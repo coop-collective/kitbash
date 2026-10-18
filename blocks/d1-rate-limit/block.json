@@ -5,7 +5,7 @@
   "title": "Fixed-window rate limits in D1 that fail closed in production",
   "description": "One atomic UPSERT ... RETURNING per call counts hits per name and key (IP, API key, member) in a D1 table shared by every isolate. In production a missing table or unreachable D1 counts as limited. A Hono middleware answers 429 with Retry-After, and purgeExpired cleans old windows from a cron.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "categories": [
     "security",
@@ -91,12 +91,6 @@
       "type": "registry:file",
       "target": ".kit/blocks/d1-rate-limit/SKILL.md",
       "role": "doc"
-    },
-    {
-      "path": "e2e.json",
-      "type": "registry:file",
-      "role": "doc",
-      "target": ".kit/blocks/d1-rate-limit/e2e.json"
     }
   ],
   "dependencies": [

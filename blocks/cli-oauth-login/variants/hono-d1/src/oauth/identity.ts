@@ -1,9 +1,9 @@
-// The one seam to the auth block (email-code-auth, BLOCK-SPEC section 10 interface): who a pasted bearer token is,
+// The one seam to the auth block (email-code-auth >= 1.1: authenticate, startCode, consumeCode, its members table): who a pasted bearer token is,
 // who a member id is, and (optionally) email-code sign-in on the authorize page. If your auth block names these
 // differently, this is the only file to change.
 import { authenticate } from "{{paths.lib|rel}}/auth/tokens";
 {{#kit.if emailSignIn}}
-import { startCode, verifyCode } from "{{paths.lib|rel}}/auth/codes";
+import { consumeCode, startCode } from "{{paths.lib|rel}}/auth/codes";
 {{/kit.if}}
 import type { OAuthEnv, OAuthMember } from "./types";
 
@@ -40,9 +40,10 @@ export async function sendSignInCode(env: OAuthEnv, email: string): Promise<void
 /** Check a sign-in code; the person on success, else null. */
 export async function memberByCode(env: OAuthEnv, email: string, code: string): Promise<OAuthMember | null> {
 {{#kit.if emailSignIn}}
-  // verifyCode also mints a bearer token labelled "sign-in"; it is never shown (only its HMAC is stored).
-  const r = await verifyCode(authEnv(env), email, code);
-  return r ? memberById(env, r.member_id) : null;
+  // consumeCode uses up the code and makes the account on first use, without minting a bearer token: the OAuth grant
+  // is this sign-in's only credential.
+  const r = await consumeCode(authEnv(env), email, code);
+  return r ? { id: r.member.id, email: r.member.email, name: r.member.name ?? null } : null;
 {{kit.else}}
   void env;
   void email;

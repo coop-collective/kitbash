@@ -67,10 +67,11 @@ export async function startCode(env: AuthEnv, emailIn: string): Promise<{ sent: 
 export type SignIn = { token: string; member: Member; created: boolean };
 
 /**
- * Uses up a code and mints a bearer token, making the account on first use. Null for a wrong, expired, used or
- * exhausted code (the caller answers 401 without saying which).
+ * Uses up a code and returns the member, making the account on first use, without minting a token: for callers that
+ * sign the person in some other way (an OAuth grant, a session). Null for a wrong, expired, used or exhausted code
+ * (the caller answers 401 without saying which). The address is the verified one, normalized (trimmed, lowercased).
  */
-export async function verifyCode(env: AuthEnv, emailIn: string, codeIn: string, label = "sign-in", name?: string): Promise<SignIn | null> {
+export async function consumeCode(env: AuthEnv, emailIn: string, codeIn: string, name?: string): Promise<{ member: Member; created: boolean } | null> {
   const email = normalEmail(String(emailIn ?? ""));
   const code = String(codeIn ?? "").replace(/\s/g, "");
   if (!/^\d{6}$/.test(code) || !EMAIL_RE.test(email)) return null;
@@ -90,6 +91,15 @@ export async function verifyCode(env: AuthEnv, emailIn: string, codeIn: string, 
   // used_at IS NULL in the WHERE: of two verifies racing on one code, only one wins
   const used = await env.DB.prepare(`UPDATE {{kit.tablePrefix}}login_codes SET used_at = ? WHERE id = ? AND used_at IS NULL`).bind(now, row.id).run();
   if (!used.meta.changes) return null;
-  const { member, created } = await upsertMember(env, email, name);
-  return { token: await issueToken(env, member.id, label), member, created };
+  return upsertMember(env, email, name);
+}
+
+/**
+ * Uses up a code (consumeCode) and mints a bearer token, making the account on first use. Null for a wrong, expired,
+ * used or exhausted code (the caller answers 401 without saying which).
+ */
+export async function verifyCode(env: AuthEnv, emailIn: string, codeIn: string, label = "sign-in", name?: string): Promise<SignIn | null> {
+  const r = await consumeCode(env, emailIn, codeIn, name);
+  if (!r) return null;
+  return { token: await issueToken(env, r.member.id, label), member: r.member, created: r.created };
 }

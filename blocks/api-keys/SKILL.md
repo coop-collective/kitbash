@@ -3,7 +3,7 @@ name: api-keys
 description: Use when a Hono + D1 Worker needs long-lived prefixed API keys that people can create and revoke, stored as HMAC.
 license: MIT
 metadata:
-  kitbash: "@coop/api-keys@1.0.0"
+  kitbash: "@coop/api-keys@1.0.1"
 ---
 
 # api-keys

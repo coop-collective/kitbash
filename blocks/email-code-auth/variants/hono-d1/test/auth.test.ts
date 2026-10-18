@@ -5,7 +5,7 @@ import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { peppered, sha256Hex } from "{{paths.lib|rel}}/crypto";
 import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/mail";
-import { GLOBAL_PER_10_MIN, MAX_ATTEMPTS, PER_ADDRESS_PER_HOUR, startCode, verifyCode } from "{{paths.lib|rel}}/auth/codes";
+import { consumeCode, GLOBAL_PER_10_MIN, MAX_ATTEMPTS, PER_ADDRESS_PER_HOUR, startCode, verifyCode } from "{{paths.lib|rel}}/auth/codes";
 import { requireBearer } from "{{paths.lib|rel}}/auth/middleware";
 import { authenticate, revokeToken, TOKEN_PREFIX, TOKEN_RE, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
 import { AuthError, type AuthEnv } from "{{paths.lib|rel}}/auth/types";
@@ -80,6 +80,18 @@ describe("the sign-in scenario (BLOCK-SPEC §10)", () => {
     const b = (await verifyCode(authEnv, email, lastCode(email)))!;
     expect(b.created).toBe(false);
     expect(b.member.id).toBe(a.member.id);
+  });
+
+  it("consumeCode uses the code and returns the (lowercased) member without minting a token", async () => {
+    const email = "consume@example.com";
+    await startCode(authEnv, " CONSUME@Example.com ");
+    const tokensBefore = await env.DB.prepare(`SELECT count(*) AS n FROM ${T("member_tokens")}`).first<{ n: number }>();
+    const r = (await consumeCode(authEnv, "Consume@Example.COM", lastCode(email)))!;
+    expect(r.member.email).toBe(email);
+    expect(r.created).toBe(true);
+    const tokensAfter = await env.DB.prepare(`SELECT count(*) AS n FROM ${T("member_tokens")}`).first<{ n: number }>();
+    expect(tokensAfter!.n).toBe(tokensBefore!.n);
+    expect(await consumeCode(authEnv, email, lastCode(email))).toBeNull(); // single use
   });
 
   it(`the ${PER_ADDRESS_PER_HOUR + 1}th code in an hour is quietly dropped`, async () => {

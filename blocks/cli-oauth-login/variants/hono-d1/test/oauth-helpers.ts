@@ -4,7 +4,7 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { expect } from "vitest";
-import { issueToken } from "{{paths.lib|rel}}/auth/tokens";
+import { issueToken, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
 import { requirePerson, type PersonVars } from "{{paths.lib|rel}}/oauth/middleware";
 import { oauthWorker } from "{{paths.lib|rel}}/oauth/provider";
 import type { OAuthEnv } from "{{paths.lib|rel}}/oauth/types";
@@ -15,7 +15,7 @@ export const LOOPBACK = "http://127.0.0.1:43123/callback";
 export const REMOTE = "https://agent.example.net/oauth/callback";
 
 /** The bindings from wrangler.jsonc plus a test-only pepper (the auth block reads TOKEN_PEPPER). */
-export const testEnv = { ...(env as unknown as OAuthEnv), TOKEN_PEPPER: "test-pepper-not-a-secret" } as OAuthEnv;
+export const testEnv = { ...(env as unknown as OAuthEnv), TOKEN_PEPPER: "test-pepper-not-a-secret-32-chars-min" } as OAuthEnv;
 
 /** The app as a host project wires it: the authorize routes, /api/cli-logins, and an API route behind requirePerson. */
 export const app = new Hono<{ Bindings: OAuthEnv; Variables: PersonVars }>();
@@ -31,13 +31,13 @@ export async function raw(path: string, init: RequestInit = {}): Promise<Respons
   return res;
 }
 
-/** A person with a bearer token: a members row (email-code-auth's table) and a token from its issueToken. */
+/** A person with a bearer token, made through email-code-auth's own upsertMember and issueToken (its members table). */
 export async function member(name: string): Promise<{ id: string; email: string; token: string }> {
-  const id = crypto.randomUUID();
-  const email = `${name.toLowerCase()}-${id.slice(0, 8)}@example.test`;
-  await testEnv.DB.prepare("INSERT INTO {{kit.authTablePrefix}}members (id, email, name) VALUES (?, ?, ?)").bind(id, email, name).run();
-  const token = await issueToken(testEnv as unknown as Parameters<typeof issueToken>[0], id, "test");
-  return { id, email, token };
+  const authEnv = testEnv as unknown as Parameters<typeof issueToken>[0];
+  const email = `${name.toLowerCase()}-${crypto.randomUUID().slice(0, 8)}@example.test`;
+  const { member: m } = await upsertMember(authEnv, email, name);
+  const token = await issueToken(authEnv, m.id, "test");
+  return { id: m.id, email, token };
 }
 
 /** A tiny cookie jar: what the authorize pages set, sent back on the next request. */

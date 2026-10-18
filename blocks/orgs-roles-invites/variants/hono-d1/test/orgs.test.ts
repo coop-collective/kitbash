@@ -4,7 +4,7 @@
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
-import { issueToken } from "{{paths.lib|rel}}/auth/tokens";
+import { issueToken, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
 import { requireBearer } from "{{paths.lib|rel}}/auth/middleware";
 import { setMailHook, type Mail } from "{{paths.lib|rel}}/orgs/invite-mail";
 import { ORG_HEADER, requireOrg, type OrgVars } from "{{paths.lib|rel}}/orgs/middleware";
@@ -13,7 +13,7 @@ import { onSignIn } from "{{paths.lib|rel}}/orgs/service";
 import type { OrgsEnv } from "{{paths.lib|rel}}/orgs/types";
 import { orgRoutes } from "{{paths.routes|rel}}/orgs";
 
-const testEnv = { ...(env as unknown as OrgsEnv), TOKEN_PEPPER: "test-pepper-not-a-secret" } as OrgsEnv & { TOKEN_PEPPER: string };
+const testEnv = { ...(env as unknown as OrgsEnv), TOKEN_PEPPER: "test-pepper-not-a-secret-32-chars-min" } as OrgsEnv & { TOKEN_PEPPER: string };
 
 // the app as a host project wires it: the org routes, and one org-scoped route of its own
 const app = new Hono<{ Bindings: OrgsEnv; Variables: OrgVars }>();
@@ -34,13 +34,13 @@ async function call(path: string, opts: { token?: string; method?: string; body?
 }
 const api = (p: string) => `{{kit.routePrefix}}${p}`;
 
-/** A person with a bearer token: a members row (the auth block's table) and a token from its issueToken. */
+/** A person with a bearer token, made through the auth block's own upsertMember and issueToken (its members table). */
 async function person(name: string, email?: string) {
-  const id = crypto.randomUUID();
-  const addr = email ?? `${name.toLowerCase()}-${id.slice(0, 8)}@example.test`;
-  await testEnv.DB.prepare("INSERT INTO {{kit.authTablePrefix}}members (id, email, name) VALUES (?, ?, ?)").bind(id, addr, name).run();
-  const token = await issueToken(testEnv as unknown as Parameters<typeof issueToken>[0], id, "test");
-  return { id, email: addr, name, token };
+  const authEnv = testEnv as unknown as Parameters<typeof issueToken>[0];
+  const addr = (email ?? `${name}-${crypto.randomUUID().slice(0, 8)}@example.test`).toLowerCase();
+  const { member: m } = await upsertMember(authEnv, addr, name);
+  const token = await issueToken(authEnv, m.id, "test");
+  return { id: m.id, email: addr, name, token };
 }
 
 async function withTeam(name: string) {

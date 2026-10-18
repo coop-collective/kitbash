@@ -5,7 +5,7 @@
   "title": "Cloudflare Email Service sender with dev printing and a test override",
   "description": "mailer(env) over the send_email binding EMAIL, from MAIL_FROM with the app's name; prints instead of sending in dev; null in production when unbound, so callers refuse instead of faking delivery. sendMail() logs only the Email Service error code. An inline-styled HTML layout and escaping helper. A test override captures mail.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "categories": ["email"],
   "meta": {
@@ -30,8 +30,7 @@
     { "path": "src/mail.ts", "type": "registry:lib", "target": "{{paths.lib}}/mail.ts", "role": "service", "variant": "hono-d1" },
     { "path": "test/mail.test.ts", "type": "registry:file", "target": "{{paths.tests}}/mail.test.ts", "role": "test", "variant": "hono-d1" },
     { "path": "config/wrangler.patch.jsonc", "type": "registry:file", "target": "wrangler.jsonc", "role": "config-patch", "variant": "hono-d1", "merge": "jsonc-deep" },
-    { "path": "SKILL.md", "type": "registry:file", "target": ".kit/blocks/cf-email-sender/SKILL.md", "role": "doc" },
-    { "path": "e2e.json", "type": "registry:file", "target": ".kit/blocks/cf-email-sender/e2e.json", "role": "doc" }
+    { "path": "SKILL.md", "type": "registry:file", "target": ".kit/blocks/cf-email-sender/SKILL.md", "role": "doc" }
   ],
   "dependencies": [],
   "devDependencies": ["@cloudflare/vitest-pool-workers@>=0.8"],

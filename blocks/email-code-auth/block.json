@@ -5,7 +5,7 @@
   "title": "Email code sign-in with peppered bearer tokens",
   "description": "Six-digit email codes over Cloudflare Email Service (uniform, single use, 5 guesses counted before the compare, 5/address/hour and 200/10 min caps) and opaque prefixed bearer tokens, both stored as HMAC under a TOKEN_PEPPER-derived key; a Hono requireBearer middleware; sign-up on first verified code.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -157,12 +157,6 @@
       "type": "registry:file",
       "target": ".kit/blocks/email-code-auth/SKILL.md",
       "role": "doc"
-    },
-    {
-      "path": "e2e.json",
-      "type": "registry:file",
-      "target": ".kit/blocks/email-code-auth/e2e.json",
-      "role": "doc"
     }
   ],
   "dependencies": [
@@ -262,6 +256,11 @@
     },
     {
       "symbol": "verifyCode",
+      "from": "src/auth/codes.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "consumeCode",
       "from": "src/auth/codes.ts",
       "kind": "function"
     },

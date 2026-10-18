@@ -3,7 +3,7 @@ name: vitest-workerd-harness
 description: Use when a Hono + D1 Worker needs tests that run in workerd with migrations applied, or a test proving new migrations keep production rows.
 license: MIT
 metadata:
-  kitbash: "@coop/vitest-workerd-harness@1.0.0"
+  kitbash: "@coop/vitest-workerd-harness@1.0.1"
 ---
 
 # vitest-workerd-harness

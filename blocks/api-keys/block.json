@@ -5,7 +5,7 @@
   "title": "Prefixed API keys with HMAC storage, optional KV verify cache and owner routes",
   "description": "Keys like ak_live_<id8>_<secret43>: the secret is shown once and stored only as an HMAC with a pepper. Verification reads an optional KV cache, then D1, with a constant-time compare. Revocation busts the cache. Includes a requireApiKey middleware, owner-scoped create/list/rename/revoke routes, a 50-key cap and optional scope labels. Without a KV binding there is simply no cache.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "categories": [
     "auth",
@@ -148,12 +148,6 @@
       "type": "registry:file",
       "target": ".kit/blocks/api-keys/SKILL.md",
       "role": "doc"
-    },
-    {
-      "path": "e2e.json",
-      "type": "registry:file",
-      "role": "doc",
-      "target": ".kit/blocks/api-keys/e2e.json"
     }
   ],
   "dependencies": [

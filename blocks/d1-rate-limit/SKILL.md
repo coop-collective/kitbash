@@ -3,7 +3,7 @@ name: d1-rate-limit
 description: Use when a Hono + D1 Worker needs shared rate limits (login, code sending, API keys) that fail closed in production.
 license: MIT
 metadata:
-  kitbash: "@coop/d1-rate-limit@1.0.0"
+  kitbash: "@coop/d1-rate-limit@1.0.1"
 ---
 
 # d1-rate-limit

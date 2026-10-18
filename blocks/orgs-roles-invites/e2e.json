@@ -1,53 +1,45 @@
 {
-  "version": 1,
-  "block": "orgs-roles-invites",
-  "template": "templates/hono-d1",
-  "requires": [
-    {
-      "block": "email-code-auth",
-      "dir": "blocks/email-code-auth",
-      "fallback_dir": "packages/core/test/fixtures/blocks/email-code-auth-fixture",
-      "note": "Installed first. Its tablePrefix must equal this block's authTablePrefix."
-    }
-  ],
+  "_doc": "Cases for test-e2e/install.test.mjs, read from this block directory (never installed into projects). The defaults case always runs; \"cases\" add param sets ({name, params, dependencyParams?}); registryDependencies are installed first by `kit install` itself (from blocks/, with dependencyParams passed as --param <dependency>.<name>=<value>). \"conflicts\" entries write \"setup\" files into a fresh project, expect the dry run to exit 1 with the listed conflicts, then install with \"resolve\" ({params?, on_conflict?}) and expect verify to pass. \"chains\" install several blocks into one project.",
   "cases": [
     {
-      "name": "defaults",
-      "install": [
-        { "block": "email-code-auth", "params": {} },
-        { "block": "orgs-roles-invites", "params": {} }
-      ],
-      "expect": { "conflicts": 0, "verify": "pass", "files": ["migrations/0003_orgs.sql", "src/lib/orgs/service.ts", "src/routes/orgs.ts", "test/orgs.test.ts"] }
-    },
-    {
-      "name": "all-three-mvp-blocks",
-      "install": [
-        { "block": "email-code-auth", "params": {} },
-        { "block": "cli-oauth-login", "dir": "blocks/cli-oauth-login", "params": {} },
-        { "block": "orgs-roles-invites", "params": {} }
-      ],
-      "expect": { "conflicts": 0, "verify": "pass", "files": ["migrations/0004_orgs.sql"] }
-    },
-    {
       "name": "legacy-org-no-personal-prefixed",
-      "install": [
-        { "block": "email-code-auth", "params": { "tokenPrefix": "mc_", "tablePrefix": "app_" } },
+      "params": {
+        "authTablePrefix": "app_",
+        "tablePrefix": "team_",
+        "legacyOrgId": "org_default",
+        "productRoles": true,
+        "personalOrgs": false,
+        "orgHeader": "X-HQ-Org",
+        "invitesPerDay": 5,
+        "maxTeamOrgs": 3,
+        "routePrefix": "/v1"
+      },
+      "dependencyParams": {
+        "email-code-auth": {
+          "tokenPrefix": "mc_",
+          "tablePrefix": "app_"
+        }
+      }
+    }
+  ],
+  "conflicts": [
+    {
+      "name": "orgs-table",
+      "setup": {
+        "migrations/0002_legacy.sql": "CREATE TABLE orgs (id TEXT PRIMARY KEY);\n"
+      },
+      "expect": [
         {
-          "block": "orgs-roles-invites",
-          "params": { "authTablePrefix": "app_", "tablePrefix": "team_", "legacyOrgId": "org_default", "productRoles": true, "personalOrgs": false, "orgHeader": "X-HQ-Org", "invitesPerDay": 5, "maxTeamOrgs": 3, "routePrefix": "/v1" }
+          "kind": "table",
+          "name": "orgs",
+          "resolve_with_param": "tablePrefix"
         }
       ],
-      "expect": { "conflicts": 0, "verify": "pass" }
-    },
-    {
-      "name": "table-conflict-resolved-by-tablePrefix",
-      "setup": [{ "write": "migrations/0002_legacy.sql", "content": "CREATE TABLE orgs (id TEXT PRIMARY KEY);\n" }],
-      "install": [
-        { "block": "email-code-auth", "params": {} },
-        { "block": "orgs-roles-invites", "params": {}, "expect": { "conflicts": [{ "kind": "table", "name": "orgs", "param": "tablePrefix" }], "applied": false } },
-        { "block": "orgs-roles-invites", "params": { "tablePrefix": "team_" } }
-      ],
-      "expect": { "conflicts": 0, "verify": "pass", "files": ["migrations/0004_orgs.sql"] }
+      "resolve": {
+        "params": {
+          "tablePrefix": "team_"
+        }
+      }
     }
   ]
 }

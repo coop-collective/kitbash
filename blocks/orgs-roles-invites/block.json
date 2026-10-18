@@ -5,7 +5,7 @@
   "title": "Orgs with roles and email invitations",
   "description": "Personal workspaces and team orgs with owner/admin/member roles, email invitations (existing accounts join at once, new addresses on first sign-in) with a daily cap, and org scoping where orgOf(env) throws when unscoped.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "categories": [
     "auth",
@@ -174,12 +174,6 @@
       "target": "{{paths.tests}}/orgs.test.ts",
       "role": "test",
       "variant": "hono-d1"
-    },
-    {
-      "path": "e2e.json",
-      "type": "registry:file",
-      "target": ".kit/blocks/orgs-roles-invites/e2e.json",
-      "role": "fixture"
     },
     {
       "path": "SKILL.md",

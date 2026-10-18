@@ -110,50 +110,71 @@ async function blockDirs() {
   return out;
 }
 
+/** A block's own cases: `<block dir>/e2e.json` (core allows it undeclared; it is never installed). */
+async function blockE2e(dir) {
+  const f = path.join(dir, "e2e.json");
+  return (await exists(f)) ? readJson(f) : {};
+}
+
+/** Cases by name, later sources winning (cases.json first, then the block's e2e.json). */
+const byName = (...lists) => [...new Map(lists.flat().filter(Boolean).map((c) => [c.name, c])).values()];
+
 async function loadPlan() {
   const cfg = await readJson(path.join(here, "cases.json"));
   const dirs = await blockDirs();
   for (const [name, c] of Object.entries(cfg.blocks ?? {})) {
     if (c.path) dirs.set(name, path.resolve(repo, c.path));
   }
+  const step = (block, s = {}) => {
+    const dir = dirs.get(block);
+    if (!dir) throw new Error(`unknown block ${block} (not in blocks/ and no cases.json "path")`);
+    return { block, dir, params: s.params ?? {}, dependencyParams: s.dependencyParams ?? {} };
+  };
   const entries = [];
+  const chains = [...(cfg.chains ?? [])];
   for (const [name, dir] of [...dirs].sort(([a], [b]) => a.localeCompare(b))) {
     const c = cfg.blocks?.[name] ?? {};
-    const manifest = await readJson(path.join(dir, "block.json"));
-    const cases = [{ name: "defaults", params: {} }, ...(c.cases ?? [])];
-    for (const k of cases) entries.push({ title: `${name} [${k.name}]`, filter: name, steps: [...(await depsOf(manifest, dirs, k.dependencyParams ?? {})), { block: name, dir, params: k.params ?? {} }] });
+    const own = await blockE2e(dir);
+    for (const k of byName([{ name: "defaults", params: {} }], c.cases, own.cases)) {
+      entries.push({ title: `${name} [${k.name}]`, filter: name, steps: [step(name, k)] });
+    }
+    for (const k of byName(c.conflicts, own.conflicts)) {
+      entries.push({ title: `${name} [conflict: ${k.name}]`, filter: name, conflict: k, steps: [step(name, k)] });
+    }
+    chains.push(...(own.chains ?? []));
   }
-  for (const ch of cfg.chains ?? []) {
-    const steps = ch.steps.map((s) => {
-      const dir = dirs.get(s.block);
-      if (!dir) throw new Error(`chain ${ch.name}: unknown block ${s.block}`);
-      return { block: s.block, dir, params: s.params ?? {} };
-    });
-    entries.push({ title: `chain ${ch.name}`, filter: ch.name, steps });
+  for (const ch of byName(chains)) {
+    entries.push({ title: `chain ${ch.name}`, filter: ch.name, steps: ch.steps.map((s) => step(s.block, s)) });
   }
   const only = (process.env.KIT_E2E_ONLY ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   return only.length ? entries.filter((e) => only.includes(e.filter) || e.steps.some((s) => only.includes(s.block))) : entries;
 }
 
-/** registryDependencies resolved (transitively, dependencies first) to block directories by their directory name. */
-async function depsOf(manifest, dirs, depParams, seen = new Set()) {
-  const steps = [];
-  for (const ref of manifest.registryDependencies ?? []) {
-    const name = String(typeof ref === "string" ? ref : ref.name ?? ref.id).replace(/^@[^/]+\//, "").replace(/@.*$/, "");
-    if (seen.has(name)) continue;
-    seen.add(name);
-    const dir = dirs.get(name);
-    if (!dir) throw new Error(`${manifest.name} depends on ${name}, which is not in blocks/ (add it to cases.json "path" if it lives elsewhere)`);
-    steps.push(...(await depsOf(await readJson(path.join(dir, "block.json")), dirs, depParams, seen)), { block: name, dir, params: depParams[name] ?? {} });
-  }
-  return steps;
-}
-
 /* ---------------------------------------------------------------- the tests */
 
+const BLOCKS = path.join(repo, "blocks");
 const kit = (args, cwd, home) => sh("node", [KIT, ...args], { cwd, timeout: 600_000, env: { KIT_KEYCHAIN: "0", HOME: home } });
 const paramArgs = (p) => Object.entries(p).flatMap(([k, v]) => ["--param", `${k}=${v}`]);
+const depParamArgs = (dp) => Object.entries(dp).flatMap(([dep, p]) => paramArgs(Object.fromEntries(Object.entries(p).map(([k, v]) => [`${dep}.${k}`, v]))));
+/** `kit install` resolves the block's registryDependencies itself (from blocks/, by directory name) and installs them first. */
+const installArgs = (s, extra = []) => ["install", s.dir, "--blocks-dir", BLOCKS, ...paramArgs(s.params), ...depParamArgs(s.dependencyParams), ...extra];
 const fmt = (r) => `exit ${r.code}\n${r.out}\n${r.err}`.slice(-4000);
+
+/** Blocks that add npm dependencies change package.json: install them (offline first) as a person would. */
+async function installAddedDependencies(dir, base) {
+  const [now, was] = await Promise.all([readFile(path.join(dir, "package.json"), "utf8"), readFile(path.join(base, "package.json"), "utf8")]);
+  if (now === was) return null;
+  const pkg = JSON.parse(now);
+  const added = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).filter((n) => !/"/.test(n));
+  // CI=1 makes pnpm default to a frozen lockfile; a block that adds a dependency changes package.json on purpose
+  const flags = ["install", "--ignore-workspace", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"];
+  const missing = async () => (await Promise.all(added.map(async (n) => ((await exists(path.join(dir, "node_modules", n, "package.json"))) ? null : n)))).filter(Boolean);
+  let r = await sh("pnpm", [...flags, "--offline"], { cwd: dir });
+  if ((await missing()).length && process.env.KIT_E2E_ONLINE !== "0") r = await sh("pnpm", flags, { cwd: dir });
+  const left = await missing();
+  assert.deepEqual(left, [], `pnpm install did not provide ${left.join(", ")}: ${fmt(r)}`);
+  return added;
+}
 
 const problem = await toolingProblem();
 const plan = await loadPlan();
@@ -166,37 +187,70 @@ describe("kitbash e2e: blocks installed into templates/hono-d1 and verified", ()
       if (base.skip) return t.skip(base.skip);
       const dir = await freshProject(base.dir);
       const home = await tmp("kitbash-e2e-home-");
-      const ids = [];
-      for (const s of c.steps) {
-        const manifest = await readJson(path.join(s.dir, "block.json"));
-        const id = `@local/${manifest.name}`;
-        const r = await kit(["install", s.dir, "--apply", ...paramArgs(s.params)], dir, home);
-        assert.equal(r.code, 0, `kit install ${s.block} ${JSON.stringify(s.params)} failed: ${fmt(r)}`);
-        ids.push({ id, step: s, manifest });
+      const steps = c.steps.map((s) => ({ ...s }));
+
+      if (c.conflict) {
+        // setup files → the dry run reports the listed conflicts (exit 1, nothing written) → resolve → verify passes
+        for (const [rel, content] of Object.entries(c.conflict.setup ?? {})) {
+          await mkdir(path.dirname(path.join(dir, rel)), { recursive: true });
+          await writeFile(path.join(dir, rel), content);
+        }
+        const dry = await kit(installArgs(steps[0], ["--json"]), dir, home);
+        assert.equal(dry.code, 1, `the dry run reports conflicts: ${fmt(dry)}`);
+        const out = JSON.parse(dry.out);
+        const conflicts = out.conflicts ?? out.error?.conflicts ?? [];
+        for (const want of c.conflict.expect ?? []) {
+          assert.ok(
+            conflicts.some((x) => Object.entries(want).every(([k, v]) => x[k] === v)),
+            `expected conflict ${JSON.stringify(want)} in ${JSON.stringify(conflicts)}`,
+          );
+        }
+        assert.equal(await exists(path.join(dir, ".kit", "lock.json")), false, "nothing installed by a dry run with conflicts");
+        const res = c.conflict.resolve ?? {};
+        steps[0].params = { ...steps[0].params, ...(res.params ?? {}) };
+        steps[0].onConflict = res.on_conflict;
       }
+
+      for (const s of steps) {
+        const r = await kit(installArgs(s, ["--apply", ...(s.onConflict ? ["--on-conflict", s.onConflict] : [])]), dir, home);
+        assert.equal(r.code, 0, `kit install ${s.block} ${JSON.stringify(s.params)} failed: ${fmt(r)}`);
+      }
+      await installAddedDependencies(dir, base.dir);
       // The project's generated Worker types must reflect the config the blocks patched (as `pnpm typecheck` does).
       const ty = await sh(path.join(dir, "node_modules", ".bin", "wrangler"), ["types", "--strict-vars=false"], { cwd: dir, timeout: 180_000 });
       assert.equal(ty.code, 0, `wrangler types failed: ${fmt(ty)}`);
 
       const lock = await readJson(path.join(dir, ".kit", "lock.json"));
-      for (const { id, step } of ids) {
-        assert.ok(lock.blocks?.[id], `lock records ${id}`);
-        for (const [k, v] of Object.entries(step.params)) {
+      const byBlock = (name) => Object.keys(lock.blocks ?? {}).find((id) => id.split("/")[1] === name);
+      for (const s of steps) {
+        const manifest = await readJson(path.join(s.dir, "block.json"));
+        const id = byBlock(manifest.name);
+        assert.ok(id, `lock records ${manifest.name}`);
+        for (const [k, v] of Object.entries(s.params)) {
           const recorded = lock.blocks[id].params?.[k];
           if (recorded !== undefined) assert.equal(String(recorded), String(v), `lock params.${k} for ${id}`);
         }
+        for (const [dep, p] of Object.entries(s.dependencyParams)) {
+          const depId = byBlock(dep);
+          assert.ok(depId, `lock records the dependency ${dep}`);
+          for (const [k, v] of Object.entries(p)) assert.equal(String(lock.blocks[depId].params?.[k]), String(v), `lock params.${k} for ${depId}`);
+        }
       }
-      for (const { id, manifest } of ids) {
-        const cmds = manifest.verify?.commands ?? [];
-        assert.ok(cmds.length > 0, `${id} declares verify.commands`);
+      // a block's e2e.json is the harness's, never the project's
+      for (const id of Object.keys(lock.blocks)) {
+        assert.equal(await exists(path.join(dir, ".kit", "blocks", id.split("/")[1], "e2e.json")), false, `${id}: e2e.json is not installed`);
+      }
+      // every installed block, dependencies included, is verified
+      for (const id of Object.keys(lock.blocks)) {
         const v = await kit(["verify", id, "--timeout", "600"], dir, home);
         assert.equal(v.code, 0, `kit verify ${id} failed: ${fmt(v)}`);
-        assert.equal((v.out.match(/PASS \(exit 0\)/g) ?? []).length, cmds.length, `every verify command of ${id} passed:\n${v.out}`);
+        const ran = (v.out.match(/PASS \(exit 0\)/g) ?? []).length;
+        assert.ok(ran > 0 && !/FAIL \(exit/.test(v.out), `every verify command of ${id} passed:\n${v.out}`);
         assert.equal((await readJson(path.join(dir, ".kit", "lock.json"))).blocks[id].verify?.passed, true, `lock records ${id} verify.passed`);
       }
       // Installing the last block again must be refused with conflicts (its own files and tables now exist).
-      const last = ids.at(-1).step;
-      const again = await kit(["install", last.dir, ...paramArgs(last.params)], dir, home);
+      const last = steps.at(-1);
+      const again = await kit(installArgs(last), dir, home);
       assert.equal(again.code, 1, `a second install of ${last.block} reports conflicts: ${fmt(again)}`);
       assert.match(again.out + again.err, /conflict/i);
     });

@@ -3,7 +3,7 @@ name: cli-oauth-login
 description: Use when a Hono + D1 Worker should let a person's own CLI or MCP client sign in with their account over OAuth 2.1 (browser, PKCE) instead of a pasted token, with revocable per-CLI grants.
 license: MIT
 metadata:
-  kitbash: "@coop/cli-oauth-login@1.0.0"
+  kitbash: "@coop/cli-oauth-login@1.1.0"
 ---
 
 # cli-oauth-login
@@ -29,8 +29,8 @@ registration, client metadata documents, PKCE S256, refresh tokens) in front of 
   `/oauth/token`, `/.well-known/oauth-authorization-server`, `/.well-known/oauth-protected-resource<apiRoute>`, the
   protected `<apiRoute>` (default `/mcp`), `GET /api/cli-logins`, `DELETE /api/cli-logins/:id`.
 - Exports: `oauthWorker`, `requirePerson`, `oauthRoutes`, `cliLoginRoutes`, `revokeCliGrants`, `cliMember`.
-- Needs: `@coop/email-code-auth` installed first (`authenticate`, `requireBearer`, `issueToken`, `startCode`,
-  `verifyCode`, its members table); D1 `DB`; KV `OAUTH_KV`; optional var `PUBLIC_ORIGIN`.
+- Needs: `@coop/email-code-auth` >= 1.1 installed first (`authenticate`, `requireBearer`, `startCode`,
+  `consumeCode`, its members table); D1 `DB`; KV `OAUTH_KV`; optional var `PUBLIC_ORIGIN`.
 - Params: `tokenPrefix` and `authTablePrefix` must equal email-code-auth's `tokenPrefix` and `tablePrefix`.
 
 ## Install
@@ -58,6 +58,5 @@ exchange, API call, refresh, revoke) and `npx tsc --noEmit`.
 
 - Signs in the person, not a limited agent identity: an approved CLI has the person's full access. Cloud agents with
   their own scopes (Ideator's agent_identities) are not included.
-- Email-code sign-in calls email-code-auth's `verifyCode`, which also mints an unused bearer token (stored only as HMAC).
 - No per-client rate limit on the API route; add `d1-rate-limit` if you need one.
 - Over plain http only localhost can do OAuth; anything else needs https or `PUBLIC_ORIGIN`.

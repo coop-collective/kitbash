@@ -1,51 +1,44 @@
 {
-  "version": 1,
-  "block": "cli-oauth-login",
-  "template": "templates/hono-d1",
-  "requires": [
-    {
-      "block": "email-code-auth",
-      "dir": "blocks/email-code-auth",
-      "fallback_dir": "packages/core/test/fixtures/blocks/email-code-auth-fixture",
-      "note": "Installed first. Its tokenPrefix and tablePrefix must equal this block's tokenPrefix and authTablePrefix."
-    }
-  ],
+  "_doc": "Cases for test-e2e/install.test.mjs, read from this block directory (never installed into projects). The defaults case always runs; \"cases\" add param sets ({name, params, dependencyParams?}); registryDependencies are installed first by `kit install` itself (from blocks/, with dependencyParams passed as --param <dependency>.<name>=<value>). \"conflicts\" entries write \"setup\" files into a fresh project, expect the dry run to exit 1 with the listed conflicts, then install with \"resolve\" ({params?, on_conflict?}) and expect verify to pass. \"chains\" install several blocks into one project.",
   "cases": [
     {
-      "name": "defaults",
-      "install": [
-        { "block": "email-code-auth", "params": {} },
-        { "block": "cli-oauth-login", "params": {} }
-      ],
-      "expect": {
-        "conflicts": 0,
-        "verify": "pass",
-        "files": ["migrations/0003_cli_logins.sql", "src/lib/oauth/provider.ts", "src/lib/oauth/templates/consent.html", "src/routes/oauth.ts", "test/cli-oauth.test.ts"],
-        "dependencies_added": ["@cloudflare/workers-oauth-provider"],
-        "config": { "wrangler.jsonc": ["kv_namespaces", "OAUTH_KV"] }
-      }
-    },
-    {
       "name": "prefixed-refuse-remote-no-email",
-      "install": [
-        { "block": "email-code-auth", "params": { "tokenPrefix": "mc_", "tablePrefix": "app_" } },
-        {
-          "block": "cli-oauth-login",
-          "params": { "tokenPrefix": "mc_", "authTablePrefix": "app_", "tablePrefix": "app_", "remoteClients": "refuse", "emailSignIn": false, "brandName": "Kit Bash", "brandColor": "#22aa88", "apiRoute": "/v1/mcp" }
+      "params": {
+        "tokenPrefix": "mc_",
+        "authTablePrefix": "app_",
+        "tablePrefix": "app_",
+        "remoteClients": "refuse",
+        "emailSignIn": false,
+        "brandName": "Kit Bash",
+        "brandColor": "#22aa88",
+        "apiRoute": "/v1/mcp"
+      },
+      "dependencyParams": {
+        "email-code-auth": {
+          "tokenPrefix": "mc_",
+          "tablePrefix": "app_"
         }
-      ],
-      "expect": { "conflicts": 0, "verify": "pass", "files": ["migrations/0003_cli_logins.sql"] }
-    },
-    {
-      "name": "table-conflict-resolved-by-tablePrefix",
-      "setup": [{ "write": "migrations/0002_legacy.sql", "content": "CREATE TABLE cli_logins (id TEXT PRIMARY KEY);\n" }],
-      "install": [
-        { "block": "email-code-auth", "params": {} },
-        { "block": "cli-oauth-login", "params": {}, "expect": { "conflicts": [{ "kind": "table", "name": "cli_logins", "param": "tablePrefix" }], "applied": false } },
-        { "block": "cli-oauth-login", "params": { "tablePrefix": "oauth_" } }
-      ],
-      "expect": { "conflicts": 0, "verify": "pass", "files": ["migrations/0004_cli_logins.sql"] }
+      }
     }
   ],
-  "post_install": "pnpm install (offline when the store has it): the block adds @cloudflare/workers-oauth-provider; then wrangler types --strict-vars=false before verify."
+  "conflicts": [
+    {
+      "name": "cli-logins-table",
+      "setup": {
+        "migrations/0002_legacy.sql": "CREATE TABLE cli_logins (id TEXT PRIMARY KEY);\n"
+      },
+      "expect": [
+        {
+          "kind": "table",
+          "name": "cli_logins",
+          "resolve_with_param": "tablePrefix"
+        }
+      ],
+      "resolve": {
+        "params": {
+          "tablePrefix": "oauth_"
+        }
+      }
+    }
+  ]
 }
