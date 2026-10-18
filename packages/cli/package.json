@@ -1,0 +1,26 @@
+{
+  "name": "@kitbash/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "kit: the Kitbash CLI (login, init, search, get, install, apply, verify, upgrade, diff, harvest, validate, publish, propose, status, heartbeat).",
+  "bin": { "kit": "./dist/kit.js" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "kit": "node src/kit.ts",
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kitbash/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "rolldown": "^1.2.14",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
