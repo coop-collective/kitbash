@@ -1,0 +1,7 @@
+{
+  "_doc": "test-e2e cases for this block (same shape as a test-e2e/cases.json \"blocks\" entry). The defaults case always runs; these add param sets. Each case installs the block into a copy of templates/hono-d1 and runs its verify.commands.",
+  "cases": [
+    { "name": "console", "params": { "mailer": "console" } },
+    { "name": "branded", "params": { "appName": "Mail Cheap", "appDomain": "mailcheap.app" } }
+  ]
+}

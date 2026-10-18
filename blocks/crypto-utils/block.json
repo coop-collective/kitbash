@@ -1,0 +1,78 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "crypto-utils",
+  "type": "registry:block",
+  "title": "WebCrypto helpers: HMAC, HKDF purpose keys, constant-time compare, CSPRNG codes",
+  "description": "One dependency-free module for Workers: hex and base64url, SHA-256, HMAC-SHA256, HKDF and per-purpose keys derived from a pepper, constant-time string comparison, rejection-sampled digit codes, random tokens and prefixed ids. Tested against FIPS 180-2, RFC 4231 and RFC 5869 vectors.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": ["crypto", "security"],
+  "meta": {
+    "maturity": "production",
+    "origin": "harvested",
+    "est_hours_saved": 1.5,
+    "also_harvested_from": [
+      { "repo": "local:social-connector (no remote)", "commit": "6a6ae3f", "paths": ["telegram-connector/src/lib/crypto.ts", "telegram-connector/src/auth/email-code.ts"] }
+    ]
+  },
+  "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1", "ui": "none", "lang": "ts", "test": "vitest-workerd" },
+  "compat": { "wrangler": ">=4", "typescript": ">=5.4" },
+  "variants": [
+    { "id": "hono-d1", "default": true, "root": "variants/hono-d1", "stack": { "framework": "hono" } }
+  ],
+  "params": [],
+  "files": [
+    { "path": "src/crypto.ts", "type": "registry:lib", "target": "{{paths.lib}}/crypto.ts", "role": "lib", "variant": "hono-d1" },
+    { "path": "test/crypto.test.ts", "type": "registry:file", "target": "{{paths.tests}}/crypto.test.ts", "role": "test", "variant": "hono-d1" },
+    { "path": "SKILL.md", "type": "registry:file", "target": ".kit/blocks/crypto-utils/SKILL.md", "role": "doc" }
+  ],
+  "dependencies": [],
+  "devDependencies": ["@cloudflare/vitest-pool-workers@>=0.8"],
+  "registryDependencies": [],
+  "exports": [
+    { "symbol": "peppered", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "purposeKey", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "hmacSha256Hex", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "hkdf", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "sha256Hex", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "timingSafeEqual", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "randomDigits", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "randomToken", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "newId", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "base64url", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "fromBase64url", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "toHex", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "fromHex", "from": "src/crypto.ts", "kind": "function" },
+    { "symbol": "utf8", "from": "src/crypto.ts", "kind": "function" }
+  ],
+  "ui": [],
+  "tests": [
+    { "file": "test/crypto.test.ts", "runner": "vitest-workerd", "covers": ["encodings", "sha256", "hmac", "hkdf", "compare", "random"] }
+  ],
+  "verify": {
+    "commands": ["npx vitest run {{paths.tests}}/crypto.test.ts", "pnpm typecheck"],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds one module of WebCrypto helpers to a Worker: HMAC with HKDF-derived per-purpose keys from a pepper, constant-time compare, unbiased digit codes, random tokens and ids. No bindings, no tables, no routes.",
+    "when_to_use": ["Code needs to store a secret's keyed hash (codes, API keys, tokens) or compare secrets in constant time.", "Another block lists it in registryDependencies (email-code-auth, api-keys)."],
+    "when_not_to_use": ["You need password hashing (use a slow KDF such as PBKDF2 or scrypt, not HMAC).", "You need encryption at rest (AES-GCM is not in this block)."],
+    "adapt": [
+      { "id": "import", "required": false, "title": "Import the helpers where needed", "where": "any module under {{paths.app}}", "do": "import { peppered, timingSafeEqual } from '{{paths.lib}}/crypto' (relative path from the importing file).", "check": "The project typechecks." }
+    ],
+    "author_notes": "Use peppered(secret, purpose, message) with a distinct purpose string per use, so a leak of one hash family says nothing about another."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": ["packages/api/src/util.ts"]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T00:00:00Z"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "cf-email-sender",
+  "type": "registry:block",
+  "title": "Cloudflare Email Service sender with dev printing and a test override",
+  "description": "mailer(env) over the send_email binding EMAIL, from MAIL_FROM with the app's name; prints instead of sending in dev; null in production when unbound, so callers refuse instead of faking delivery. sendMail() logs only the Email Service error code. An inline-styled HTML layout and escaping helper. A test override captures mail.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": ["email"],
+  "meta": {
+    "maturity": "production",
+    "origin": "harvested",
+    "est_hours_saved": 1.5,
+    "also_harvested_from": [
+      { "repo": "local:social-connector (no remote)", "commit": "6a6ae3f", "paths": ["telegram-connector/src/auth/mailer.ts", "telegram-connector/src/auth/email-code.ts"] }
+    ]
+  },
+  "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1", "ui": "none", "lang": "ts", "test": "vitest-workerd" },
+  "compat": { "wrangler": ">=4", "typescript": ">=5.4" },
+  "variants": [
+    { "id": "hono-d1", "default": true, "root": "variants/hono-d1", "stack": { "framework": "hono" } }
+  ],
+  "params": [
+    { "name": "appName", "type": "string", "default": "My App", "description": "Sender display name and the heading of the HTML layout." },
+    { "name": "appDomain", "type": "string", "default": "example.com", "description": "Domain of the MAIL_FROM default (login@<appDomain>); it must be onboarded in Email Service." },
+    { "name": "mailer", "type": "enum", "default": "email-service", "values": ["email-service", "console"], "description": "email-service sends through the EMAIL binding; console only prints (dev), and is null in production." }
+  ],
+  "files": [
+    { "path": "src/mail.ts", "type": "registry:lib", "target": "{{paths.lib}}/mail.ts", "role": "service", "variant": "hono-d1" },
+    { "path": "test/mail.test.ts", "type": "registry:file", "target": "{{paths.tests}}/mail.test.ts", "role": "test", "variant": "hono-d1" },
+    { "path": "config/wrangler.patch.jsonc", "type": "registry:file", "target": "wrangler.jsonc", "role": "config-patch", "variant": "hono-d1", "merge": "jsonc-deep" },
+    { "path": "SKILL.md", "type": "registry:file", "target": ".kit/blocks/cf-email-sender/SKILL.md", "role": "doc" },
+    { "path": "e2e.json", "type": "registry:file", "target": ".kit/blocks/cf-email-sender/e2e.json", "role": "doc" }
+  ],
+  "dependencies": [],
+  "devDependencies": ["@cloudflare/vitest-pool-workers@>=0.8"],
+  "registryDependencies": [],
+  "envVars": { "MAIL_FROM": "login@example.com" },
+  "env": [
+    { "name": "MAIL_FROM", "secret": false, "default": "login@{{kit.appDomain}}", "description": "Sender address; its domain must be onboarded in Cloudflare Email Service." },
+    { "name": "ENVIRONMENT", "secret": false, "default": "dev", "description": "dev, development, local or test print mail instead of failing when EMAIL is unbound; anything else (production) gets no mailer." }
+  ],
+  "bindings": [
+    { "type": "send_email", "name": "EMAIL", "required": false, "note": "Without it mail is printed in dev and mailer(env) is null in production." }
+  ],
+  "exports": [
+    { "symbol": "mailer", "from": "src/mail.ts", "kind": "function" },
+    { "symbol": "sendMail", "from": "src/mail.ts", "kind": "function" },
+    { "symbol": "setMailerOverride", "from": "src/mail.ts", "kind": "function" },
+    { "symbol": "layout", "from": "src/mail.ts", "kind": "function" },
+    { "symbol": "escapeHtml", "from": "src/mail.ts", "kind": "function" },
+    { "symbol": "MailError", "from": "src/mail.ts", "kind": "class" },
+    { "symbol": "MailEnv", "from": "src/mail.ts", "kind": "type" },
+    { "symbol": "APP_NAME", "from": "src/mail.ts", "kind": "const" }
+  ],
+  "ui": [],
+  "tests": [
+    { "file": "test/mail.test.ts", "runner": "vitest-workerd", "covers": ["binding", "dev-print", "production-null", "override", "errors", "html"] }
+  ],
+  "verify": {
+    "commands": ["npx vitest run {{paths.tests}}/mail.test.ts", "pnpm typecheck"],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds a mail module for Workers over Cloudflare Email Service: mailer(env) and sendMail(env, mail), printed in dev, refused in production when unbound, overridable in tests. One send_email binding and one var.",
+    "when_to_use": ["The app sends its own transactional mail (sign-in codes, invitations, receipts) from a Worker.", "Another block lists it in registryDependencies (email-code-auth, orgs-roles-invites)."],
+    "when_not_to_use": ["Bulk or marketing mail, or tracked campaigns.", "A provider other than Cloudflare Email Service is required."],
+    "adapt": [
+      { "id": "mail-domain", "required": false, "title": "Onboard the sending domain in Email Service", "do": "Cloudflare dashboard, Email, Email Service: add {{kit.appDomain}}; keep MAIL_FROM in wrangler.jsonc vars on that domain; set ENVIRONMENT to production in the deployed config.", "check": "A mail sent from staging arrives; sendMail does not throw E_SENDER_NOT_VERIFIED." }
+    ],
+    "author_notes": "Treat a null mailer as 'feature unavailable' (HTTP 501), never as success."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": ["packages/api/src/mail.ts"]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T00:00:00Z"
+  }
+}
