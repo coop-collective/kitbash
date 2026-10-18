@@ -1227,6 +1227,51 @@
         },
         "untrusted_author_text": {
           "$ref": "#/$defs/UntrustedAuthorText"
+        },
+        "dependencies": {
+          "description": "registryDependencies not yet in the lock, installed first in this order (dependencies of dependencies first)",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "block": {
+                "$ref": "#/$defs/PinnedRef"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "local",
+                  "registry"
+                ]
+              },
+              "plan_id": {
+                "type": "string"
+              },
+              "conflicts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Conflict"
+                }
+              },
+              "applied": {
+                "type": "boolean"
+              },
+              "changed_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "block",
+              "source",
+              "plan_id",
+              "conflicts",
+              "applied"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -1337,6 +1382,51 @@
         },
         "untrusted_author_text": {
           "$ref": "#/$defs/UntrustedAuthorText"
+        },
+        "dependencies": {
+          "description": "registryDependencies not yet in the lock, installed first in this order (dependencies of dependencies first)",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "block": {
+                "$ref": "#/$defs/PinnedRef"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "local",
+                  "registry"
+                ]
+              },
+              "plan_id": {
+                "type": "string"
+              },
+              "conflicts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Conflict"
+                }
+              },
+              "applied": {
+                "type": "boolean"
+              },
+              "changed_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "block",
+              "source",
+              "plan_id",
+              "conflicts",
+              "applied"
+            ],
+            "additionalProperties": false
+          }
         },
         "applied": {
           "type": "boolean",

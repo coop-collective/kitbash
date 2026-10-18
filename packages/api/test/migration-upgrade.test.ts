@@ -1,7 +1,8 @@
 // Migration replay scaffold (Ideator's migration-upgrade pattern, DESIGN §5.7). PROD_SIM_DB is a second, empty D1
-// (vitest.config.ts). Today there is one migration: it applies cleanly to an empty database and the FTS triggers keep
-// block_search in step. When 0002+ exist, apply the shipped prefix here, insert realistic rows, apply the rest and
-// assert every row survived.
+// (vitest.config.ts). Today: 0001 (kit-api), 0002_auth (email-code-auth, installed from the registry), 0003
+// (members.default_org_id). They apply cleanly to an empty database and the FTS triggers keep block_search in step.
+// Once a version has shipped, apply the shipped prefix here, insert realistic rows, apply the rest and assert every
+// row survived.
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { E } from "./helpers";

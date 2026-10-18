@@ -1,0 +1,187 @@
+{
+  "blocks": {
+    "@coop/cf-email-sender": {
+      "adapt": {
+        "mail-domain": "skipped"
+      },
+      "files": [
+        {
+          "block_path": "SKILL.md",
+          "rendered_sha256": "06d1f388232621c47e974054ee238b8027aa2c04ed3e6182916e4e1ca266a281",
+          "role": "doc",
+          "target": ".kit/blocks/cf-email-sender/SKILL.md"
+        },
+        {
+          "block_path": "src/mail.ts",
+          "rendered_sha256": "604c06a7672be981394b877c378ec15816595ba4e1c5f761ba2d87c9fb74af40",
+          "role": "service",
+          "target": "src/lib/mail.ts"
+        },
+        {
+          "block_path": "test/mail.test.ts",
+          "rendered_sha256": "0d3d29cf8319d16d1a649b3bd7b746707b9d242c4e93e3971782dc59fccb9157",
+          "role": "test",
+          "target": "test/mail.test.ts"
+        }
+      ],
+      "installed_at": "2026-10-18T13:04:56Z",
+      "interface": {
+        "bindings": [
+          "send_email:EMAIL"
+        ],
+        "routes": [],
+        "tables": []
+      },
+      "manifest_sha256": "9485401ad8ce7062c385403acd4e63e95a2a894bdefaeda72888899e1723b716",
+      "params": {
+        "appDomain": "example.com",
+        "appName": "Kitbash",
+        "mailer": "console"
+      },
+      "plan_id": "plan_E365ECEB1D205DDBA2B2",
+      "registry_signature": "ed25519:PiitmtbpQOmaS-7FRtYrVI_MSZR4HGqEZ7PSm0nBa6Xhu_PkJner7jNSDEVrN5FbcR-QSI2UJye1DIQOWEaaBw",
+      "variant": "hono-d1",
+      "verify": {
+        "last_run": "2026-10-18T13:06:20Z",
+        "passed": true
+      },
+      "version": "1.0.1"
+    },
+    "@coop/crypto-utils": {
+      "adapt": {
+        "import": "done"
+      },
+      "files": [
+        {
+          "block_path": "SKILL.md",
+          "rendered_sha256": "bc766574d68e602c8651189834860da57750766c6f421aa6accbece15122f646",
+          "role": "doc",
+          "target": ".kit/blocks/crypto-utils/SKILL.md"
+        },
+        {
+          "block_path": "src/crypto.ts",
+          "rendered_sha256": "356b2dd83b43f86b945a3b1bcab584cad6e82d94d9d4556a69ed4d7b30ed74e6",
+          "role": "lib",
+          "target": "src/lib/crypto.ts"
+        },
+        {
+          "block_path": "test/crypto.test.ts",
+          "rendered_sha256": "91c13179a9d0d52324d7d974fda7c92ba59c747e3ab3c61bddfc52d5c676184a",
+          "role": "test",
+          "target": "test/crypto.test.ts"
+        }
+      ],
+      "installed_at": "2026-10-18T13:04:56Z",
+      "interface": {
+        "bindings": [],
+        "routes": [],
+        "tables": []
+      },
+      "manifest_sha256": "9ec35ddab905be84850ed4a39ffb546d09d03c87b160606d3e676c833ab3faa3",
+      "params": {},
+      "plan_id": "plan_11F4CF3821CA639C8EFE",
+      "registry_signature": "ed25519:KFnLHPJlsfgNkzEHD-PZhP4riQ5RVJB2Zj3b3BEgIpfWFGN1NsREy0YpmzqNzi3Q6lJHIEAnUBrqJwQ7Q4weCw",
+      "variant": "hono-d1",
+      "verify": {
+        "last_run": "2026-10-18T13:06:15Z",
+        "passed": true
+      },
+      "version": "1.0.0"
+    },
+    "@coop/email-code-auth": {
+      "adapt": {
+        "create-d1": "skipped",
+        "mount-routes": "skipped",
+        "set-secrets": "done",
+        "wire-middleware": "done"
+      },
+      "files": [
+        {
+          "block_path": "SKILL.md",
+          "rendered_sha256": "db833e917a49df32635fb25f990d53312d9d18eb075b6fb638c765269825bf7f",
+          "role": "doc",
+          "target": ".kit/blocks/email-code-auth/SKILL.md"
+        },
+        {
+          "block_path": "migrations/0001_auth.sql",
+          "rendered_sha256": "a257a05d473173eba3c52440388ed75eb74895a83586462381f382e56cb8e3ca",
+          "role": "migration",
+          "target": "migrations/0002_auth.sql"
+        },
+        {
+          "block_path": "src/auth/codes.ts",
+          "rendered_sha256": "8ba35094463d58e830b4e2803c89e825cb5db459db08c8236680466f2082df12",
+          "role": "service",
+          "target": "src/lib/auth/codes.ts"
+        },
+        {
+          "block_path": "src/auth/middleware.ts",
+          "rendered_sha256": "15f9006a0738f71d084dde4c9cf2fde3e92ccedcee4b03db1dbb7f0938e90838",
+          "role": "lib",
+          "target": "src/lib/auth/middleware.ts"
+        },
+        {
+          "block_path": "src/auth/tokens.ts",
+          "rendered_sha256": "1f997134344552a16c67cf0cde3a94ebdc765ed96a0425537903729f9ce5806c",
+          "role": "service",
+          "target": "src/lib/auth/tokens.ts"
+        },
+        {
+          "block_path": "src/auth/types.ts",
+          "rendered_sha256": "3a474b22b8cf2ba019ab01480606ab3790419dac0934fa5d83a76459f5c6a797",
+          "role": "lib",
+          "target": "src/lib/auth/types.ts"
+        },
+        {
+          "block_path": "src/auth/routes.ts",
+          "rendered_sha256": "4c4769f213414c8d5a10818c0a4eed86de21daa150bdc0d6874a7269ffcc4a45",
+          "role": "route",
+          "target": "src/routes/auth.ts"
+        },
+        {
+          "block_path": "test/auth.test.ts",
+          "rendered_sha256": "350ae48d4e27898a56ef12048e1a279b2dcf2502524627bdea71f4ffa85002c6",
+          "role": "test",
+          "target": "test/auth.test.ts"
+        }
+      ],
+      "installed_at": "2026-10-18T13:04:56Z",
+      "interface": {
+        "bindings": [
+          "d1:DB"
+        ],
+        "routes": [
+          "POST /auth/email/start",
+          "POST /auth/email/verify",
+          "POST /auth/logout",
+          "GET /api/me"
+        ],
+        "tables": [
+          "members",
+          "member_tokens",
+          "login_codes"
+        ]
+      },
+      "manifest_sha256": "3b8f1b0b6ed77de4638b15e2be46a7660c619b78e7ea01e115d455a2fb130c04",
+      "migrations": {
+        "0001_auth.sql": "0002_auth.sql"
+      },
+      "params": {
+        "appSlug": "api",
+        "codeTtlMin": 10,
+        "routePrefix": "/auth",
+        "tablePrefix": "",
+        "tokenPrefix": "kit_"
+      },
+      "plan_id": "plan_D8C54C4341C624B76F68",
+      "registry_signature": "ed25519:JHdXu70pyiJm1KRZhDK446yo9veYcd2bk8G-gjUmpEN_7e-HwhgBDYRo9RYTIJ8EpFYg-nkYhPoTN9NwFdPiAw",
+      "variant": "hono-d1",
+      "verify": {
+        "last_run": "2026-10-18T13:06:25Z",
+        "passed": true
+      },
+      "version": "1.1.0"
+    }
+  },
+  "version": 1
+}

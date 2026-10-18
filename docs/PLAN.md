@@ -272,3 +272,57 @@ Parallel groups: K1 {WP-20, WP-21} → K2 {WP-22, WP-26, WP-27} → K3 {WP-23, W
 - 2026-10-18: design written (this folder). No code yet. Awaiting the owner's answers to DESIGN §9 (name, "block" vs
   "kit", public timing, payout rails, pricing, domain/account, licensing of harvested code, telemetry default,
   build-from-blocks on day one).
+- 2026-10-18: WP-01…WP-07 merged (core, API, CLI, plugin, e2e harness, 8 blocks, Ideator contract draft).
+- 2026-10-18: **WP-08 (dogfood and MVP exit): done for Claude Code; the Codex repeat installs and verifies everything but misses the ≤ 3 edits count.**
+  - Integration fixes first (two commits before the WP-08 one): cli-oauth-login and orgs-roles-invites now run on the
+    real email-code-auth (1.1.0 adds `consumeCode`, a code → member check that mints no token; their tests make people
+    with its `upsertMember`, since `members.created_at` is NOT NULL, and use a 32+ char pepper); core: `template: false`
+    text files no longer crash the planner, `kit validate` enforces the 1,500-token summary budget, templated route
+    paths are rendered before the consistency check, `e2e.json` is an allowed undeclared file (removed from every
+    block's `files[]`); `kit install` resolves `registryDependencies` itself (local siblings / `--blocks-dir` /
+    registry, dependencies first, planned on an overlay, `--param <dep>.<name>=v`); `kit login` sends the bearer for
+    `/api/registry/key` (kit-api serves it behind auth; found by the first real run against `wrangler dev`). Each fix
+    has a regression test.
+  - Tests: core 171, api 86, cli 71, plugin 19, docs/examples 15; all typechecks and `pnpm validate` green. e2e harness
+    28/28: every block's defaults and param cases, a resolved-conflict case for each block that declares tables (and
+    vitest-workerd-harness's file conflicts), core's fixture, and the chains `mvp-auth-stack`
+    (email-code-auth → cli-oauth-login → orgs-roles-invites), `mvp-auth-stack-prefixed` and
+    `api-keys-with-rate-limit-and-harness`. The harness reads `blocks/*/e2e.json`, installs through `kit install
+    --blocks-dir`, runs `pnpm install` when a block adds npm dependencies, and verifies every block in the lock.
+  - `scripts/e2e-mvp.sh`: local `wrangler dev` of kit-api (temp state, throwaway pepper and registry key), seed, token,
+    `kit login`, `kit publish` of all 8 blocks, a fresh `templates/hono-d1` copy, a headless Claude Code session with
+    the plugin (allowlisted tools only; push/deploy/publish/curl/web denied; $5 and 30 min caps), then lock check,
+    `kit verify` of every block and the edit count. `--no-agent` runs the same with a scripted install; `--codex` adds
+    the Codex repeat.
+  - **MVP exit evidence (Claude Code, claude-opus-5-5, 2026-10-18):** one session, prompt "add email-code sign-in, CLI
+    OAuth login and orgs using the registry": 3 searches, 3 gets, 7 installs (dry runs + applies; dependencies
+    crypto-utils and cf-email-sender came in with email-code-auth), 5 verifies, all PASS (70/70 project tests). Edits
+    outside block files: 1 file by the git count (`src/index.ts`: mount routes, `requireBearer`, `requirePerson` +
+    `requireOrg` on `/mcp`, `export default oauthWorker(app)`); by Edit/Write calls 3 (`src/index.ts`, one added
+    `PUBLIC_ORIGIN=` line in the kit-patched `.dev.vars.example`, and a smoke test it wrote and deleted). 203 s wall,
+    45 turns, **$0.93**; tokens: 54 input, 11,426 output, 1,538,211 cache read, 74,032 cache write. For the pitch: a
+    3-feature install (5 blocks, ~3,200 lines with tests) cost under $1 and ~1.6M mostly cached input tokens.
+  - Codex repeat (codex-cli 0.162.1, `codex exec`, workspace-write sandbox, kitbash MCP tools pre-approved): same
+    prompt, all five blocks installed through the `registry_*` tools and all five `kit verify` PASS (73 project tests),
+    585 s, tokens 4,005,903 input (3,874,944 cached) and 17,723 output (6,205 reasoning); cost not reported (ChatGPT
+    sign-in). **Edits outside block files: 6**, so the ≤ 3 criterion is not met: the wiring itself is one file
+    (`src/index.ts`), three are workarounds for its sandbox, which cannot write outside the project (`storeDir` in
+    `pnpm-workspace.yaml`, `WRANGLER_LOG_PATH` in `vitest.config.ts`, `.gitignore` for them), and two are unrequested
+    extras (README notes, `test/integration.test.ts`). Fix before v1: run Codex with the store and Wrangler log paths
+    writable (or pre-set in the template), and say "no extra files" in the prompt.
+  - Dogfood: kit-api has `@coop/email-code-auth@1.1.0` (+ crypto-utils, cf-email-sender with `mailer=console`)
+    installed **from the registry** (`kit install @coop/email-code-auth --param tokenPrefix=kit_ ...` against
+    `wrangler dev`), all three `kit verify` PASS. `src/auth.ts` is now a thin adapter: the block's `resolveBearer`
+    plus the caller's orgs and default org. Deviations: WP-02's own `members`/`member_tokens` were folded out of
+    `0001_schema.sql` (never deployed) and the block's `0002_auth.sql` creates them; `0003_member_default_org.sql` adds
+    kit-api's `default_org_id`; WP-02's auth tests moved to `test/api-auth.test.ts` (the block's own test took
+    `test/auth.test.ts`); the block's sign-in routes are not mounted (adapt item `mount-routes` recorded as skipped:
+    sign-up with orgs is WP-10). `pnpm kit:token` keeps working (it hashes with the block's HKDF purpose key; a test
+    pins that) and a `wrangler dev` check answered `/api/me` 200 with the minted token, 401 with a fake one.
+  - Gaps before v1 (public tier): accounts (WP-10: mount email-code sign-in and `cli-oauth-login` in kit-api, `kit
+    login` over OAuth), visibility/licensing and `/r/` (WP-11), the server-side scanner queue and co-sign tiers
+    (WP-12), sandboxed verify runs (WP-13), billing, web UI, remote MCP OAuth, telemetry, deploy (WP-14…WP-19).
+    Smaller ones found here: `kit apply <plan_id>` of a plan that had dependencies is refused as stale (use `kit
+    install --apply --plan-id`); dependency params are not shared automatically (a `tokenPrefix` must be passed to
+    both blocks); `kit init` detects `npm` inside a pnpm workspace package; the harness' remaining "extended"
+    assertions (exact migration numbers) are not encoded; Ideator still needs the WP-07 contract finalized.

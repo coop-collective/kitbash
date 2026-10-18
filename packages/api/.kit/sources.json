@@ -1,0 +1,11 @@
+{
+  "@coop/cf-email-sender": {
+    "kind": "registry"
+  },
+  "@coop/crypto-utils": {
+    "kind": "registry"
+  },
+  "@coop/email-code-auth": {
+    "kind": "registry"
+  }
+}

@@ -110,6 +110,20 @@ describe("planner rules", () => {
     expect(p.writes).toContainEqual(expect.objectContaining({ path: "src/lib/auth/crypto.ts", action: "skip", reason: "identical file exists" }));
   });
 
+  it("a text file with template: false is copied byte for byte and still gets a diff (WP-08 regression)", async () => {
+    const bundle = cloneBundle(await loadFixtureBlock());
+    const keyOf = (path: string) => Object.keys(bundle.files).find((k) => k.endsWith(path));
+    const entry = bundle.manifest.files.find((f: { role: string; path: string }) => f.role !== "config-patch" && f.role !== "migration" && text(bundle.files[keyOf(f.path)!])?.includes("{{kit."));
+    entry.template = false;
+    const { plan: p } = await plan({ bundle });
+    const f = p.kit.files.find((x) => x.block_path === entry.path)!;
+    expect(f).toBeDefined();
+    const key = keyOf(entry.path)!;
+    expect(atob(f.content_b64)).toBe(text(bundle.files[key]));
+    expect(atob(f.content_b64)).toContain("{{kit.");
+    expect(p.kit.diff).toContain(`+++ b/${f.path}`);
+  });
+
   it("a binding with the same name and a different type is a conflict", async () => {
     const p0 = loadProject();
     const wr = (p0.tree["wrangler.jsonc"] as string).replace('"vars": {', '"kv_namespaces": [{ "binding": "EMAIL", "id": "x" }],\n  "vars": {');

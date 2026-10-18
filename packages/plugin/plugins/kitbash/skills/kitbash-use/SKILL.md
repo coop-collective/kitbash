@@ -23,7 +23,9 @@ server (`kitbash`); they run on this machine and write only into the project you
    outside `.kit/` was written. **Read the `config-patch` and `conflict` hunks of the diff at `diff_preview_path` at
    minimum**, and anything else you doubt. Resolve a conflict with a param (the plan names it, for example `tablePrefix`)
    or ask the user; never use `on_conflict: "overwrite"` or `"rename"` without the user's agreement, and never
-   `apply_config: false` to dodge a conflict silently.
+   `apply_config: false` to dodge a conflict silently. A plan with `dependencies` installs those blocks first, in that
+   order, in the same call; set their params as `params: {"<dependency>.<name>": value}` (for example a shared
+   `tokenPrefix`).
 4. **Apply.** Tell the user what the plan does in a few lines. Then `registry_install` with `dry_run: false` and the
    `plan_id` of the plan you reviewed: it is refused (`plan_stale`) if the block or the project changed since, in which
    case re-run the dry run and review again. Run the package manager's install if `dependencies_to_add` is not empty.

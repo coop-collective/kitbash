@@ -1,5 +1,5 @@
 {
-  "_doc": "Per-block cases for install.test.mjs. Keys are block directory names under blocks/ (or an entry with its own \"path\", relative to the repo root). A block with no entry still runs once with default params. The default case is always run; \"cases\" adds param sets. registryDependencies are installed first (resolved by directory name under blocks/), with default params unless a case sets \"dependencyParams\": {\"crypto-utils\": {\"k\": \"v\"}}. \"chains\" install several blocks in sequence into one project: steps are {block, params?}. Every installed block is then verified.",
+  "_doc": "Cases that do not belong to one block directory: entries with their own \"path\" (core's fixture block) and cross-block chains. Each block's own cases live in blocks/<name>/e2e.json (same shape: cases, conflicts, chains), which install.test.mjs reads and merges with this file (by case name; the block's file wins). Every block runs once with default params with no entry at all. registryDependencies are installed by `kit install` itself (--blocks-dir blocks/); \"dependencyParams\": {\"cf-email-sender\": {\"mailer\": \"console\"}} becomes --param cf-email-sender.mailer=console.",
   "blocks": {
     "email-code-auth-fixture": {
       "path": "packages/core/test/fixtures/blocks/email-code-auth-fixture",
@@ -12,90 +12,50 @@
           }
         }
       ]
-    },
-    "api-keys": {
-      "cases": [
+    }
+  },
+  "chains": [
+    {
+      "name": "mvp-auth-stack",
+      "steps": [
         {
-          "name": "alternate-params",
-          "params": {
-            "keyPrefix": "xk_live_",
-            "tablePrefix": "app_",
-            "routePrefix": "/me/keys",
-            "cacheTtlS": "120",
-            "maxActiveKeys": "5"
-          }
-        }
-      ]
-    },
-    "d1-rate-limit": {
-      "cases": [
-        {
-          "name": "prefixed",
-          "params": {
-            "tablePrefix": "app_"
-          }
-        }
-      ]
-    },
-    "vitest-workerd-harness": {
-      "cases": []
-    },
-    "cf-email-sender": {
-      "cases": [
-        {
-          "name": "console",
-          "params": {
-            "mailer": "console"
-          }
+          "block": "email-code-auth"
         },
         {
-          "name": "branded",
-          "params": {
-            "appName": "Mail Cheap",
-            "appDomain": "mailcheap.app"
-          }
+          "block": "cli-oauth-login"
+        },
+        {
+          "block": "orgs-roles-invites"
         }
       ]
     },
-    "email-code-auth": {
-      "cases": [
+    {
+      "name": "mvp-auth-stack-prefixed",
+      "steps": [
         {
-          "name": "prefixed",
+          "block": "email-code-auth",
           "params": {
-            "tokenPrefix": "mc_",
+            "tokenPrefix": "kit_",
             "tablePrefix": "app_"
-          }
-        },
-        {
-          "name": "short-codes",
-          "params": {
-            "codeTtlMin": 2,
-            "routePrefix": "/signin"
           },
           "dependencyParams": {
             "cf-email-sender": {
               "mailer": "console"
             }
           }
-        }
-      ]
-    }
-  },
-  "chains": [
-    {
-      "name": "api-keys-with-rate-limit-and-harness",
-      "steps": [
-        {
-          "block": "vitest-workerd-harness"
         },
         {
-          "block": "d1-rate-limit",
+          "block": "cli-oauth-login",
           "params": {
-            "tablePrefix": "app_"
+            "tokenPrefix": "kit_",
+            "authTablePrefix": "app_"
           }
         },
         {
-          "block": "api-keys"
+          "block": "orgs-roles-invites",
+          "params": {
+            "authTablePrefix": "app_"
+          }
         }
       ]
     }

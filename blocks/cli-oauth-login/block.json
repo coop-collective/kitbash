@@ -5,7 +5,7 @@
   "title": "OAuth sign-in for a person's own CLI (My CLI on this computer)",
   "description": "OAuth 2.1 sign-in for a person's own CLI or MCP client (PKCE, dynamic registration) on @cloudflare/workers-oauth-provider, a branded consent page, and revocable cli_logins grants.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -98,7 +98,7 @@
       "name": "emailSignIn",
       "type": "boolean",
       "default": true,
-      "description": "Offer email-code sign-in on the authorize page (uses email-code-auth's startCode/verifyCode); a pasted token always works."
+      "description": "Offer email-code sign-in on the authorize page (uses email-code-auth's startCode/consumeCode); a pasted token always works."
     },
     {
       "name": "accessTokenTtlS",
@@ -238,12 +238,6 @@
       "merge": "jsonc-deep"
     },
     {
-      "path": "e2e.json",
-      "type": "registry:file",
-      "target": ".kit/blocks/cli-oauth-login/e2e.json",
-      "role": "fixture"
-    },
-    {
       "path": "SKILL.md",
       "type": "registry:file",
       "target": ".kit/blocks/cli-oauth-login/SKILL.md",
@@ -258,7 +252,7 @@
     "@cloudflare/vitest-pool-workers@>=0.8"
   ],
   "registryDependencies": [
-    "@coop/email-code-auth@^1"
+    "@coop/email-code-auth@^1.1"
   ],
   "env": [
     {

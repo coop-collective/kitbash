@@ -4,6 +4,9 @@
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { fill } from "{{paths.lib|rel}}/oauth/pages";
+{{#kit.if emailSignIn}}
+import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/mail";
+{{/kit.if}}
 import { AS, LOOPBACK, REMOTE, cliConnect, form, member, raw, rpc, testEnv, toConsent, worker } from "./oauth-helpers";
 
 const loginOf = (clientId: string) =>
@@ -176,6 +179,26 @@ describe("authorize page edges", () => {
     expect(html).toContain(email);
     const wrong = await raw("/authorize/signin/code", { method: "POST", body: form({ email, code: "12345x", return: "/authorize?x=1" }) });
     expect(await wrong.text()).toContain("That code is wrong or expired");
+  });
+
+  it("the right code signs in through email-code-auth's consumeCode and mints no bearer token", async () => {
+    const outbox: Mail[] = [];
+    setMailerOverride(async (m) => void outbox.push(m));
+    try {
+      const email = `code-${crypto.randomUUID().slice(0, 8)}@example.test`;
+      await raw("/authorize/signin/email", { method: "POST", body: form({ email: email.toUpperCase(), return: "/authorize?x=1" }) });
+      const code = /\b(\d{6})\b/.exec(outbox.find((m) => m.to === email)!.subject)![1]!;
+      const tokens = () => testEnv.DB.prepare("SELECT count(*) AS n FROM {{kit.authTablePrefix}}member_tokens").first<{ n: number }>();
+      const before = (await tokens())!.n;
+      const ok = await raw("/authorize/signin/code", { method: "POST", body: form({ email, code, return: "/authorize?x=1" }) });
+      expect(ok.status).toBe(303);
+      expect(ok.headers.get("set-cookie")).toMatch(/^__Host-oauth_session=/);
+      expect((await tokens())!.n).toBe(before);
+      const m = await testEnv.DB.prepare("SELECT email FROM {{kit.authTablePrefix}}members WHERE email = ?").bind(email).first<{ email: string }>();
+      expect(m?.email).toBe(email);
+    } finally {
+      setMailerOverride(null);
+    }
   });
 {{/kit.if}}
 });

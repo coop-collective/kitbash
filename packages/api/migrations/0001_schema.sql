@@ -12,13 +12,9 @@ CREATE TABLE orgs (
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE members (
-  id TEXT PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  name TEXT,
-  default_org_id TEXT REFERENCES orgs(id),
-  created_at TEXT NOT NULL
-);
+-- members, member_tokens and login_codes are the email-code-auth block's (0002_auth.sql, installed from the registry by
+-- WP-08; epoch-ms times there); members.default_org_id is added by 0003_member_default_org.sql. kit-api was never
+-- deployed, so WP-02's own two tables were folded out of this migration rather than migrated.
 
 CREATE TABLE org_members (
   org_id TEXT NOT NULL REFERENCES orgs(id) ON DELETE CASCADE,
@@ -29,16 +25,6 @@ CREATE TABLE org_members (
 );
 CREATE INDEX org_members_member ON org_members(member_id);
 
--- Opaque kit_ bearer tokens; only HMAC-SHA256(TOKEN_PEPPER, token) is stored.
-CREATE TABLE member_tokens (
-  id TEXT PRIMARY KEY,
-  member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-  token_hash TEXT NOT NULL UNIQUE,
-  label TEXT,
-  created_at TEXT NOT NULL,
-  last_used_at TEXT,
-  revoked_at TEXT
-);
 
 -- Publisher Ed25519 keys (ed25519:<base64url>), registered to a member on first publish (MVP: trust on first use).
 CREATE TABLE publisher_keys (

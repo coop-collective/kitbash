@@ -11,7 +11,7 @@
  *   POST /api/proposals                                                   → {proposal_id}
  *   POST /api/projects/:id/heartbeat                                      → {project_id, installs, …}
  *   GET  /api/me                                                          → {member, orgs[], scope_default, plan}
- *   GET  /api/registry/key                                                → {public_key, key_id}
+ *   GET  /api/registry/key  (bearer)                                       → {public_key, key_id}
  * `:scope` is the org slug without the `@`. Errors are the contract's `{error: {code, message}}` envelope.
  * The bundle's `registry_key` is never trusted: signatures are checked against the key pinned at `kit login`.
  */
@@ -159,7 +159,8 @@ export function createApi(settings: Pick<Settings, "apiUrl" | "token">, fetchImp
     heartbeat: (projectId, body) => call("POST", `/api/projects/${encodeURIComponent(projectId)}/heartbeat`, body),
     me: () => call("GET", "/api/me"),
     registryKey: async () => {
-      const r = await call<{ public_key?: string }>("GET", "/api/registry/key", undefined, { auth: false });
+      // kit-api serves the key behind the bearer, like every route but /health
+      const r = await call<{ public_key?: string }>("GET", "/api/registry/key");
       if (!r?.public_key || !/^ed25519:[A-Za-z0-9_-]{43}$/.test(r.public_key)) throw new KitError("signature_invalid", "the registry did not return a valid ed25519 key");
       return r.public_key;
     },

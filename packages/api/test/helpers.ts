@@ -25,7 +25,8 @@ export async function member(slug = `t${crypto.randomUUID().slice(0, 8)}`, role:
   }
   const id = newId("mem");
   await E.DB.batch([
-    E.DB.prepare("INSERT INTO members (id, email, name, default_org_id, created_at) VALUES (?, ?, ?, ?, ?)").bind(id, `${id}@example.test`, "Tester", org.id, now()),
+    // members is email-code-auth's table (epoch-ms created_at) plus kit-api's default_org_id
+    E.DB.prepare("INSERT INTO members (id, email, name, default_org_id, created_at) VALUES (?, ?, ?, ?, ?)").bind(id, `${id}@example.test`, "Tester", org.id, Date.now()),
     E.DB.prepare("INSERT INTO org_members (org_id, member_id, role, created_at) VALUES (?, ?, ?, ?)").bind(org.id, id, role, now()),
   ]);
   return { id, token: await issueToken(E, id, "test"), org };

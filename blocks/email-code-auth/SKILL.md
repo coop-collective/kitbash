@@ -3,7 +3,7 @@ name: email-code-auth
 description: Use when a Hono + D1 Worker needs passwordless email-code sign-in (sign-up included) and opaque, revocable bearer tokens for apps, CLIs or MCP clients.
 license: MIT
 metadata:
-  kitbash: "@coop/email-code-auth@1.0.0"
+  kitbash: "@coop/email-code-auth@1.1.0"
 ---
 
 # email-code-auth
@@ -29,7 +29,7 @@ derived (HKDF) from the `TOKEN_PEPPER` secret per purpose, so a D1 dump alone ca
 - `POST <routePrefix>/logout` (bearer) revokes the calling token. `GET /api/me` (bearer) → `{member}`.
 - Exports: `requireBearer` (sets `member`, `tokenId`; 401 with `WWW-Authenticate`), `authenticate(env, token)`,
   `resolveBearer`, `issueToken(env, memberId, label)`, `revokeToken`, `revokeTokenId`, `upsertMember`, `startCode`,
-  `verifyCode`, `authRoutes`, `meRoutes`, `AuthEnv`, `Member`, `AuthError`, `TOKEN_PREFIX`, `TOKEN_RE`.
+  `verifyCode` (code → token), `consumeCode` (code → `{member, created}`, no token), `authRoutes`, `meRoutes`, `AuthEnv`, `Member`, `AuthError`, `TOKEN_PREFIX`, `TOKEN_RE`.
 - Tokens: `<tokenPrefix>` + 43 base64url chars.
 
 ## Install

@@ -47,14 +47,17 @@ export function list(p: Parsed, k: string, split = true): string[] {
   return split ? arr.flatMap((x) => x.split(",")).map((x) => x.trim()).filter(Boolean) : arr;
 }
 
-/** `--param k=v` (repeatable). Values stay strings; core coerces integers and booleans per the param's type. */
+/**
+ * `--param k=v` (repeatable). Values stay strings; core coerces integers and booleans per the param's type.
+ * `--param <block>.<k>=v` sets a param of a dependency `kit install` installs first.
+ */
 export function params(p: Parsed): Record<string, string> {
   const out: Record<string, string> = {};
   for (const kv of list(p, "param", false)) {
     const i = kv.indexOf("=");
     if (i <= 0) throw new UsageError(`--param expects name=value, got ${JSON.stringify(kv)}`);
     const k = kv.slice(0, i);
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) throw new UsageError(`bad param name ${JSON.stringify(k)}`);
+    if (!/^([a-z0-9][a-z0-9-]*\.)?[A-Za-z_][A-Za-z0-9_]*$/.test(k)) throw new UsageError(`bad param name ${JSON.stringify(k)}`);
     out[k] = kv.slice(i + 1);
   }
   return out;
