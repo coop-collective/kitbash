@@ -1,0 +1,18 @@
+{
+  "name": "kitbash",
+  "description": "Kitbash: whole, tested features (blocks) for your coding agent, for Claude Code and Grok",
+  "owner": {
+    "name": "Xava Labs"
+  },
+  "plugins": [
+    {
+      "name": "kit",
+      "description": "Search the block registry, install a feature with a dry-run diff first, adapt it, prove it with its own tests, and harvest or publish your own blocks (local MCP server, skills, /kit:* commands).",
+      "version": "0.1.0",
+      "source": "./plugins/kitbash",
+      "author": {
+        "name": "Xava Labs"
+      }
+    }
+  ]
+}

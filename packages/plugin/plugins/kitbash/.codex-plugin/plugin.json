@@ -1,0 +1,33 @@
+{
+  "name": "kit",
+  "version": "0.1.0",
+  "description": "Search, install, adapt and verify whole features (blocks) in your project, with a dry-run diff first; harvest and publish your own.",
+  "author": {
+    "name": "Xava Labs"
+  },
+  "license": "UNLICENSED",
+  "keywords": ["kitbash", "xava", "mcp", "blocks", "skills"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": {
+    "kitbash": {
+      "command": "node",
+      "args": ["./scripts/kit-mcp.mjs"]
+    }
+  },
+  "interface": {
+    "displayName": "Kitbash",
+    "shortDescription": "Install whole, tested features into your project",
+    "longDescription": "A local MCP server with the Kitbash registry tools: search blocks, read a summary, install with a dry-run diff you review first, adapt the wiring, and prove it with the block's own tests. Also harvests and publishes your own blocks.",
+    "developerName": "Xava Labs",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "Use $kitbash-use to add email sign-in to this project.",
+      "Use $kitbash-use to find a block for rate limiting and install it.",
+      "Use $kitbash-harvest to turn this feature into a block.",
+      "Use $kitbash-publish to publish this block privately."
+    ],
+    "brandColor": "#F5A524"
+  }
+}
