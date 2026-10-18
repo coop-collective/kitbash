@@ -1,0 +1,7 @@
+{
+  // cli-oauth-login: the OAuth provider's storage (clients, grants, hashed tokens) and the authorize page's sessions.
+  // Placeholder id: local dev and tests use Miniflare storage. Create it with `wrangler kv namespace create OAUTH_KV`.
+  "kv_namespaces": [
+    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" }
+  ]
+}
