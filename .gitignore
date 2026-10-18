@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.wrangler/
+.dev.vars
+.env
+*.log
+.DS_Store
+# plan files and diffs are per-session working state
+.kit/plans/

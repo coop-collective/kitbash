@@ -1,0 +1,14 @@
+const LIMIT = 50; // project: raised
+const TTL = 10;
+
+function a() {
+  return LIMIT;
+}
+
+function b() {
+  return TTL;
+}
+
+function c() {
+  return 0;
+}

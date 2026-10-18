@@ -1,0 +1,2 @@
+const LIMIT = 7;
+const TTL = 10;

@@ -1,0 +1,3 @@
+# email-code-auth: HMAC pepper for codes and tokens (openssl rand -hex 32)
+TOKEN_PEPPER=
+MAIL_FROM=login@{{kit.appDomain}}

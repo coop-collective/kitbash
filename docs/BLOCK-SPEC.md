@@ -145,7 +145,8 @@ Keys marked **shadcn** exist in `registry-item.json` with the same meaning. Keys
 }
 ```
 
-A `.kit/schema/block.v1.json` (JSON Schema, generated from the zod schema in `packages/core`) is the normative form.
+The normative form is the zod schema in `packages/core/src/schema.ts`; `packages/core/schema/block.v1.json` (JSON Schema
+2020-12) is generated from it. Unknown keys are errors except inside `meta`, `cssVars`, `css`, `tailwind` (§11).
 
 ## 4. Params (adaptation points)
 
@@ -166,7 +167,8 @@ the agent's judgement is spent only on wiring (§7).
 
 - Types: `string | identifier | path | integer | boolean | enum`. `identifier` must match `^[A-Za-z_][A-Za-z0-9_-]*$`
   (or the given `pattern`), so substituted values can't inject syntax.
-- Token form in files: `{{kit.<name>}}`. Modifiers: `{{kit.appSlug|pascal}}`, `|camel`, `|snake`, `|upper`, `|kebab`.
+- Token form in files: `{{kit.<name>}}`. Modifiers: `{{kit.appSlug|pascal}}`, `|camel`, `|snake`, `|upper`, `|kebab`
+  (`|upper` is SCREAMING_SNAKE: `my-app` → `MY_APP`; `|lower` also exists; path tokens take `|rel`, see §11).
   A file with `"template": false` is copied byte for byte (binaries, or code that legitimately contains `{{kit.`).
 - Conditional blocks: `{{#kit.if mailer == "resend"}} … {{/kit.if}}` and whole-file conditions
   (`"when": "mailer == 'resend'"` on a `files[]` entry). Keep these rare; prefer a variant when the shape differs.
@@ -194,6 +196,8 @@ the agent's judgement is spent only on wiring (§7).
 ]
 ```
 
+- `path` is relative to the variant's `root` when `variant` is set (`migrations/0001_auth.sql` lives at
+  `variants/hono-d1/migrations/0001_auth.sql`), else to the block directory.
 - `path`, `type`, `target` are shadcn's. `target` may use **path tokens** resolved from the project profile (§6.1):
   `{{paths.routes}}`, `{{paths.lib}}`, `{{paths.ui}}`, `{{paths.migrations}}`, `{{paths.tests}}`, `{{paths.app}}`.
 - `role`: `migration | route | service | ui | lib | test | doc | config-patch | fixture`. The planner treats roles
@@ -535,3 +539,77 @@ registry_install {block: "@coop/email-code-auth", project_root: ".", params: {to
 
 Total block-related context spent by the agent: roughly 1,000 tokens of registry output plus the diff it chose to
 read, against the 20–60k tokens a from-scratch build of the same feature usually costs.
+
+## 11. Implementation notes and corrections (WP-01, `packages/core`)
+
+Where this section and the text above disagree, this section is what `@kitbash/core` implements.
+
+**Manifest.** Unknown keys are errors (rule `unknown_key`) except in `meta`, `cssVars`, `css`, `tailwind`. A param
+without a `default` must say `required: true`. `meta.est_hours_saved` (author-set, number) feeds `Card` and `Summary`.
+`target` is required except for role `doc`, whose default target is `.kit/blocks/<name>/<path>`. Validation findings are
+`{rule, severity: block|warn|info, path, detail}`; `kit validate` fails on any `block`; a public publish also refuses
+`warn` (§9). A `TODO` in any manifest string is `block` (harvested drafts carry two).
+
+**Params.** `identifier` values always match `^[A-Za-z0-9_-]*$` in addition to `pattern` (patterns are anchored).
+`string` values may not contain quotes, backslashes, backticks, `<`, `>`, `${`, `{{`, `}}`, control or invisible
+characters (max 200). `path` values are `/seg/seg` with no dot segments. CLI strings are coerced for `integer` and
+`boolean`. Inference (`appSlug`, `appDomain`) is used only when the inferred value validates, and is reported in
+`inferred`.
+
+**Renderer.** `{{kit.else}}` is supported inside `{{#kit.if}}`; conditions are `name`, `!name`, `name == lit`,
+`name != lit`; a block tag alone on its line removes the line. `{{paths.<name>|rel}}` renders the path relative to the
+directory of the file being written (`import … from "{{paths.lib|rel}}/auth/codes"` works from any target), and
+`{{migrations.renumbered}}` lists the final migration names. Only `{{kit.`, `{{#kit.if`, `{{/kit.if}}`, `{{paths.`,
+`{{migrations.` are ours; other `{{…}}` (JSX, Handlebars) are untouched. Unknown tokens throw.
+
+**Targets the planner refuses**, whatever the manifest says: anything outside the project root (after rendering),
+`.git/`, `node_modules/`, `.kit/` except `.kit/blocks/<this block>/`, `.github/workflows/`, agent config
+(`.claude/`, `.codex/`, `.agents/`, `.cursor/`), `package.json` and lock files (dependencies come only from
+`dependencies[]`), `.npmrc`/`.yarnrc*`, and env files other than `*.example`. `on_conflict: rename` writes
+`<name>.<block>.<ext>` beside the original.
+
+**Config merges** only add. A key the project already has keeps the project's value (a warning names it); a type
+change or a `null` (removal) is a `config` conflict. `jsonc-deep` unions arrays of objects by `binding`, then `name`,
+`id`, `pattern`, `class_name`, `queue`, and arrays of scalars by value; `json-merge-patch` adds missing keys and keeps
+the project's arrays. A wrangler patch may not set `build` (it runs shell commands). Insertions keep the file's
+comments and the style of the neighbouring line. `append-missing-lines` matches `KEY=` lines by key and writes declared
+secrets as `KEY=` (names only).
+
+**Migrations.** `TIMESTAMP_name.sql` projects need the caller's `now`; names start after the highest existing one.
+
+**Plan (§6.5).** `writes[]` items carry `role` and, for skips, `reason`; the plan also has `migrations` (block file →
+project file), `dev_dependencies_to_add`, and `verify.skipped[]` (declared commands outside the allowlist: shown, never
+run). `adapt[]` is `{id, required, status}`; the rendered `where/do/check` live only in `untrusted_author_text.adapt`.
+`plan_id` is `plan_` + the first 20 hex digits (upper case) of the SHA-256 of the canonical plan, so the same inputs give
+the same id. Missing dependencies become a `package.json` patch inside the plan (only `dependencies` and
+`devDependencies` may change; `applyPlan` checks). The plan saved under `.kit/plans/<id>.json` also has a `kit`
+section with every file's new content and the SHA-256 of what it replaces; `applyPlan` re-checks every path, refuses
+when a file changed since planning (`plan_stale`) or a content hash doesn't match, and writes the lock last.
+
+**Lock (§6.6).** Entries may also carry `files[].role`, `plan_id`, `on_conflict` (target → chosen action) and
+`interface {tables, routes: ["METHOD /path"], bindings: ["type:NAME"]}`, which later installs use for conflict checks.
+Merged config files are not tracked per file.
+
+**Agent text (§7).** A card is ≤ 100 tokens plus an optional one-line `summary` (≤ 160 chars, the first sentence of
+`agent.summary`); the title is trimmed to fit. Everything an author wrote reaches an agent only inside
+`untrusted_author_text` (`notice` + summary, description, when_*, adapt, author_notes, changelog_top; `registry_get`
+`skill` and `changelog` details are wrapped the same way). Block references are split on the last `@`.
+
+**Signing (§8).** Messages are domain-separated and also cover the shipped files that are not in `files[]`
+(CHANGELOG.md, LICENSE, an unlisted SKILL.md or docs):
+`"kitbash/block-v1/publisher\n" + canonical(manifest) + "\n" + canonical({path: sha256})` for the publisher, and the same
+body under `"kitbash/block-v1/registry\n"` plus `"\n" + publisher_signature` for the registry, so the co-signature binds
+the publisher's. Keys are `ed25519:<base64url raw 32 bytes>`, signatures `ed25519:<base64url 64 bytes>`, private keys
+JWK. `verifyBundle` also refuses files in the bundle that the signed manifest doesn't declare.
+
+**Allowlist (§9).** Commands are split on spaces and run without a shell: quotes, backticks, backslashes, the shell
+metacharacters `; & | $ < > ( ) { } [ ] * ? ! ~ #` and env assignments are refused. Arguments must be safe relative paths (no `..`, not absolute) or flags from the command's own
+list: vitest `run --run --passWithNoTests --silent --no-color --project --bail --reporter=default|dot|verbose|basic|tap`;
+`node --test [--test-reporter=spec|dot|tap]`; `npx tsc --noEmit [-p <path>]`; `pnpm typecheck` (no args);
+`[npx|pnpm] wrangler d1 migrations apply|list <name> --local` only. Flags that load code or config (`--config`,
+`--require`, `--import`, `--reporter=<file>`, `--globalSetup`, `--inspect`…) are refused.
+
+**Client scanner.** Known secret formats are `block` even for private blocks; high-entropy strings are `warn` (`info`
+in tests). Invisible Unicode (zero-width, tag characters, variation-selector supplement, private use), bidi controls
+and ANSI escapes are `block` in any file. Files allowed without a `files[]` entry: `block.json`, `CHANGELOG.md`,
+`LICENSE*`, and the `docs`/`skill` paths.
