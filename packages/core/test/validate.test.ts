@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { publishAllowed, validateBlock } from "../src/scan.ts";
 import { validateManifest } from "../src/schema.ts";
-import { cloneBundle, loadFixtureBlock } from "./helpers.ts";
+import { cloneBundle, loadFixtureBlock, text } from "./helpers.ts";
 
 const rules = (fs: { rule: string; severity: string }[], sev = "block") => fs.filter((f) => f.severity === sev).map((f) => f.rule);
 
@@ -193,6 +193,34 @@ describe("scanner: files, hidden text, injection", () => {
     const b = cloneBundle(await loadFixtureBlock());
     b.files["SKILL.md"] += "\n" + "This sentence pads the skill file well past its budget. ".repeat(200);
     expect(rules((await validateBlock(b)).findings)).toContain("budget");
+  });
+
+  it("a summary over the 1,500-token budget is blocking in validate, not only in kit get (WP-08 regression)", async () => {
+    const b = cloneBundle(await loadFixtureBlock());
+    // each field is within its own schema limit; together they are far over the summary budget
+    b.manifest.agent.adapt = Array.from({ length: 20 }, (_, i) => ({ id: `step-${i}`, required: false, title: `Step ${i}`, do: `Wire part ${i} of the block into the app. `.repeat(12) }));
+    const v = await validateBlock(b);
+    expect(v.ok).toBe(false);
+    expect(v.findings).toContainEqual(expect.objectContaining({ rule: "budget", severity: "block", path: "block.json" }));
+  });
+
+  it("e2e.json is an allowed undeclared file (the block's e2e cases, never installed) (WP-08 regression)", async () => {
+    const b = cloneBundle(await loadFixtureBlock());
+    b.files["e2e.json"] = '{"cases": []}\n';
+    const v = await validateBlock(b);
+    expect(v.findings.filter((f) => f.path === "e2e.json")).toEqual([]);
+    expect(v.ok).toBe(true);
+  });
+
+  it("a route whose path ends in a param token is compared rendered, like the code (WP-08 regression)", async () => {
+    const b = cloneBundle(await loadFixtureBlock());
+    const routes = "variants/hono-d1/src/auth/routes.ts";
+    b.files[routes] = `${text(b.files[routes])}\nexport const statusPath = "/status/{{kit.appSlug}}";\n`;
+    b.manifest.routes.push({ method: "GET", path: "/status/{{kit.appSlug}}", auth: "public" });
+    const v = await validateBlock(b);
+    expect(v.findings.filter((f) => f.rule === "route_not_found")).toEqual([]);
+    b.manifest.routes.push({ method: "GET", path: "/nowhere/{{kit.appSlug}}", auth: "public" });
+    expect((await validateBlock(b)).findings).toContainEqual(expect.objectContaining({ rule: "route_not_found" }));
   });
 
   it("consistency: a declared table no migration creates, a missing test file", async () => {

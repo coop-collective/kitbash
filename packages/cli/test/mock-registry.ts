@@ -70,8 +70,9 @@ export async function createMockRegistry(opts: { token?: string } = {}): Promise
     if (req.method !== "GET") body = JSON.parse((await req.text()) || "null");
     reg.requests.push({ method: req.method, path: url.pathname + url.search, auth, ...(body !== undefined ? { body } : {}) });
     const p = url.pathname;
-    if (p === "/api/registry/key") return json(200, { public_key: key.publicKey, key_id: key.keyId });
+    // like kit-api: every route but /health needs the token, the registry key included (WP-08 regression)
     if (auth !== `Bearer ${reg.token}`) return err(401, "unauthorized", "missing or bad token");
+    if (p === "/api/registry/key") return json(200, { public_key: key.publicKey, key_id: key.keyId });
     if (p === "/api/me") return json(200, { member: "mem_owner", orgs: ["@coop"], scope_default: "@coop", plan: "owner" });
     if (p === "/api/search") {
       const q = (url.searchParams.get("q") ?? "").toLowerCase().split(/\s+/).filter(Boolean);

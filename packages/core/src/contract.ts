@@ -225,6 +225,19 @@ const planShape = {
   verify: Verify,
   diff_preview_path: z.string(),
   untrusted_author_text: UntrustedAuthorText,
+  dependencies: z
+    .array(
+      z.strictObject({
+        block: PinnedRef,
+        source: z.enum(["local", "registry"]),
+        plan_id: z.string(),
+        conflicts: z.array(Conflict),
+        applied: z.boolean(),
+        changed_files: z.array(z.string()).optional(),
+      }),
+    )
+    .optional()
+    .describe("registryDependencies not yet in the lock, installed first in this order (dependencies of dependencies first)"),
 };
 export const Plan = z.strictObject(planShape);
 export const AppliedPlan = z.strictObject({

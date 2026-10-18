@@ -7,7 +7,7 @@
  * declared-vs-shipped consistency (tables, routes, env, exports, tests, migrations, SKILL.md).
  * The server (WP-12) adds OSV/typosquat checks and the sandbox.
  */
-import { finding, type Finding } from "./errors.ts";
+import { finding, KitError, type Finding } from "./errors.ts";
 import type { BlockBundle } from "./fs.ts";
 import { byteLength, countLines, isText, sha256Hex, tryDecodeUtf8 } from "./hash.ts";
 import { findInjection } from "./injection.ts";
@@ -24,15 +24,18 @@ import {
   type Manifest,
 } from "./schema.ts";
 import { findHiddenText, findSecrets } from "./secrets.ts";
-import { checkSkill } from "./summary.ts";
+import { buildSummary, checkSkill } from "./summary.ts";
 
 export const MAX_BLOCK_BYTES = 2 * 1024 * 1024;
 export const MAX_FILES = 200;
 export const RECOMMENDED_FILES = 60;
 
-/** Files a block directory may contain without declaring them in `files[]`. */
+/**
+ * Files a block directory may contain without declaring them in `files[]`. They are never installed into a project:
+ * `e2e.json` holds the block's own e2e cases (test-e2e/install.test.mjs reads it from the block directory).
+ */
 export function metaFiles(m: Manifest | undefined): Set<string> {
-  const s = new Set(["block.json", "CHANGELOG.md", "LICENSE", "LICENSE.md", "LICENSE.txt"]);
+  const s = new Set(["block.json", "CHANGELOG.md", "LICENSE", "LICENSE.md", "LICENSE.txt", "e2e.json"]);
   if (m?.docs) s.add(m.docs);
   if (m?.skill) s.add(m.skill);
   return s;
@@ -254,10 +257,16 @@ export async function scanBlock(bundle: BlockBundle, opts: ScanOptions = {}): Pr
     }
     for (const t of created) if (!declaredTables.includes(t)) findings.push(finding("table_not_declared", "warn", "block.json#/tables", `${t} is created by a migration but not in tables[] (variant ${variant.id})`));
     for (const t of declaredTables) if (migFiles.length && !created.includes(t)) findings.push(finding("table_not_created", "warn", "block.json#/tables", `${t} is declared but no migration creates it (variant ${variant.id})`));
-    // routes: the part after the leading param token must appear in some code file
+    // routes: the part after the leading param token (a mount prefix the adapt step applies), rendered with the
+    // defaults like the code it is compared with, must appear in some code file
     const code = vf.filter((f) => CODE_EXT.test(f.path)).map((f) => rendered.get(bundlePath(m, f)) ?? "").join("\n");
     for (const r of m.routes ?? []) {
-      const tail = r.path.replace(/^(\{\{[^}]+\}\})+/, "");
+      let tail = r.path.replace(/^(\{\{[^}]+\}\})+/, "");
+      try {
+        tail = renderTemplate(tail, { params: defaults, paths: { ...DEFAULT_PATHS } });
+      } catch {
+        continue; // reported as render_error
+      }
       const probe = tail.split("/").filter(Boolean).slice(-2).join("/");
       if (probe && !code.includes(probe)) findings.push(finding("route_not_found", "warn", "block.json#/routes", `${r.method} ${r.path} not found in the code (variant ${variant.id})`));
     }
@@ -310,6 +319,17 @@ export async function validateBlock(bundle: BlockBundle, opts: ScanOptions = {})
       if (d !== undefined) lines += countLines(d);
     }
     out.size = { files: v.manifest.files.length, lines };
+    // the summary budget `kit get` and publish enforce (1,500 tokens), checked per variant so validate catches it first
+    const changelog = bundle.files["CHANGELOG.md"] !== undefined ? (tryDecodeUtf8(bundle.files["CHANGELOG.md"]) ?? undefined) : undefined;
+    for (const variant of v.manifest.variants) {
+      try {
+        buildSummary(v.manifest, { id: `@scope/${v.manifest.name}`, variant: variant.id, ...(changelog ? { changelog } : {}) });
+      } catch (e) {
+        if (!(e instanceof KitError) || e.rule !== "budget") throw e;
+        out.findings.push(finding("budget", "block", "block.json", `variant ${variant.id}: ${e.message}`));
+        out.ok = false;
+      }
+    }
   }
   return out;
 }

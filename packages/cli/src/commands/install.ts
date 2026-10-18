@@ -19,11 +19,14 @@ import {
   type InstallPlan,
   type OnConflict,
 } from "@kitbash/core";
+import path from "node:path";
 import { bool, need, oneOf, params as parseParams, str, type Parsed } from "../args.ts";
 import { apiFor, assertPlanPinned } from "../context.ts";
 import { json, line, sanitize, sanitizeLine, untrustedEnvelope, type Io } from "../io.ts";
 import { ensureProfile, openProject, recordSource, type BlockSource, type Project } from "../project.ts";
 import { fetchRegistryBlock, isLocalSpec, loadLocalBlock, type ResolvedBlock } from "../source.ts";
+import { overlayFs, resolveDependencies, splitParams, type DependencyStep } from "../deps.ts";
+import type { KitFs, ProjectProfile } from "@kitbash/core";
 
 export const installOptions = {
   version: { type: "string" },
@@ -34,6 +37,8 @@ export const installOptions = {
   "on-conflict": { type: "string" },
   "no-config": { type: "boolean" },
   id: { type: "string" },
+  "blocks-dir": { type: "string" },
+  "no-deps": { type: "boolean" },
 } as const;
 
 export async function resolveBlock(io: Io, spec: string, a: { version?: string; variant?: string; id?: string }): Promise<ResolvedBlock> {
@@ -52,6 +57,31 @@ function sourceOf(b: ResolvedBlock): BlockSource {
 
 const sidecar = (planId: string) => `.kit/plans/${planId}.source.json`;
 
+interface PlanOpts {
+  profile: ProjectProfile;
+  variant?: string;
+  onConflict: OnConflict;
+  applyConfig: boolean;
+}
+
+async function planOn(io: Io, fs: KitFs, block: ResolvedBlock, params: Record<string, string>, o: PlanOpts, variant?: string): Promise<InstallPlan> {
+  const lock = await readLock(fs);
+  const project = await readProjectForPlan(fs, { bundle: block.bundle, profile: o.profile, params, ...(variant ? { variant } : {}), blockId: block.blockId });
+  return planInstall({
+    bundle: block.bundle,
+    blockId: block.blockId,
+    profile: o.profile,
+    project,
+    lock,
+    params,
+    ...(variant ? { variant } : {}),
+    onConflict: o.onConflict,
+    applyConfig: o.applyConfig,
+    ...(o.profile.migrations.pattern === "TIMESTAMP_name.sql" ? { now: io.now() } : {}),
+    registrySignature: block.registrySignature,
+  });
+}
+
 export async function install(io: Io, a: Parsed): Promise<number> {
   const spec = need(a, 0, "block reference or block directory");
   const onConflict = (oneOf(str(a, "on-conflict"), ["stop", "skip", "overwrite", "rename"] as const, "--on-conflict") ?? "stop") as OnConflict;
@@ -59,22 +89,17 @@ export async function install(io: Io, a: Parsed): Promise<number> {
   const { profile, created, notes } = await ensureProfile(p, { write: true });
   const variant = str(a, "variant");
   const block = await resolveBlock(io, spec, { version: str(a, "version"), variant, id: str(a, "id") });
-  const params = parseParams(a);
-  const lock = await readLock(p.fs);
-  const project = await readProjectForPlan(p.fs, { bundle: block.bundle, profile, params, ...(variant ? { variant } : {}), blockId: block.blockId });
-  const plan = await planInstall({
-    bundle: block.bundle,
-    blockId: block.blockId,
-    profile,
-    project,
-    lock,
-    params,
-    ...(variant ? { variant } : {}),
-    onConflict,
-    applyConfig: !bool(a, "no-config"),
-    ...(profile.migrations.pattern === "TIMESTAMP_name.sql" ? { now: io.now() } : {}),
-    registrySignature: block.registrySignature,
-  });
+  const { own: params, deps: depParams } = splitParams(parseParams(a));
+  const o: PlanOpts = { profile, onConflict, applyConfig: !bool(a, "no-config") };
+
+  // registryDependencies not in the lock yet: planned in order on an overlay, then the block itself
+  const resolution = bool(a, "no-deps")
+    ? { steps: [] as DependencyStep[], warnings: [] as string[] }
+    : await resolveDependencies(io, block, await readLock(p.fs), { ...(str(a, "blocks-dir") ? { blocksDir: str(a, "blocks-dir")! } : {}), depParams });
+  if (resolution.steps.length) return installWithDependencies(io, a, p, block, params, o, variant, resolution.steps, resolution.warnings, created);
+
+  const plan = await planOn(io, p.fs, block, params, o, variant);
+  plan.warnings.push(...resolution.warnings);
   await savePlan(p.fs, plan);
   await writeText(p.fs, sidecar(plan.plan_id), `${JSON.stringify(sourceOf(block))}\n`);
 
@@ -95,6 +120,108 @@ export async function install(io: Io, a: Parsed): Promise<number> {
     throw new KitError("plan_stale", `the block or the project changed since ${pinned} was reviewed; the new plan is ${plan.plan_id} (see ${plan.diff_preview_path}); nothing written`);
   }
   return doApply(io, p, plan, sourceOf(block), a);
+}
+
+type DepReport = NonNullable<ReturnType<typeof toContractPlan>["dependencies"]>[number];
+
+/**
+ * The block needs other blocks first. Dry run: every plan is made on an overlay (dependencies applied in memory, in
+ * order), saved under .kit/plans, and printed; `--plan-id` pins the block's own plan from that dry run. Apply: the
+ * same plans are made again on the project and applied in order; nothing is written when any of them has conflicts.
+ */
+async function installWithDependencies(
+  io: Io,
+  a: Parsed,
+  p: Project,
+  block: ResolvedBlock,
+  params: Record<string, string>,
+  o: PlanOpts,
+  variant: string | undefined,
+  steps: DependencyStep[],
+  warnings: string[],
+  created: boolean,
+): Promise<number> {
+  const dry = overlayFs(p.fs);
+  const reports: DepReport[] = [];
+  const depPlans: InstallPlan[] = [];
+  let blocked = false;
+  for (const s of steps) {
+    const plan = await planOn(io, dry, s.block, s.params, o);
+    depPlans.push(plan);
+    reports.push({ block: plan.block, source: s.block.origin.kind, plan_id: plan.plan_id, conflicts: plan.conflicts, applied: false });
+    if (plan.conflicts.length) {
+      blocked = true;
+      break;
+    }
+    await applyPlan(dry, plan, { now: io.now() });
+  }
+  const rootPlan = blocked ? null : await planOn(io, dry, block, params, o, variant);
+  if (rootPlan) rootPlan.warnings.push(...warnings);
+  for (const plan of [...depPlans, ...(rootPlan ? [rootPlan] : [])]) await savePlan(p.fs, plan);
+  const conflicted = blocked || !!rootPlan?.conflicts.length;
+
+  if (!bool(a, "apply") || conflicted) {
+    if (bool(a, "json")) {
+      if (rootPlan) json(io, { ...toContractPlan(rootPlan), dependencies: reports });
+      else json(io, errorEnvelope("conflicts", `dependency ${reports.at(-1)!.block} has conflicts; nothing written.`, { conflicts: reports.at(-1)!.conflicts }));
+    } else {
+      if (created) line(io, "created .kit/project.json (stack detected)");
+      line(io, `${block.blockId} needs ${steps.length} block(s) installed first: ${steps.map((s) => `${s.block.blockId}@${s.block.version} (${s.block.origin.kind === "local" ? sanitizeLine(path.relative(io.cwd, s.block.origin.dir) || s.block.origin.dir) : "registry"})`).join(", ")}`);
+      for (const plan of depPlans) {
+        line(io);
+        printPlan(io, plan);
+      }
+      if (rootPlan) {
+        line(io);
+        for (const f of block.findings) line(io, `scan ${f.severity}: ${sanitizeLine(f.rule)} ${sanitizeLine(f.path)}: ${sanitizeLine(f.detail)}`);
+        printPlan(io, rootPlan);
+      }
+      line(io);
+      line(
+        io,
+        conflicted
+          ? "Not applicable until the conflicts are resolved (set a dependency's params with --param <dependency>.<name>=<value>); nothing written."
+          : `Dry run: nothing was written outside .kit/. Review the diffs, then: kit install ${sanitizeLine(need(a, 0, "block"))} --apply --plan-id ${rootPlan!.plan_id} (with the same --param flags)`,
+      );
+    }
+    return conflicted ? 1 : 0;
+  }
+
+  const pinned = str(a, "plan-id");
+  if (pinned && pinned !== rootPlan!.plan_id) {
+    throw new KitError("plan_stale", `the block or the project changed since ${pinned} was reviewed; the new plan is ${rootPlan!.plan_id}; nothing written`);
+  }
+  const applied: DepReport[] = [];
+  for (const s of steps) {
+    const plan = await planOn(io, p.fs, s.block, s.params, o);
+    if (plan.conflicts.length) throw new KitError("plan_stale", `${plan.block}: the project changed while installing (${plan.conflicts.length} conflict(s)); installed so far: ${applied.map((x) => x.block).join(", ") || "none"}`);
+    await savePlan(p.fs, plan);
+    const r = await applyPlan(p.fs, plan, { now: io.now() });
+    await recordSource(p, plan.kit.block_id, sourceOf(s.block));
+    applied.push({ block: plan.block, source: s.block.origin.kind, plan_id: plan.plan_id, conflicts: [], applied: true, changed_files: r.changed_files });
+    if (!bool(a, "json")) {
+      line(io, `Installed dependency ${sanitizeLine(r.block)} (${r.changed_files.length} files)`);
+      const deps = { ...r.dependencies_to_add, ...(r.dev_dependencies_to_add ?? {}) };
+      if (Object.keys(deps).length) line(io, `package.json now lists ${Object.keys(deps).join(", ")}: run your package manager's install.`);
+      if (r.adapt.length) line(io, `adapt checklist for ${sanitizeLine(r.block)}: ${r.adapt.map((x) => `${x.id}${x.required ? " (required)" : ""}`).join(", ")}`);
+    }
+  }
+  const plan = await planOn(io, p.fs, block, params, o, variant);
+  plan.warnings.push(...warnings);
+  await savePlan(p.fs, plan);
+  if (plan.conflicts.length) {
+    if (bool(a, "json")) json(io, errorEnvelope("conflicts", `${plan.conflicts.length} conflict(s) after the dependencies (installed: ${applied.map((x) => x.block).join(", ")}); ${block.blockId} not written.`, { conflicts: plan.conflicts }));
+    else {
+      printConflicts(io, plan);
+      line(io, `dependencies installed; ${block.blockId} not written.`);
+    }
+    return 1;
+  }
+  const r = await applyPlan(p.fs, plan, { now: io.now() });
+  await recordSource(p, plan.kit.block_id, sourceOf(block));
+  if (bool(a, "json")) json(io, { ...r, dependencies: applied });
+  else printApplied(io, r);
+  return 0;
 }
 
 export async function apply(io: Io, a: Parsed): Promise<number> {

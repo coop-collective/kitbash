@@ -422,6 +422,12 @@ export function renderBlockFiles(
   return out;
 }
 
+/** The text a diff shows for a rendered file: a `template: false` text file keeps its bytes, so decode them. */
+function diffText(r: { content: FileData; text: boolean }): string {
+  if (!r.text) return "\u0000";
+  return typeof r.content === "string" ? r.content : (tryDecodeUtf8(r.content) ?? "\u0000");
+}
+
 // ---------- the planner ----------
 
 /**
@@ -571,7 +577,7 @@ export async function planInstall(input: PlanInput): Promise<InstallPlan> {
       const after = await sha256Hex(r.content);
       files.push({ path: target, action: "create", role: entry.role, block_path: entry.path, before_sha256: null, after_sha256: after, content_b64: base64Encode(toBytes(r.content)), tracked: true });
       writes.push({ path: target, action: "create", role: entry.role, bytes: toBytes(r.content).byteLength, ...(fromPath ? { from: fromPath } : {}) });
-      diffs.push({ group: 2, path: target, text: unifiedDiff(target, null, r.text ? (r.content as string) : "\u0000") });
+      diffs.push({ group: 2, path: target, text: unifiedDiff(target, null, diffText(r)) });
       continue;
     }
     // the target exists with different content
@@ -579,7 +585,7 @@ export async function planInstall(input: PlanInput): Promise<InstallPlan> {
     if (onConflict === "stop") {
       conflicts.push({ kind: "file", name: target, detail: `${target} exists and differs; rerun with on_conflict skip, overwrite or rename` });
       for (const e of exportClash) conflicts.push({ kind: "export", name: e.symbol, detail: `${target} already exports ${e.symbol}` });
-      diffs.push({ group: 0, path: target, text: unifiedDiff(target, tryDecodeUtf8(projectData), r.text ? (r.content as string) : "\u0000", { note: `conflict: ${target} exists (on_conflict=stop); the diff shows what overwrite would do` }) });
+      diffs.push({ group: 0, path: target, text: unifiedDiff(target, tryDecodeUtf8(projectData), diffText(r), { note: `conflict: ${target} exists (on_conflict=stop); the diff shows what overwrite would do` }) });
       continue;
     }
     onConflictRecord[target] = onConflict;
@@ -590,7 +596,7 @@ export async function planInstall(input: PlanInput): Promise<InstallPlan> {
     if (onConflict === "overwrite") {
       files.push({ path: target, action: "overwrite", role: entry.role, block_path: entry.path, before_sha256: await shaOf(projectData), after_sha256: await sha256Hex(r.content), content_b64: base64Encode(toBytes(r.content)), tracked: true });
       writes.push({ path: target, action: "overwrite", role: entry.role, bytes: toBytes(r.content).byteLength, ...(fromPath ? { from: fromPath } : {}) });
-      diffs.push({ group: 0, path: target, text: unifiedDiff(target, tryDecodeUtf8(projectData), r.text ? (r.content as string) : "\u0000", { note: `overwrite: ${target}` }) });
+      diffs.push({ group: 0, path: target, text: unifiedDiff(target, tryDecodeUtf8(projectData), diffText(r), { note: `overwrite: ${target}` }) });
       continue;
     }
     // rename
@@ -601,7 +607,7 @@ export async function planInstall(input: PlanInput): Promise<InstallPlan> {
     }
     files.push({ path: alt, action: "rename", role: entry.role, block_path: entry.path, before_sha256: null, after_sha256: await sha256Hex(r.content), content_b64: base64Encode(toBytes(r.content)), tracked: true });
     writes.push({ path: alt, action: "rename", role: entry.role, bytes: toBytes(r.content).byteLength, from: entry.path, reason: `${target} exists` });
-    diffs.push({ group: 2, path: alt, text: unifiedDiff(alt, null, r.text ? (r.content as string) : "\u0000", { note: `rename: ${target} exists` }) });
+    diffs.push({ group: 2, path: alt, text: unifiedDiff(alt, null, diffText(r), { note: `rename: ${target} exists` }) });
   }
 
   // emit merged config targets

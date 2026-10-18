@@ -25,7 +25,7 @@ const COMMANDS: Record<string, Command> = {
   install: {
     options: installOptions,
     run: install,
-    usage: "kit install <@scope/name[@version] | ./block-dir> [--param k=v]… [--variant v] [--on-conflict stop|skip|overwrite|rename] [--no-config] [--apply [--plan-id <id>]] [--id @scope/name]",
+    usage: "kit install <@scope/name[@version] | ./block-dir> [--param k=v]… [--param <dependency>.k=v]… [--blocks-dir <dir>] [--no-deps] [--variant v] [--on-conflict stop|skip|overwrite|rename] [--no-config] [--apply [--plan-id <id>]] [--id @scope/name]",
   },
   apply: { options: {}, run: apply, usage: "kit apply <plan_id>" },
   verify: { options: verifyOptions, run: verify, usage: "kit verify <@scope/name> [--command '<allowlisted command>']… [--timeout seconds] [--from <block dir>]" },
