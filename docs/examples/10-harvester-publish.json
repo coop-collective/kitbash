@@ -1,0 +1,6 @@
+{
+  "description": "Harvester publishes privately first; a public publish needs hq_request_approval and is refused on scan findings.",
+  "tool": "registry_publish",
+  "request": { "block_dir": ".kit/drafts/stripe-billing", "visibility": "private", "license": "Proprietary", "tag": "latest" },
+  "response": { "id": "@coop/stripe-billing", "version": "0.1.0", "scan": { "tier": "scanned", "findings": [ { "rule": "fetch-literal-host", "path": "src/lib/billing/stripe.ts", "severity": "info", "detail": "api.stripe.com declared in meta.network_hosts" } ] }, "url": "https://kitbash.dev/@coop/stripe-billing" }
+}

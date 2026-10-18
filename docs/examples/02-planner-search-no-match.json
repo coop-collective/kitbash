@@ -1,0 +1,6 @@
+{
+  "description": "No block covers the Feature: an empty results array (not an error). The Planner proceeds with registry_block unset.",
+  "tool": "registry_search",
+  "request": { "query": "usage based metering with stripe", "stack": { "framework": "hono", "db": "d1" } },
+  "response": { "results": [] }
+}

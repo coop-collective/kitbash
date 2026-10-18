@@ -1,0 +1,7 @@
+{
+  "description": "Applying with a conflict and on_conflict stop (the default): an Error envelope naming the param that resolves it. The Builder reruns with tablePrefix.",
+  "tool": "registry_install",
+  "request": { "block": "@coop/email-code-auth", "project_root": "/Users/coop/Workspace/mailcheap-autopilot/feat_01JABC", "dry_run": false },
+  "response_def": "Error",
+  "response": { "error": { "code": "conflicts", "message": "1 conflict; nothing written.", "conflicts": [ { "kind": "table", "name": "members", "detail": "migrations/0003_members.sql already creates members", "resolve_with_param": "tablePrefix" } ] } }
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Planner (planner.registry_check) searches once per proposed Feature. Ideator's hq_registry search proxies this call.",
+  "tool": "registry_search",
+  "request": { "query": "email code sign in bearer token", "stack": { "framework": "hono", "db": "d1" }, "tags": ["auth"], "scope": "all", "limit": 5 },
+  "response": { "results": [
+    { "id": "@coop/email-code-auth", "version": "1.3.0", "variant": "hono-d1", "title": "Email code sign-in with hashed bearer tokens",
+      "stack": ["cloudflare-workers", "hono", "d1", "vitest-workerd"], "size": { "files": 9, "lines": 612 },
+      "trust": { "tier": "scanned", "sandbox": "passed" }, "license": "MIT", "score": 0.91,
+      "summary": "Six-digit email codes, single-use and attempt-limited; opaque bearer tokens; Hono middleware.", "est_hours_saved": 6 }
+  ] }
+}
