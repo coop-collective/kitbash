@@ -1,0 +1,12 @@
+{
+  "_doc": "Per-block cases for install.test.mjs. Keys are block directory names under blocks/ (or an entry with its own \"path\", relative to the repo root). A block with no entry still runs once with default params. The default case is always run; \"cases\" adds param sets. registryDependencies are installed first (resolved by directory name under blocks/), with default params unless a case sets \"dependencyParams\": {\"crypto-utils\": {\"k\": \"v\"}}. \"chains\" install several blocks in sequence into one project: steps are {block, params?}. Every installed block is then verified.",
+  "blocks": {
+    "email-code-auth-fixture": {
+      "path": "packages/core/test/fixtures/blocks/email-code-auth-fixture",
+      "cases": [
+        { "name": "prefixed", "params": { "tokenPrefix": "mc_", "tablePrefix": "app_" } }
+      ]
+    }
+  },
+  "chains": []
+}
