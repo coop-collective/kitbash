@@ -1,0 +1,76 @@
+# Kitbash (working name: feature-registry)
+
+**A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
+rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,
+config patches, tests and a one-page agent guide. An agent searches in ~100 tokens, judges in ~1,000, installs without
+reading the code, adapts the wiring from a checklist, and proves it with the block's own tests. shadcn's registry for
+the whole stack, built for agents first.
+
+## Why
+
+The owner runs ~30 small apps on Cloudflare (Workers, Hono, D1, R2, Next.js, Tauri). Three scans of `~/Workspace`
+found the same features rewritten by hand again and again: six bearer-token schemes, three email-code sign-ins with
+identical limits and zero shared lines, four OAuth-for-MCP providers, eight stateless MCP servers, seven plugin
+scaffolds whose `validate.mjs` files differ by 200–330 lines. Each rebuild costs an agent session 20–60k tokens and the
+owner a day of review, and produces one more slightly different version. Ideator's autopilot is about to multiply the
+number of apps. The first customer is the owner's own agents.
+
+Nothing on the market covers this unit. Component registries (shadcn: 462 namespaces, an MCP server, paid namespaces
+behind header auth) model files, not features: no migrations, tests, versions, upgrades or stack variants. Whole-app
+boilerplates (ShipFast, Supastarter, Makerkit) are one-shot copies whose own docs warn about upgrading, and their
+revenue is falling as agents write scaffolding. Feature-level installers exist for one framework at a time (Makerkit's
+plugins, Rails engines, AdonisJS `configure`). The blocker that killed earlier attempts, fragile codemods across many
+stacks, is exactly what a coding agent with a test suite absorbs. **Tests included is the moat**: tests are the
+acceptance check for installs, upgrades and royalties.
+
+## What it is
+
+- **Blocks** (`block.json`, a superset of shadcn `registry-item.json`): files with `{{kit.param}}` placeholders, typed
+  params, stack variants (`hono-d1`, `nextjs-d1`), migrations renumbered on copy, declared bindings/env/secrets (names
+  only), routes and tables as an interface for conflict checks, allowlisted `verify` commands, an Agent Skills
+  `SKILL.md`, provenance and signatures, lineage. Three sizes: card ≤ 100 tokens, summary ≤ 1,500, bundle on disk.
+- **The flow**: `registry_search` → `registry_get` → `registry_install` (dry run with a diff; deterministic copy +
+  substitution + migration renumbering + config merge; lock file) → adapt checklist → `registry_verify` → later
+  `registry_upgrade` (Copier-style 3-way re-apply) and `registry_propose` (send improvements upstream with params
+  un-rendered).
+- **Delivery**: a `kit` CLI; a Claude Code / Codex / Grok plugin whose local stdio MCP server exposes the `registry_*`
+  tools (so Ideator's Planner/Builder/Harvester call them directly); a remote `/mcp` for cloud agents; a
+  shadcn-compatible `/r/` endpoint.
+- **Tiers**: private blocks per org (Free 5, Pro unlimited, Team per seat); public blocks free or paid (one-time per
+  org, 15% fee); forks with immutable lineage; royalties to authors **and upstream forkers** (75% / 15% / 7% / 3%),
+  metered on *verified active project-months*, not downloads, with a user-centric pool from 30% of subscriptions.
+- **Security**: no scripts in blocks; publisher + registry signatures over content hashes; static scan for secrets,
+  dangerous code, dependency advisories and prompt injection in docs; sandboxed test runs; review tiers with rug-pull
+  detection and a 72-hour `latest` cooldown; "instructions are data" rules enforced by the tools; dry-run diffs.
+- **Stack**: Cloudflare Workers (Hono) + D1 (FTS5) + R2 (content-addressed blobs) + Queues + Cron, Vectorize and
+  Sandbox in v1; Email Service; Stripe (and USDC via xinf's existing seller payouts). Auth is Ideator's: email codes,
+  hashed bearer tokens, OAuth 2.1 with "My CLI on this computer". The registry installs its own auth from its own blocks.
+
+## Documents
+
+| File | What |
+|---|---|
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Positioning, landscape, block format decisions, agent flow and MCP contract, tiers/forks/royalties, security, architecture, roadmap, open questions |
+| [`docs/BLOCK-SPEC.md`](docs/BLOCK-SPEC.md) | The manifest schema, install semantics, lock file, signing, scanner rules, and a worked `email-code-auth` block for Hono + D1 |
+| [`docs/HARVEST.md`](docs/HARVEST.md) | 37 candidate blocks found in the owner's repos, with golden sources, rebuild counts, quality notes and effort |
+| [`docs/PLAN.md`](docs/PLAN.md) | Work packages (MVP, v1, v2) sized for one agent session each, with ownership, dependencies, acceptance and tests |
+
+## Roadmap in one line each
+
+- **MVP** (~1 week of agent sessions): private registry for the owner on `wrangler dev`, core + CLI + plugin with the
+  MCP tools, two reference templates, five harvested blocks (`email-code-auth`, `cf-email-sender`, `cli-oauth-login`,
+  `orgs-roles-invites`, `api-keys`), Ideator contract. Exit: Claude Code and Codex each install three blocks into a
+  fresh template in one session with ≤ 3 manual edits and all block tests green.
+- **v1**: accounts (from our own blocks), public/private, licenses, scanner, sandbox, review tiers, Stripe
+  subscriptions and paid blocks, web UI, remote MCP, semantic search, telemetry, 20 more public blocks, deploy.
+- **v2**: forks + lineage + similarity, proposals UI, royalty engine and payouts (Stripe Connect, USDC), x402
+  per-install, Gitstalk mirror and pre-land gate, curated tier via an Ideator review loop.
+
+## Name options
+
+Kitbash (recommended: building new models from parts of other kits; CLI `kit`), Prefab, Quarry, Blockwork, Spolia.
+Open question: Nullshot already calls its registry items "blocks"; Kitbash's unit could be a "kit" instead.
+
+## Status
+
+2026-10-18: founding design written. No code yet; nothing deployed or published. Local git repository only.
