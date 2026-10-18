@@ -1,0 +1,16 @@
+{
+  "_doc": "test-e2e cases for this block (same shape as a test-e2e/cases.json \"blocks\" entry, plus \"conflicts\"). The defaults case always runs; registryDependencies (crypto-utils, cf-email-sender) are installed first from blocks/. Each case installs into a fresh copy of templates/hono-d1 and runs verify.commands. A \"conflicts\" entry first writes the \"setup\" files into the project, expects the install (dry run) to exit 1 with the listed conflicts, then installs with \"resolve.params\" and expects verify to pass.",
+  "cases": [
+    { "name": "prefixed", "params": { "tokenPrefix": "mc_", "tablePrefix": "app_" } },
+    { "name": "short-codes", "params": { "codeTtlMin": 2, "routePrefix": "/signin" }, "dependencyParams": { "cf-email-sender": { "mailer": "console" } } }
+  ],
+  "conflicts": [
+    {
+      "name": "members-table",
+      "setup": { "migrations/0002_members.sql": "CREATE TABLE members (id TEXT PRIMARY KEY, email TEXT NOT NULL);\n" },
+      "params": {},
+      "expect": [{ "kind": "table", "name": "members", "resolve_with_param": "tablePrefix" }],
+      "resolve": { "params": { "tablePrefix": "auth_" } }
+    }
+  ]
+}

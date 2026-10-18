@@ -1,0 +1,362 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "email-code-auth",
+  "type": "registry:block",
+  "title": "Email code sign-in with peppered bearer tokens",
+  "description": "Six-digit email codes over Cloudflare Email Service (uniform, single use, 5 guesses counted before the compare, 5/address/hour and 200/10 min caps) and opaque prefixed bearer tokens, both stored as HMAC under a TOKEN_PEPPER-derived key; a Hono requireBearer middleware; sign-up on first verified code.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "email"
+  ],
+  "meta": {
+    "maturity": "production",
+    "origin": "harvested",
+    "est_hours_saved": 6,
+    "also_harvested_from": [
+      {
+        "repo": "local:social-connector (no remote)",
+        "commit": "6a6ae3f",
+        "paths": [
+          "telegram-connector/src/auth/email-code.ts",
+          "telegram-connector/src/auth/mailer.ts",
+          "telegram-connector/src/lib/crypto.ts"
+        ]
+      }
+    ]
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "appSlug",
+      "type": "identifier",
+      "default": "my-app",
+      "description": "Short app name; the D1 database_name when the project has no DB binding yet."
+    },
+    {
+      "name": "tokenPrefix",
+      "type": "identifier",
+      "default": "app_",
+      "pattern": "^[a-z]{2,6}_$",
+      "description": "Bearer token prefix; makes tokens greppable and secret-scannable."
+    },
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "Prefix for the three tables; set it when the project already has a members table."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/auth",
+      "description": "Mount point of the public routes."
+    },
+    {
+      "name": "codeTtlMin",
+      "type": "integer",
+      "default": 10,
+      "min": 2,
+      "max": 60,
+      "description": "Minutes a code stays valid."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_auth.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_auth.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/auth/types.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/auth/types.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/auth/tokens.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/auth/tokens.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/auth/codes.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/auth/codes.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/auth/middleware.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/auth/middleware.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/auth/routes.ts",
+      "type": "registry:lib",
+      "target": "{{paths.routes}}/auth.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/auth.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/auth.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "config/dev.vars.example",
+      "type": "registry:file",
+      "target": ".dev.vars.example",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "append-missing-lines"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/email-code-auth/SKILL.md",
+      "role": "doc"
+    },
+    {
+      "path": "e2e.json",
+      "type": "registry:file",
+      "target": ".kit/blocks/email-code-auth/e2e.json",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@>=0.8"
+  ],
+  "registryDependencies": [
+    "@coop/crypto-utils@^1",
+    "@coop/cf-email-sender@^1"
+  ],
+  "secrets": [
+    {
+      "name": "TOKEN_PEPPER",
+      "description": "32+ random characters; keys the HMACs of codes and tokens. Rotating it signs everyone out.",
+      "obtain": "openssl rand -hex 32",
+      "required": true
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true,
+      "create": "wrangler d1 create {{kit.appSlug}}"
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_auth.sql",
+      "name": "auth",
+      "creates": [
+        "{{kit.tablePrefix}}members",
+        "{{kit.tablePrefix}}member_tokens",
+        "{{kit.tablePrefix}}login_codes"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}members",
+    "{{kit.tablePrefix}}member_tokens",
+    "{{kit.tablePrefix}}login_codes"
+  ],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/email/start",
+      "auth": "public",
+      "description": "Mail a code; over a cap: same reply, no mail."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/email/verify",
+      "auth": "public",
+      "description": "Use a code; returns { token, member, created }."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/logout",
+      "auth": "bearer",
+      "description": "Revoke the calling token."
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "auth": "bearer",
+      "description": "The calling member."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "requireBearer",
+      "from": "src/auth/middleware.ts",
+      "kind": "hono-middleware"
+    },
+    {
+      "symbol": "authenticate",
+      "from": "src/auth/tokens.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "issueToken",
+      "from": "src/auth/tokens.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "revokeToken",
+      "from": "src/auth/tokens.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "startCode",
+      "from": "src/auth/codes.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "verifyCode",
+      "from": "src/auth/codes.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "authRoutes",
+      "from": "src/auth/routes.ts",
+      "kind": "hono-app"
+    },
+    {
+      "symbol": "meRoutes",
+      "from": "src/auth/routes.ts",
+      "kind": "hono-app"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/auth.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "codes",
+        "tokens",
+        "limits",
+        "pepper",
+        "middleware",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/auth.test.ts",
+      "pnpm typecheck"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds email-code sign-in and peppered bearer tokens to a Hono Worker on D1. Three tables, four routes, one middleware, one secret (TOKEN_PEPPER). Needs crypto-utils and cf-email-sender installed first.",
+    "when_to_use": [
+      "The app needs accounts without passwords or OAuth providers.",
+      "A CLI, desktop app or MCP client needs opaque, revocable bearer tokens."
+    ],
+    "when_not_to_use": [
+      "You need OAuth or social sign-in.",
+      "A browser app needs cookie sessions (pair it with a session-cookie block instead of storing the token in localStorage)."
+    ],
+    "adapt": [
+      {
+        "id": "mount-routes",
+        "required": true,
+        "title": "Mount the auth routes",
+        "where": "{{paths.app}}/index.ts (where the Hono app is created)",
+        "do": "app.route('{{kit.routePrefix}}', authRoutes); app.route('/', meRoutes); (import from './routes/auth')",
+        "check": "POST {{kit.routePrefix}}/email/start answers 200."
+      },
+      {
+        "id": "wire-middleware",
+        "required": true,
+        "title": "Protect your routes with requireBearer",
+        "where": "{{paths.app}}/index.ts",
+        "do": "app.use('/api/*', requireBearer) (from './lib/auth/middleware'); handlers read c.get('member').",
+        "check": "GET /api/me without a token answers 401."
+      },
+      {
+        "id": "set-secrets",
+        "required": true,
+        "title": "Set TOKEN_PEPPER",
+        "do": "TOKEN_PEPPER=<openssl rand -hex 32> in .dev.vars; wrangler secret put TOKEN_PEPPER for production.",
+        "check": "email/start does not answer 500 not_configured."
+      },
+      {
+        "id": "create-d1",
+        "required": false,
+        "title": "Create the D1 database and apply migrations",
+        "do": "Only when the project has no real DB yet: wrangler d1 create {{kit.appSlug}}, put the id in wrangler.jsonc, apply migrations locally.",
+        "check": "wrangler d1 migrations list shows {{migrations.renumbered}} applied."
+      }
+    ],
+    "author_notes": "Keep the 200 per 10 minutes global cap; it is what stops a code-spray attack."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": [
+        "packages/api/src/auth.ts",
+        "packages/api/src/index.ts",
+        "packages/api/migrations/0001_schema.sql",
+        "packages/api/test/auth.test.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T00:00:00Z"
+  }
+}
