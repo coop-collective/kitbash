@@ -1,0 +1,5 @@
+# Root workspace. templates/* are deliberately NOT members: each template is its own pnpm root
+# (installed with `pnpm install --ignore-workspace`), see templates/hono-d1/pnpm-workspace.yaml.
+packages:
+  - packages/*
+  - test-e2e

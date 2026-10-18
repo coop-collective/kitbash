@@ -1,0 +1,21 @@
+{
+  // A minimal Hono + D1 Worker used by @kitbash/core's planner tests.
+  "name": "hono-d1-min",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "vars": {
+    "ENVIRONMENT": "dev"
+  },
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "api.hono-min.dev/*", "zone_name": "hono-min.dev" }],
+  "d1_databases": [
+    {
+      // local placeholder id
+      "binding": "DB",
+      "database_name": "hono-d1-min",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "compatibility_flags": ["nodejs_compat"]
+}

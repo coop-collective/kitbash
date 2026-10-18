@@ -1,0 +1,7 @@
+{
+  "description": "A cloud agent on the remote /mcp calls an install: install, verify and harvest answer needs_local with the kit command.",
+  "tool": "registry_install",
+  "request": { "block": "@coop/email-code-auth", "project_root": "." },
+  "response_def": "Error",
+  "response": { "error": { "code": "needs_local", "message": "registry_install writes files and runs only through the local kit MCP server.", "command": "kit install @coop/email-code-auth" } }
+}

@@ -1,0 +1,8 @@
+<<<<<<< ours
+const LIMIT = 50;
+||||||| base
+const LIMIT = 5;
+=======
+const LIMIT = 7;
+>>>>>>> theirs
+const TTL = 10;

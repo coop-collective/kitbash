@@ -1,0 +1,34 @@
+{
+  "name": "@kitbash/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kitbash core: block schema, renderer, planner, lock, signing, client scanner, harvest heuristics, contract types.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contract": "./src/contract.ts",
+    "./node": "./src/node.ts",
+    "./schema/block.v1.json": "./schema/block.v1.json",
+    "./schema/contract.v1.json": "./schema/contract.v1.json"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "gen-schema": "node scripts/gen-schema.mjs",
+    "validate": "node scripts/gen-schema.mjs --check"
+  },
+  "dependencies": {
+    "diff": "^9.0.0",
+    "jsonc-parser": "^3.3.1",
+    "node-diff3": "^3.2.1",
+    "semver": "^7.8.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/semver": "^7.8.0",
+    "ajv": "^8.20.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

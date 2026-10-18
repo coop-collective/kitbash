@@ -1,0 +1,417 @@
+--- a/.dev.vars.example
++++ b/.dev.vars.example
+@@ -1,2 +1,5 @@
+ # Local secrets go in .dev.vars (gitignored).
+ ENVIRONMENT=dev
++# email-code-auth: HMAC pepper for codes and tokens (openssl rand -hex 32)
++TOKEN_PEPPER=
++MAIL_FROM=login@hono-min.dev
+--- a/wrangler.jsonc
++++ b/wrangler.jsonc
+@@ -4,7 +4,8 @@
+   "main": "src/index.ts",
+   "compatibility_date": "2026-08-22",
+   "vars": {
+-    "ENVIRONMENT": "dev"
++    "ENVIRONMENT": "dev",
++    "MAIL_FROM": "login@hono-min.dev"
+   },
+   "observability": { "enabled": true },
+   "routes": [{ "pattern": "api.hono-min.dev/*", "zone_name": "hono-min.dev" }],
+@@ -17,5 +18,10 @@
+       "migrations_dir": "migrations"
+     }
+   ],
+-  "compatibility_flags": ["nodejs_compat"]
++  "compatibility_flags": ["nodejs_compat"],
++  "send_email": [
++    {
++      "name": "EMAIL"
++    }
++  ]
+ }
+--- /dev/null
++++ b/.kit/blocks/email-code-auth-fixture/SKILL.md
+@@ -0,0 +1,40 @@
++---
++name: email-code-auth-fixture
++description: Use when a Hono + D1 Worker needs passwordless email-code sign-in and opaque bearer tokens.
++license: MIT
++metadata:
++  kitbash: "@coop/email-code-auth-fixture@1.3.0"
++---
++
++# email-code-auth (fixture)
++
++## What it adds
++
++Six-digit email codes (HMAC-stored, single use, 5 attempts, 5 per address per hour, 200 per 10 minutes overall) and
++opaque bearer tokens (HMAC-stored, revocable), plus a `requireBearer` Hono middleware.
++
++## Interface
++
++- Tables: `members`, `member_tokens`, `login_codes` (prefix with `tablePrefix`).
++- Routes: `POST <routePrefix>/email/start`, `POST <routePrefix>/email/verify`, `GET /api/me`.
++- Exports: `requireBearer`, `authenticate`, `authRoutes`, `meRoutes`.
++- Needs: D1 binding `DB`, secret `TOKEN_PEPPER`; optional `EMAIL` send binding and `MAIL_FROM`.
++
++## Install
++
++Dry run first; read the config-patch hunks (wrangler.jsonc, .dev.vars.example). Set `tablePrefix` if the project
++already has a `members` table.
++
++## Adapt
++
++1. Mount `authRoutes` at `routePrefix` and `meRoutes` at `/`.
++2. Put `requireBearer` in front of protected routes.
++3. Set `TOKEN_PEPPER` in `.dev.vars`.
++
++## Verify
++
++`npx vitest run test/auth.test.ts` and `npx tsc --noEmit`.
++
++## Known limits
++
++No sessions or cookies, no OAuth providers; codes are per address, not per device.
+--- /dev/null
++++ b/migrations/0005_auth.sql
+@@ -0,0 +1,26 @@
++-- email-code-auth: members, their bearer tokens (HMAC only), and one-time login codes (HMAC only).
++CREATE TABLE members (
++  id TEXT PRIMARY KEY,
++  email TEXT NOT NULL UNIQUE,
++  name TEXT,
++  created_at TEXT NOT NULL DEFAULT (datetime('now'))
++);
++CREATE TABLE member_tokens (
++  id TEXT PRIMARY KEY,
++  member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
++  token_hash TEXT NOT NULL UNIQUE,
++  label TEXT,
++  created_at TEXT NOT NULL DEFAULT (datetime('now')),
++  last_used_at TEXT,
++  revoked_at TEXT
++);
++CREATE TABLE login_codes (
++  id TEXT PRIMARY KEY,
++  email TEXT NOT NULL,
++  code_hash TEXT NOT NULL,
++  attempts INTEGER NOT NULL DEFAULT 0,
++  expires_at TEXT NOT NULL,
++  used_at TEXT,
++  created_at TEXT NOT NULL DEFAULT (datetime('now'))
++);
++CREATE INDEX login_codes_email ON login_codes(email, created_at);
+--- /dev/null
++++ b/src/lib/auth/codes.ts
+@@ -0,0 +1,48 @@
++import { hmacHex, randomDigits, timingSafeEqualHex } from "./crypto";
++import { sendCode } from "./mail";
++import { issueToken, upsertMember } from "./tokens";
++import type { AuthEnv } from "./types";
++
++const CODE_TTL_SECONDS = 10 * 60;
++const MAX_ATTEMPTS = 5;
++const PER_ADDRESS_PER_HOUR = 5;
++const GLOBAL_PER_10_MIN = 200;
++
++function pepper(env: AuthEnv): string {
++  if (!env.TOKEN_PEPPER) throw new Error("TOKEN_PEPPER is not set");
++  return env.TOKEN_PEPPER;
++}
++
++export async function startCode(env: AuthEnv, email: string): Promise<{ sent: true }> {
++  const addr = email.trim().toLowerCase();
++  const [perAddr, overall] = await Promise.all([
++    env.DB.prepare(`SELECT count(*) AS n FROM login_codes WHERE email = ? AND created_at > datetime('now', '-1 hour')`).bind(addr).first<{ n: number }>(),
++    env.DB.prepare(`SELECT count(*) AS n FROM login_codes WHERE created_at > datetime('now', '-10 minutes')`).first<{ n: number }>(),
++  ]);
++  if ((perAddr?.n ?? 0) >= PER_ADDRESS_PER_HOUR || (overall?.n ?? 0) >= GLOBAL_PER_10_MIN) return { sent: true }; // quiet drop
++  const code = randomDigits(6);
++  const codeHash = await hmacHex(pepper(env), `${addr}:${code}`);
++  await env.DB.prepare(`INSERT INTO login_codes (id, email, code_hash, expires_at) VALUES (?, ?, ?, datetime('now', '+${CODE_TTL_SECONDS} seconds'))`)
++    .bind(crypto.randomUUID(), addr, codeHash)
++    .run();
++  await sendCode(env, addr, code);
++  return { sent: true };
++}
++
++export async function verifyCode(env: AuthEnv, email: string, code: string): Promise<{ token: string; member_id: string } | null> {
++  const addr = email.trim().toLowerCase();
++  const row = await env.DB.prepare(
++    `SELECT id, code_hash, attempts FROM login_codes WHERE email = ? AND used_at IS NULL AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1`,
++  )
++    .bind(addr)
++    .first<{ id: string; code_hash: string; attempts: number }>();
++  if (!row || row.attempts >= MAX_ATTEMPTS) return null;
++  // count the attempt before comparing, so a crash or a timing trick can't give a free try
++  await env.DB.prepare(`UPDATE login_codes SET attempts = attempts + 1 WHERE id = ?`).bind(row.id).run();
++  const expected = await hmacHex(pepper(env), `${addr}:${code}`);
++  if (!timingSafeEqualHex(expected, row.code_hash)) return null;
++  const used = await env.DB.prepare(`UPDATE login_codes SET used_at = datetime('now') WHERE id = ? AND used_at IS NULL`).bind(row.id).run();
++  if (!used.meta.changes) return null; // single use, enforced by the conditional update
++  const member = await upsertMember(env, addr);
++  return { token: await issueToken(env, member.id, "sign-in"), member_id: member.id };
++}
+--- /dev/null
++++ b/src/lib/auth/crypto.ts
+@@ -0,0 +1,32 @@
++const enc = new TextEncoder();
++
++export async function hmacHex(key: string, message: string): Promise<string> {
++  const k = await crypto.subtle.importKey("raw", enc.encode(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
++  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(message)));
++  return [...sig].map((b) => b.toString(16).padStart(2, "0")).join("");
++}
++
++/** Constant-time comparison of two hex strings of equal length. */
++export function timingSafeEqualHex(a: string, b: string): boolean {
++  if (a.length !== b.length) return false;
++  let diff = 0;
++  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
++  return diff === 0;
++}
++
++/** n random decimal digits, rejection-sampled so every digit is uniform. */
++export function randomDigits(n: number): string {
++  let out = "";
++  while (out.length < n) {
++    for (const b of crypto.getRandomValues(new Uint8Array(n * 2))) {
++      if (b < 250 && out.length < n) out += String(b % 10);
++    }
++  }
++  return out;
++}
++
++export function base64url(bytes: Uint8Array): string {
++  let s = "";
++  for (const b of bytes) s += String.fromCharCode(b);
++  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
++}
+--- /dev/null
++++ b/src/lib/auth/mail.ts
+@@ -0,0 +1,24 @@
++import type { AuthEnv } from "./types";
++
++type Hook = (to: string, code: string) => void;
++let hook: Hook | null = null;
++
++/** Tests capture codes here instead of sending mail. */
++export function setMailHook(h: Hook | null): void {
++  hook = h;
++}
++
++export async function sendCode(env: AuthEnv, to: string, code: string): Promise<void> {
++  if (hook) return hook(to, code);
++  if (!env.EMAIL) {
++    if (env.ENVIRONMENT === "production") throw new Error("EMAIL binding missing: refusing to sign in without mail");
++    console.log(`[auth] (dev, no EMAIL binding) login code for ${to}: ${code}`);
++    return;
++  }
++  await env.EMAIL.send({
++    from: env.MAIL_FROM ?? "login@hono-min.dev",
++    to,
++    subject: "Your sign-in code",
++    text: `Your code is ${code}. It expires in 10 minutes.`,
++  });
++}
+--- /dev/null
++++ b/src/lib/auth/middleware.ts
+@@ -0,0 +1,13 @@
++import { createMiddleware } from "hono/factory";
++import { authenticate } from "./tokens";
++import type { AuthEnv, Member } from "./types";
++
++const BEARER = /^Bearer\s+(app_[A-Za-z0-9_-]{43})$/;
++
++export const requireBearer = createMiddleware<{ Bindings: AuthEnv; Variables: { member: Member } }>(async (c, next) => {
++  const m = BEARER.exec(c.req.header("authorization") ?? "");
++  const member = m ? await authenticate(c.env, m[1]!) : null;
++  if (!member) return c.json({ error: "unauthorized" }, 401, { "WWW-Authenticate": 'Bearer realm="api"' });
++  c.set("member", member);
++  await next();
++});
+--- /dev/null
++++ b/src/lib/auth/tokens.ts
+@@ -0,0 +1,41 @@
++import { base64url, hmacHex } from "./crypto";
++import type { AuthEnv, Member } from "./types";
++
++export const TOKEN_PREFIX = "app_";
++
++function pepper(env: AuthEnv): string {
++  if (!env.TOKEN_PEPPER) throw new Error("TOKEN_PEPPER is not set");
++  return env.TOKEN_PEPPER;
++}
++
++export async function upsertMember(env: AuthEnv, email: string): Promise<Member> {
++  await env.DB.prepare(`INSERT INTO members (id, email) VALUES (?, ?) ON CONFLICT(email) DO NOTHING`).bind(crypto.randomUUID(), email).run();
++  const m = await env.DB.prepare(`SELECT id, email, name FROM members WHERE email = ?`).bind(email).first<Member>();
++  if (!m) throw new Error("member upsert failed");
++  return m;
++}
++
++/** Issues an opaque token; only its HMAC is stored. The token is shown once. */
++export async function issueToken(env: AuthEnv, memberId: string, label: string): Promise<string> {
++  const token = `${TOKEN_PREFIX}${base64url(crypto.getRandomValues(new Uint8Array(32)))}`;
++  await env.DB.prepare(`INSERT INTO member_tokens (id, member_id, token_hash, label) VALUES (?, ?, ?, ?)`)
++    .bind(crypto.randomUUID(), memberId, await hmacHex(pepper(env), token), label)
++    .run();
++  return token;
++}
++
++export async function authenticate(env: AuthEnv, bearer: string | null): Promise<Member | null> {
++  if (!bearer || !bearer.startsWith(TOKEN_PREFIX)) return null;
++  const hash = await hmacHex(pepper(env), bearer);
++  const m = await env.DB.prepare(
++    `SELECT m.id, m.email, m.name FROM member_tokens t JOIN members m ON m.id = t.member_id WHERE t.token_hash = ? AND t.revoked_at IS NULL`,
++  )
++    .bind(hash)
++    .first<Member>();
++  if (m) await env.DB.prepare(`UPDATE member_tokens SET last_used_at = datetime('now') WHERE token_hash = ?`).bind(hash).run();
++  return m ?? null;
++}
++
++export async function revokeToken(env: AuthEnv, token: string): Promise<void> {
++  await env.DB.prepare(`UPDATE member_tokens SET revoked_at = datetime('now') WHERE token_hash = ?`).bind(await hmacHex(pepper(env), token)).run();
++}
+--- /dev/null
++++ b/src/lib/auth/types.ts
+@@ -0,0 +1,15 @@
++// The bindings and vars this block reads. Declared here (not from the generated Env) so the block typechecks
++// before `wrangler types` is re-run in the host project.
++export interface AuthEnv {
++  DB: D1Database;
++  TOKEN_PEPPER?: string;
++  MAIL_FROM?: string;
++  ENVIRONMENT?: string;
++  EMAIL?: { send(message: { from: string; to: string; subject: string; text: string }): Promise<unknown> };
++}
++
++export interface Member {
++  id: string;
++  email: string;
++  name: string | null;
++}
+--- /dev/null
++++ b/src/routes/auth.ts
+@@ -0,0 +1,24 @@
++import { Hono } from "hono";
++import { startCode, verifyCode } from "../lib/auth/codes";
++import { requireBearer } from "../lib/auth/middleware";
++import type { AuthEnv, Member } from "../lib/auth/types";
++
++/** Mounted by the adapt step at /auth: POST /email/start, POST /email/verify. */
++export const authRoutes = new Hono<{ Bindings: AuthEnv }>();
++
++authRoutes.post("/email/start", async (c) => {
++  const body = await c.req.json<{ email?: string }>().catch(() => ({ email: undefined }));
++  if (!body.email || !/^[^@\s]+@[^@\s]+$/.test(body.email)) return c.json({ error: "bad_email" }, 400);
++  return c.json(await startCode(c.env, body.email));
++});
++
++authRoutes.post("/email/verify", async (c) => {
++  const body = await c.req.json<{ email?: string; code?: string }>().catch(() => ({ email: undefined, code: undefined }));
++  if (!body.email || !body.code) return c.json({ error: "bad_request" }, 400);
++  const r = await verifyCode(c.env, body.email, body.code);
++  return r ? c.json(r) : c.json({ error: "invalid_code" }, 401);
++});
++
++/** GET /api/me behind requireBearer. */
++export const meRoutes = new Hono<{ Bindings: AuthEnv; Variables: { member: Member } }>();
++meRoutes.get("/api/me", requireBearer, (c) => c.json(c.get("member")));
+--- /dev/null
++++ b/test/auth.test.ts
+@@ -0,0 +1,92 @@
++import { env } from "cloudflare:workers";
++import { Hono } from "hono";
++import { afterEach, describe, expect, it } from "vitest";
++import { verifyCode, startCode } from "../src/lib/auth/codes";
++import { hmacHex, randomDigits, timingSafeEqualHex } from "../src/lib/auth/crypto";
++import { setMailHook } from "../src/lib/auth/mail";
++import { authenticate, revokeToken, TOKEN_PREFIX } from "../src/lib/auth/tokens";
++import type { AuthEnv } from "../src/lib/auth/types";
++import { authRoutes, meRoutes } from "../src/routes/auth";
++
++const authEnv = { DB: env.DB, TOKEN_PEPPER: "test-pepper-not-a-secret" } as AuthEnv;
++
++async function signIn(email: string): Promise<string> {
++  let code = "";
++  setMailHook((_to, c) => {
++    code = c;
++  });
++  await startCode(authEnv, email);
++  const r = await verifyCode(authEnv, email, code);
++  if (!r) throw new Error("sign-in failed");
++  return r.token;
++}
++
++afterEach(() => setMailHook(null));
++
++describe("crypto", () => {
++  it("hmacHex is deterministic and keyed", async () => {
++    expect(await hmacHex("k", "m")).toBe(await hmacHex("k", "m"));
++    expect(await hmacHex("k", "m")).not.toBe(await hmacHex("k2", "m"));
++  });
++  it("randomDigits gives n digits", () => {
++    expect(randomDigits(6)).toMatch(/^\d{6}$/);
++  });
++  it("timingSafeEqualHex", () => {
++    expect(timingSafeEqualHex("ab", "ab")).toBe(true);
++    expect(timingSafeEqualHex("ab", "ac")).toBe(false);
++    expect(timingSafeEqualHex("ab", "abc")).toBe(false);
++  });
++});
++
++describe("codes and tokens", () => {
++  it("a code verifies once and yields a prefixed token", async () => {
++    let code = "";
++    setMailHook((_to, c) => {
++      code = c;
++    });
++    await startCode(authEnv, "Ada@Example.com");
++    expect(code).toMatch(/^\d{6}$/);
++    const r = await verifyCode(authEnv, "ada@example.com", code);
++    expect(r?.token.startsWith(TOKEN_PREFIX)).toBe(true);
++    expect(await verifyCode(authEnv, "ada@example.com", code)).toBeNull();
++    const member = await authenticate(authEnv, r!.token);
++    expect(member?.email).toBe("ada@example.com");
++  });
++
++  it("locks after five wrong codes", async () => {
++    let code = "";
++    setMailHook((_to, c) => {
++      code = c;
++    });
++    await startCode(authEnv, "bob@example.com");
++    const wrong = code === "000000" ? "111111" : "000000";
++    for (let i = 0; i < 5; i++) expect(await verifyCode(authEnv, "bob@example.com", wrong)).toBeNull();
++    expect(await verifyCode(authEnv, "bob@example.com", code)).toBeNull();
++  });
++
++  it("a revoked token no longer authenticates", async () => {
++    const token = await signIn("cy@example.com");
++    expect(await authenticate(authEnv, token)).not.toBeNull();
++    await revokeToken(authEnv, token);
++    expect(await authenticate(authEnv, token)).toBeNull();
++  });
++});
++
++describe("routes", () => {
++  const app = new Hono<{ Bindings: AuthEnv }>();
++  app.route("/auth", authRoutes);
++  app.route("/", meRoutes);
++
++  it("rejects a bad email", async () => {
++    const res = await app.request("/auth/email/start", { method: "POST", body: JSON.stringify({ email: "nope" }) }, authEnv);
++    expect(res.status).toBe(400);
++  });
++
++  it("/api/me needs a bearer token", async () => {
++    expect((await app.request("/api/me", {}, authEnv)).status).toBe(401);
++    const token = await signIn("dee@example.com");
++    const res = await app.request("/api/me", { headers: { authorization: `Bearer ${token}` } }, authEnv);
++    expect(res.status).toBe(200);
++    expect(((await res.json()) as { email: string }).email).toBe("dee@example.com");
++  });
++});
