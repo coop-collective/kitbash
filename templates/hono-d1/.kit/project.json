@@ -1,0 +1,8 @@
+{
+  "project_id": "prj_template_hono_d1",
+  "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1", "ui": "none", "lang": "ts", "test": "vitest-workerd" },
+  "paths": { "app": "src", "routes": "src/routes", "lib": "src/lib", "ui": "src/components", "migrations": "migrations", "tests": "test" },
+  "migrations": { "pattern": "NNNN_name.sql", "width": 4 },
+  "config": { "wrangler": "wrangler.jsonc", "env_example": ".dev.vars.example" },
+  "package_manager": "pnpm"
+}
