@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kit-template-hono-d1",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    "ENVIRONMENT": "dev"
+  },
+  "d1_databases": [
+    {
+      // Placeholder id: local dev and tests use Miniflare storage and never read it.
+      // Replace with the real id (wrangler d1 create) before the first deploy.
+      "binding": "DB",
+      "database_name": "kit-template-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

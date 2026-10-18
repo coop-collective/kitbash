@@ -1,0 +1,2 @@
+# Copy to .dev.vars (gitignored). Local development only; production secrets go in `wrangler secret put`.
+# Blocks append their variables below (names only, never values).
