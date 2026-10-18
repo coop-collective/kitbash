@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: harvest a block"
+  short_description: "Turn a shipped, tested feature into a Kitbash block draft: boundaries, params, tests, redaction"
+  default_prompt: "Use $kitbash-harvest to turn the sign-in feature in this project into a block."

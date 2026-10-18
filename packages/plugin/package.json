@@ -1,0 +1,24 @@
+{
+  "name": "@kitbash/plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "kitbash: the Kitbash plugin for Claude Code and Codex (local stdio MCP server with the 11 registry_* tools, skills, commands, a heartbeat hook)",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "validate": "node scripts/validate.mjs",
+    "typecheck": "node scripts/check-syntax.mjs"
+  },
+  "dependencies": {
+    "@kitbash/cli": "workspace:*",
+    "@kitbash/core": "workspace:*",
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
+    "@types/node": "^26.6.5",
+    "rolldown": "^1.2.14"
+  }
+}

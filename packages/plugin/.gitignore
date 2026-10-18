@@ -1,0 +1,2 @@
+# the bundle is built by `pnpm -F @kitbash/plugin build` (scripts/build.mjs); launchers fall back to the sources
+plugins/kitbash/runtime/

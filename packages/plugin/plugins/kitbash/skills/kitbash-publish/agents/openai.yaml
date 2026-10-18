@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: publish a block"
+  short_description: "Publish a finished block: visibility, license, what the scanner rejects, reading the result"
+  default_prompt: "Use $kitbash-publish to publish the block in ./blocks/email-code-auth privately."

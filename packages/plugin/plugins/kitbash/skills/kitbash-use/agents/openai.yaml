@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: use a block"
+  short_description: "Search, dry-run install, adapt and verify a whole feature from the Kitbash registry"
+  default_prompt: "Use $kitbash-use to add email sign-in to this project from a block."

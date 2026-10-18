@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "kitbash": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/kit-mcp.mjs"]
+    }
+  }
+}

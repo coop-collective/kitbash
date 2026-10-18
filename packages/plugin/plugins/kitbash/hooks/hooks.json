@@ -1,0 +1,16 @@
+{
+  "description": "Kitbash: at session start, send `kit heartbeat --quiet` (the lock's block list only) when .kit/lock.json exists and the project turned telemetry on. Silent otherwise.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT:-$PLUGIN_ROOT}/hooks/session-start.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
