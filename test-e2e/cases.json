@@ -39,6 +39,46 @@
     },
     "vitest-workerd-harness": {
       "cases": []
+    },
+    "cf-email-sender": {
+      "cases": [
+        {
+          "name": "console",
+          "params": {
+            "mailer": "console"
+          }
+        },
+        {
+          "name": "branded",
+          "params": {
+            "appName": "Mail Cheap",
+            "appDomain": "mailcheap.app"
+          }
+        }
+      ]
+    },
+    "email-code-auth": {
+      "cases": [
+        {
+          "name": "prefixed",
+          "params": {
+            "tokenPrefix": "mc_",
+            "tablePrefix": "app_"
+          }
+        },
+        {
+          "name": "short-codes",
+          "params": {
+            "codeTtlMin": 2,
+            "routePrefix": "/signin"
+          },
+          "dependencyParams": {
+            "cf-email-sender": {
+              "mailer": "console"
+            }
+          }
+        }
+      ]
     }
   },
   "chains": [
