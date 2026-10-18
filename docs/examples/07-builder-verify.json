@@ -1,0 +1,6 @@
+{
+  "description": "After the adapt steps, run the allowlisted verify commands. Ideator's locked Feature verifier still runs separately (builder.verify).",
+  "tool": "registry_verify",
+  "request": { "block": "@coop/email-code-auth", "project_root": "/Users/coop/Workspace/mailcheap-autopilot/feat_01JABC" },
+  "response": { "passed": true, "results": [ { "command": "npx vitest run test/auth.test.ts", "exit": 0, "tail": "11 passed" }, { "command": "npx tsc --noEmit", "exit": 0, "tail": "" } ], "duration_ms": 4200 }
+}

@@ -1,0 +1,7 @@
+{
+  "description": "A registry_harvests row (Ideator migration 0040) as the Gardener writes it; its paths/name/description/stack are exactly the registry_harvest input.",
+  "def": "HarvestCandidate",
+  "value": { "feature_id": "feat_01JDEF", "project_id": "proj_mailcheap", "reason": "review_reusable", "category": "billing",
+    "paths": ["src/lib/billing/", "migrations/0007_billing.sql", "test/billing.test.ts"], "name": "stripe-billing", "description": "Stripe checkout and webhook handling over fetch, with a subscriptions table.",
+    "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1" }, "head_sha": "9f3c2ab", "branch": "autopilot/feat_01JDEF", "tests_added": ["test/billing.test.ts"], "status": "proposed" }
+}

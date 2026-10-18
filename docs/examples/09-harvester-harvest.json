@@ -1,0 +1,8 @@
+{
+  "description": "Harvester, after a person accepts a registry_harvests proposal: harvest the Feature's self-contained paths into a draft block under .kit/drafts/.",
+  "tool": "registry_harvest",
+  "request": { "project_root": "/Users/coop/Workspace/mailcheap", "paths": ["src/lib/billing/", "migrations/0007_billing.sql", "test/billing.test.ts"], "name": "stripe-billing", "description": "Stripe checkout and webhook handling over fetch, with a subscriptions table.", "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1" }, "params_hints": { "mailcheap": "appSlug" } },
+  "response": { "draft_dir": ".kit/drafts/stripe-billing", "manifest": { "name": "stripe-billing", "type": "registry:block", "version": "0.1.0" },
+    "redactions": [ { "path": "src/lib/billing/stripe.ts", "kind": "stripe-secret-key", "count": 1 } ],
+    "todo": ["Write agent.summary and adapt[]", "Confirm tablePrefix param", "Run the tests against the default params"] }
+}
