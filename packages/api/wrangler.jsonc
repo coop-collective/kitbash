@@ -9,7 +9,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
   "vars": {
-    "ENVIRONMENT": "dev"
+    "ENVIRONMENT": "dev",
+    "MAIL_FROM": "login@example.com"
   },
   // SECRETS (names only; values in .dev.vars locally, see .dev.vars.example and `pnpm kit:dev-vars`):
   //   TOKEN_PEPPER          HMAC pepper for kit_ bearer token hashes

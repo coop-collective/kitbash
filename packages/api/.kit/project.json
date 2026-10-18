@@ -1,0 +1,28 @@
+{
+  "config": {
+    "env_example": ".dev.vars.example",
+    "wrangler": "wrangler.jsonc"
+  },
+  "migrations": {
+    "pattern": "NNNN_name.sql",
+    "width": 4
+  },
+  "package_manager": "pnpm",
+  "paths": {
+    "app": "src",
+    "lib": "src/lib",
+    "migrations": "migrations",
+    "routes": "src/routes",
+    "tests": "test",
+    "ui": "src/components"
+  },
+  "project_id": "prj_obh3okszujhi7p6rqlxy",
+  "stack": {
+    "db": "d1",
+    "framework": "hono",
+    "lang": "ts",
+    "runtime": "cloudflare-workers",
+    "test": "vitest-workerd",
+    "ui": "none"
+  }
+}

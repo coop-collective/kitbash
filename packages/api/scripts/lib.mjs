@@ -54,7 +54,8 @@ export function ensureOwner({ slug = "coop", email, name }) {
   sql(
     [
       `INSERT OR IGNORE INTO orgs (id, slug, name, kind, plan, created_at) VALUES (${q(orgId)}, ${q(slug)}, ${q(name)}, 'personal', 'free', ${q(t)})`,
-      `INSERT OR IGNORE INTO members (id, email, name, default_org_id, created_at) VALUES (${q(memberId)}, ${q(email.toLowerCase())}, ${q(name)}, ${q(orgId)}, ${q(t)})`,
+      // members is email-code-auth's table (created_at in epoch ms) plus kit-api's default_org_id (0003)
+      `INSERT OR IGNORE INTO members (id, email, name, default_org_id, created_at) VALUES (${q(memberId)}, ${q(email.toLowerCase())}, ${q(name)}, ${q(orgId)}, ${Date.now()})`,
       `INSERT OR IGNORE INTO org_members (org_id, member_id, role, created_at) VALUES (${q(orgId)}, ${q(memberId)}, 'owner', ${q(t)})`,
     ].join("; "),
   );
