@@ -1,0 +1,13 @@
+<div class="card">
+  <h1>Sign in {{client_name}} on your computer?</h1>
+  <p class="muted">{{#client_domain}}Published by <b>{{client_domain}}</b>.{{/client_domain}}{{^client_domain}}This app registered itself; its name is not verified.{{/client_domain}} It will act in {{kit.brandName}} as <b>{{member_name}}</b>, exactly as you do when you sign in.</p>
+  {{^loopback}}<div class="warn">Its access goes to <b>{{redirect_host}}</b>, which is not this computer. Approve only if you trust that site and just started connecting from it.</div>{{/loopback}}
+  <ul class="facts"><li>Signed in as<b>{{member_email}}</b></li><li>Redirect<b>{{redirect_host}}</b></li></ul>
+  <form method="post" action="/authorize">
+    <input type="hidden" name="handle" value="{{handle}}">
+    <input type="hidden" name="connect_as" value="cli">
+    <label>Name this sign-in</label><input type="text" name="label" value="{{label}}" maxlength="80">
+    <p class="muted" style="margin-top:12px">You can sign it out any time under CLI sign-ins. Approve only if you just started signing in from this computer.</p>
+    <div class="row"><button class="ghost" type="submit" name="decision" value="deny">Deny</button><button class="primary" type="submit" name="decision" value="approve">Sign in</button></div>
+  </form>
+</div>

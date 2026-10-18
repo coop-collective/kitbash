@@ -1,0 +1,383 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "orgs-roles-invites",
+  "type": "registry:block",
+  "title": "Orgs with roles and email invitations",
+  "description": "Personal workspaces and team orgs with owner/admin/member roles, email invitations (existing accounts join at once, new addresses on first sign-in) with a daily cap, and org scoping where orgOf(env) throws when unscoped.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "orgs",
+    "teams"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "harvested",
+    "est_hours_saved": 8
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono",
+        "db": "d1"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "Prefix for the orgs tables."
+    },
+    {
+      "name": "authTablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "email-code-auth's tablePrefix, to find its members table."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/api",
+      "description": "Mount point of the org routes."
+    },
+    {
+      "name": "orgHeader",
+      "type": "string",
+      "default": "X-Org",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]{0,40}$",
+      "description": "Request header that names the org a request acts in."
+    },
+    {
+      "name": "personalOrgs",
+      "type": "boolean",
+      "default": true,
+      "description": "Give every account a personal workspace on its first request."
+    },
+    {
+      "name": "invitesPerDay",
+      "type": "integer",
+      "default": 30,
+      "min": 1,
+      "max": 1000,
+      "description": "People an org may invite per 24 hours (each invite can send a mail)."
+    },
+    {
+      "name": "maxTeamOrgs",
+      "type": "integer",
+      "default": 20,
+      "min": 1,
+      "max": 1000,
+      "description": "Team orgs one person may create."
+    },
+    {
+      "name": "brandName",
+      "type": "string",
+      "default": "My App",
+      "description": "Used in invitation mail."
+    },
+    {
+      "name": "appUrl",
+      "type": "string",
+      "default": "https://example.com",
+      "description": "Where an invitee signs in (invitation mail)."
+    },
+    {
+      "name": "legacyOrgId",
+      "type": "string",
+      "default": "",
+      "pattern": "^([a-z0-9_-]{1,64})?$",
+      "description": "Only when adding orgs to an app with data from before orgs: that data's org id keeps unprefixed R2/KV keys (orgKey) and the default Durable Object (doName)."
+    },
+    {
+      "name": "productRoles",
+      "type": "boolean",
+      "default": false,
+      "description": "Also export productRole(): owner and admin map to the app's owner powers, member to member."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_orgs.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_orgs.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/orgs/types.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/orgs/types.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/orgs/scope.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/orgs/scope.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/orgs/service.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/orgs/service.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/orgs/invite-mail.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/orgs/invite-mail.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/orgs/middleware.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/orgs/middleware.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/routes/orgs.ts",
+      "type": "registry:lib",
+      "target": "{{paths.routes}}/orgs.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/orgs.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/orgs.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "e2e.json",
+      "type": "registry:file",
+      "target": ".kit/blocks/orgs-roles-invites/e2e.json",
+      "role": "fixture"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/orgs-roles-invites/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@>=0.8"
+  ],
+  "registryDependencies": [
+    "@coop/email-code-auth@^1"
+  ],
+  "env": [
+    {
+      "name": "MAIL_FROM",
+      "secret": false,
+      "description": "Sender of invitation mail (shared with email-code-auth); its domain must be verified in Email Service."
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true
+    },
+    {
+      "type": "send_email",
+      "name": "EMAIL",
+      "required": false,
+      "note": "Without it invitations still work but are not mailed (emailed: false)."
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_orgs.sql",
+      "name": "orgs",
+      "creates": [
+        "{{kit.tablePrefix}}orgs",
+        "{{kit.tablePrefix}}org_members",
+        "{{kit.tablePrefix}}org_invites",
+        "{{kit.tablePrefix}}org_defaults"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}orgs",
+    "{{kit.tablePrefix}}org_members",
+    "{{kit.tablePrefix}}org_invites",
+    "{{kit.tablePrefix}}org_defaults"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/org",
+      "auth": "bearer",
+      "description": "The org this request acts in, with my role."
+    },
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/orgs",
+      "auth": "bearer",
+      "description": "My orgs, default and current."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/orgs",
+      "auth": "bearer",
+      "description": "Create a team org (I own it)."
+    },
+    {
+      "method": "ALL",
+      "path": "{{kit.routePrefix}}/orgs/:id",
+      "auth": "bearer",
+      "description": "PATCH rename (admin); DELETE a team org that holds no data (owner)."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/orgs/:id/default",
+      "auth": "bearer",
+      "description": "Make it my default org."
+    },
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/orgs/:id/people",
+      "auth": "bearer",
+      "description": "Members; open invitations for admins."
+    },
+    {
+      "method": "ALL",
+      "path": "{{kit.routePrefix}}/orgs/:id/invites",
+      "auth": "bearer",
+      "description": "POST invite by email (admin); DELETE /:inviteId revokes."
+    },
+    {
+      "method": "ALL",
+      "path": "{{kit.routePrefix}}/orgs/:id/members/:memberId",
+      "auth": "bearer",
+      "description": "PATCH role; DELETE removes, or leaves."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "requireOrg",
+      "from": "src/orgs/middleware.ts"
+    },
+    {
+      "symbol": "optionalOrg",
+      "from": "src/orgs/middleware.ts"
+    },
+    {
+      "symbol": "orgOf",
+      "from": "src/orgs/scope.ts"
+    },
+    {
+      "symbol": "inOrg",
+      "from": "src/orgs/scope.ts"
+    },
+    {
+      "symbol": "orgRoutes",
+      "from": "src/routes/orgs.ts"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/orgs.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "scope",
+        "invites",
+        "roles",
+        "org-header"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/orgs.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds orgs to a Hono + D1 app: personal workspaces, team orgs with three roles, capped email invitations, and requireOrg/orgOf scoping. Needs email-code-auth; an Email Service binding mails invitations.",
+    "when_to_use": [
+      "Several people share data and need roles and invitations."
+    ],
+    "when_not_to_use": [
+      "Fine-grained permissions or per-record ACLs."
+    ],
+    "adapt": [
+      {
+        "id": "mount-routes",
+        "required": true,
+        "title": "Mount the org routes",
+        "do": "In src/index.ts: app.route('{{kit.routePrefix}}', orgRoutes);",
+        "check": "GET {{kit.routePrefix}}/orgs with a bearer lists my orgs."
+      },
+      {
+        "id": "scope-routes",
+        "required": true,
+        "title": "Scope your routes",
+        "do": "app.use('/your/*', requireBearer, requireOrg); add org_id to your tables; filter by orgOf(c.env).",
+        "check": "Naming another org in {{kit.orgHeader}} answers 403."
+      },
+      {
+        "id": "org-data-tables",
+        "required": false,
+        "title": "List org-owned tables",
+        "do": "Add them to ORG_DATA_TABLES.",
+        "check": "Deleting an org with data answers 409."
+      }
+    ],
+    "author_notes": "Keep the invite cap: each invite mails from your domain."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": [
+        "packages/api/src/orgs.ts",
+        "packages/api/migrations/0033_orgs.sql",
+        "packages/api/src/rest.ts",
+        "packages/api/src/mail.ts",
+        "packages/api/src/auth.ts",
+        "packages/api/test/orgs-access.test.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T12:10:37Z"
+  }
+}

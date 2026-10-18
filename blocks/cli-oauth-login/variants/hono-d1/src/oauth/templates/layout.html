@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{title}} · {{kit.brandName}}</title>
+<style>
+:root{color-scheme:dark;--accent:{{kit.brandColor}}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#14161c;color:rgba(255,255,255,.86);font:14px/1.5 -apple-system,BlinkMacSystemFont,Inter,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px}
+main{width:100%;max-width:480px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-weight:600;letter-spacing:.01em}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.card{background:#1b1e26;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:22px}
+h1{font-size:18px;margin:0 0 6px;font-weight:600;color:#fff}
+p{margin:0 0 12px}
+.muted{color:rgba(255,255,255,.5);font-size:12.5px}
+.warn{background:rgba(255,190,80,.08);border:1px solid rgba(255,190,80,.3);color:#ffd28a;border-radius:10px;padding:10px 12px;font-size:12.5px;margin:12px 0}
+.err{background:rgba(255,90,90,.08);border:1px solid rgba(255,90,90,.3);color:#ff9a9a;border-radius:10px;padding:10px 12px;font-size:12.5px;margin:0 0 12px}
+label{display:block;font-size:12px;color:rgba(255,255,255,.55);margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password]{width:100%;background:#20232d;border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:9px;padding:9px 11px;font:inherit;outline:none}
+input:focus{border-color:var(--accent)}
+.row{display:flex;gap:10px;margin-top:18px}
+button{flex:1;border:0;border-radius:9px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+.primary{background:var(--accent);color:#fff}
+.ghost{background:#20232d;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.1)}
+.facts{margin:12px 0;padding:0;list-style:none;font-size:12.5px}
+.facts li{padding:5px 0;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;gap:12px}
+.facts b{color:#fff;font-weight:500;text-align:right;word-break:break-all}
+hr{border:0;border-top:1px solid rgba(255,255,255,.08);margin:20px 0}
+code{font-family:SFMono-Regular,ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+</style>
+</head>
+<body><main><div class="brand"><span class="dot"></span>{{kit.brandName}}</div>{{{body}}}</main></body>
+</html>
