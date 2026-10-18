@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "types": ["./worker-configuration.d.ts", "@cloudflare/vitest-pool-workers/types", "node"],
+    // @kitbash/core is checked against its own (Node + DOM) libs by `pnpm -F @kitbash/core typecheck`; under the
+    // Workers runtime types two of its WebCrypto/TextDecoder calls do not type-check, so this package checks against
+    // core's emitted declarations instead (the typecheck script writes them to .core-types/). Vite bundles the
+    // source as usual.
+    "paths": {
+      "@kitbash/core": ["./.core-types/src/index.d.ts"],
+      "@kitbash/core/contract": ["./.core-types/src/contract.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "worker-configuration.d.ts", "vitest.config.ts"]
+}

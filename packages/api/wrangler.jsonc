@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kit-api",
+  // No account_id and no routes on purpose: the MVP runs on `wrangler dev` only (PLAN.md conventions). The ids below
+  // are placeholders that local dev and the tests never read; a deploy needs real resources first (WP-19).
+  "main": "src/index.ts",
+  // The newest date the test runtime supports (@cloudflare/vitest-pool-workers 0.22's workerd stops at 2026-08-22).
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    "ENVIRONMENT": "dev"
+  },
+  // SECRETS (names only; values in .dev.vars locally, see .dev.vars.example and `pnpm kit:dev-vars`):
+  //   TOKEN_PEPPER          HMAC pepper for kit_ bearer token hashes
+  //   REGISTRY_SIGNING_KEY  the registry's Ed25519 private key as a JWK (JSON), used to co-sign every published version
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kit",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    // blobs: orgs/<org_id>/blobs/<sha256>; proposals: orgs/<org_id>/proposals/<id>.patch
+    { "binding": "BLOBS", "bucket_name": "kit-blobs" }
+  ],
+  "queues": {
+    // Stub: the server-side scan pipeline (WP-12) consumes it. In the MVP publish scans synchronously and only
+    // enqueues a {version_id} message for the future consumer.
+    "producers": [{ "binding": "SCAN", "queue": "kit-scan" }]
+  }
+  // Cron (v1: usage rollup, hold release, stale-latest check), left out until WP-17/WP-22:
+  // "triggers": { "crons": ["0 3 * * *"] }
+}

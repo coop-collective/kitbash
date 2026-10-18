@@ -1,0 +1,34 @@
+{
+  "name": "@kitbash/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "kit-api: the Kitbash registry Worker (Hono + D1 + R2): publish, search, bundles, remote MCP.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types --strict-vars=false",
+    "typecheck": "wrangler types --strict-vars=false && tsc -p ../core/tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir .core-types && tsc --noEmit",
+    "test": "vitest run",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "kit:dev-vars": "node scripts/dev-vars.mjs",
+    "kit:seed": "node scripts/seed.mjs",
+    "kit:token": "node scripts/token.mjs"
+  },
+  "dependencies": {
+    "@kitbash/core": "workspace:*",
+    "@modelcontextprotocol/server": "2.0.0",
+    "agents": "^0.24.0",
+    "hono": "^4.13.9",
+    "semver": "^7.8.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@modelcontextprotocol/client": "2.0.0",
+    "@types/node": "^26.6.5",
+    "@types/semver": "^7.8.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.137.0"
+  }
+}

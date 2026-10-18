@@ -3,3 +3,8 @@
 packages:
   - packages/*
   - test-e2e
+# esbuild/workerd fetch their platform binaries in postinstall (wrangler, vitest-pool-workers: packages/api).
+allowBuilds:
+  esbuild: true
+  workerd: true
+  core-js-pure: false
