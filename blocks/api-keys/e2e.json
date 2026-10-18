@@ -1,0 +1,24 @@
+{
+  "_doc": "Cases for the e2e harness (test-e2e/install.test.mjs reads this shape from cases.json: blocks.<name>.cases and chains; merge these keys there). `extended` holds assertions the harness does not consume yet (install-time conflicts, on_conflict); each was run by hand with the kit CLI against a copy of templates/hono-d1. The no-KV degradation is asserted inside test/api-keys.test.ts (a no-cache env and a failing-KV env), so every verify run covers it.",
+  "blocks": {
+    "api-keys": {
+      "cases": [
+        { "name": "alternate-params", "params": { "keyPrefix": "xk_live_", "tablePrefix": "app_", "routePrefix": "/me/keys", "cacheTtlS": "120", "maxActiveKeys": "5" } }
+      ]
+    }
+  },
+  "chains": [
+    {
+      "name": "api-keys-with-rate-limit-and-harness",
+      "steps": [
+        { "block": "vitest-workerd-harness" },
+        { "block": "d1-rate-limit", "params": { "tablePrefix": "app_" } },
+        { "block": "api-keys" }
+      ]
+    }
+  ],
+  "extended": [
+    { "name": "defaults", "expect": { "conflicts": [], "migrations": { "0001_api_keys.sql": "0002_api_keys.sql" }, "dependencies_to_add": [] } },
+    { "name": "alongside d1-rate-limit", "preinstall": ["d1-rate-limit"], "expect": { "conflicts": [], "migrations": { "0001_api_keys.sql": "0003_api_keys.sql" } } }
+  ]
+}

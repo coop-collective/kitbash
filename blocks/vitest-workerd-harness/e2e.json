@@ -1,0 +1,32 @@
+{
+  "_doc": "Cases for the e2e harness (test-e2e/install.test.mjs reads this shape from cases.json: blocks.<name>.cases and chains; merge these keys there). The hono-d1 template already ships this harness: the default install must be a no-op for vitest.config.ts and test/apply-migrations.ts (identical files are skipped), and prodSim=true must report a clean conflict on vitest.config.ts. `extended` holds the assertions the harness does not consume yet (on_conflict, setup files); each was run by hand with the kit CLI against a copy of templates/hono-d1.",
+  "blocks": {
+    "vitest-workerd-harness": { "cases": [] }
+  },
+  "chains": [],
+  "extended": [
+    {
+      "name": "defaults are a no-op on the template",
+      "expect": { "conflicts": [], "files_skipped": ["vitest.config.ts", "test/apply-migrations.ts"], "files_created": ["test/harness.test.ts"], "dependencies_to_add": [], "dev_dependencies_to_add": [] }
+    },
+    {
+      "name": "prodSim reports a conflict on the existing config",
+      "params": { "prodSim": "true" },
+      "on_conflict": "stop",
+      "expect": { "conflicts": [{ "kind": "file", "name": "vitest.config.ts" }] }
+    },
+    {
+      "name": "prodSim with overwrite replays production history under newer migrations",
+      "setup": [{ "write": "migrations/0002_note.sql", "content": "CREATE TABLE note (id INTEGER PRIMARY KEY, body TEXT NOT NULL);\n" }],
+      "params": { "prodSim": "true", "shippedThrough": "1" },
+      "on_conflict": "overwrite",
+      "expect": { "conflicts": [], "files_created": ["test/migration-upgrade.test.ts", "test/prod-seed.ts"], "verify": "pass" }
+    },
+    {
+      "name": "a project's own different vitest.config.ts is never overwritten silently",
+      "setup": [{ "write": "vitest.config.ts", "content": "import { defineConfig } from \"vitest/config\";\nexport default defineConfig({ test: {} });\n" }],
+      "on_conflict": "stop",
+      "expect": { "conflicts": [{ "kind": "file", "name": "vitest.config.ts" }] }
+    }
+  ]
+}

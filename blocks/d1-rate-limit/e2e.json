@@ -1,0 +1,19 @@
+{
+  "_doc": "Cases for the e2e harness (test-e2e/install.test.mjs reads this shape from cases.json: blocks.<name>.cases and chains; merge these keys there). `extended` holds assertions the harness does not consume yet; each was run by hand with the kit CLI against a copy of templates/hono-d1. The verify run includes the fail-closed-in-production test (the table is dropped, ENVIRONMENT=production).",
+  "blocks": {
+    "d1-rate-limit": {
+      "cases": [
+        { "name": "prefixed", "params": { "tablePrefix": "app_" } }
+      ]
+    }
+  },
+  "chains": [],
+  "extended": [
+    { "name": "defaults", "expect": { "conflicts": [], "migrations": { "0001_rate_limits.sql": "0002_rate_limits.sql" }, "dependencies_to_add": [] } },
+    {
+      "name": "project already has a rate_limits table",
+      "setup": [{ "write": "migrations/0002_legacy.sql", "content": "CREATE TABLE rate_limits (key TEXT PRIMARY KEY);\n" }],
+      "expect": { "conflicts": [{ "kind": "table", "name": "rate_limits", "resolve_with_param": "tablePrefix" }] }
+    }
+  ]
+}

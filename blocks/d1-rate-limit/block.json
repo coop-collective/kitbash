@@ -1,0 +1,243 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "d1-rate-limit",
+  "type": "registry:block",
+  "title": "Fixed-window rate limits in D1 that fail closed in production",
+  "description": "One atomic UPSERT ... RETURNING per call counts hits per name and key (IP, API key, member) in a D1 table shared by every isolate. In production a missing table or unreachable D1 counts as limited. A Hono middleware answers 429 with Retry-After, and purgeExpired cleans old windows from a cron.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "security",
+    "d1"
+  ],
+  "meta": {
+    "maturity": "production",
+    "origin": "packaged-oss",
+    "est_hours_saved": 2,
+    "attribution": "Derived from mailcheap lib/rate-limit.js (MIT, Copyright (c) 2026 Marc Lou), a fork of marclou/mailcheap; see LICENSE."
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "appSlug",
+      "type": "identifier",
+      "default": "my-app",
+      "description": "Short name used for resources (D1 name in the config patch)."
+    },
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "Prefix for the block's table; set when the project already has a rate_limits table."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_rate_limits.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_rate_limits.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/rate-limit.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/rate-limit.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/rate-limit.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/rate-limit.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/d1-rate-limit/SKILL.md",
+      "role": "doc"
+    },
+    {
+      "path": "e2e.json",
+      "type": "registry:file",
+      "role": "doc",
+      "target": ".kit/blocks/d1-rate-limit/e2e.json"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "envVars": {
+    "ENVIRONMENT": "dev"
+  },
+  "env": [
+    {
+      "name": "ENVIRONMENT",
+      "secret": false,
+      "default": "dev",
+      "description": "Set to \"production\" in the deployed Worker; it switches the limiter to fail closed."
+    }
+  ],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true,
+      "create": "wrangler d1 create {{kit.appSlug}}"
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_rate_limits.sql",
+      "name": "rate_limits",
+      "creates": [
+        "{{kit.tablePrefix}}rate_limits"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}rate_limits"
+  ],
+  "routes": [],
+  "exports": [
+    {
+      "symbol": "rateLimit",
+      "from": "src/rate-limit.ts",
+      "kind": "hono-middleware"
+    },
+    {
+      "symbol": "isRateLimited",
+      "from": "src/rate-limit.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "consumeRateLimit",
+      "from": "src/rate-limit.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "purgeExpired",
+      "from": "src/rate-limit.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "getClientIp",
+      "from": "src/rate-limit.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/rate-limit.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "atomic-window",
+        "fail-closed",
+        "middleware",
+        "purge"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/rate-limit.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds D1-backed fixed-window rate limits to a Hono Worker: one table, a rateLimit middleware and an isRateLimited function. In production it fails closed when D1 or the table is unavailable. Costs one D1 write per call.",
+    "when_to_use": [
+      "Login, code-sending or other abuse-prone routes need a limit shared across isolates.",
+      "You already use D1 and want no extra binding."
+    ],
+    "when_not_to_use": [
+      "Traffic above roughly 50 requests per second per Worker: use the Workers Rate Limiting binding.",
+      "You need a sliding window or per-request spend caps."
+    ],
+    "adapt": [
+      {
+        "id": "set-environment",
+        "required": true,
+        "title": "Set ENVIRONMENT=production in the deployed Worker",
+        "where": "wrangler.jsonc (production vars or env)",
+        "do": "Add \"ENVIRONMENT\": \"production\" to the production environment's vars so the limiter fails closed.",
+        "check": "With the table dropped in a staging deploy, limited routes answer 429, not 200."
+      },
+      {
+        "id": "use-limit",
+        "required": true,
+        "title": "Put rateLimit in front of the routes to protect",
+        "where": "{{paths.app}}/index.ts or the route file",
+        "do": "import { rateLimit } from './lib/rate-limit'; app.use('/auth/*', rateLimit({ name: 'auth', limit: 10, window: '15 m' }));",
+        "check": "The 11th request in 15 minutes from one IP gets 429 with Retry-After."
+      },
+      {
+        "id": "cron-purge",
+        "required": false,
+        "title": "Purge expired windows daily",
+        "do": "Add triggers.crons to wrangler.jsonc and call purgeExpired(env.DB) from the scheduled handler.",
+        "check": "SELECT count(*) on the table stays small."
+      }
+    ],
+    "author_notes": "Behind a proxy that is not Cloudflare, getClientIp returns \"unknown\" and every caller shares one counter; pass your own key function."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/marclou/mailcheap (fork at ~/Workspace/mailcheap)",
+      "commit": "6fd333e",
+      "paths": [
+        "lib/rate-limit.js",
+        "migrations/0002_rate_limits.sql",
+        "tests/rate-limit.test.mjs"
+      ]
+    },
+    "origin": "packaged-oss",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T12:00:00Z"
+  }
+}
