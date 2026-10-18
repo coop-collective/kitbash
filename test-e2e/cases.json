@@ -4,9 +4,60 @@
     "email-code-auth-fixture": {
       "path": "packages/core/test/fixtures/blocks/email-code-auth-fixture",
       "cases": [
-        { "name": "prefixed", "params": { "tokenPrefix": "mc_", "tablePrefix": "app_" } }
+        {
+          "name": "prefixed",
+          "params": {
+            "tokenPrefix": "mc_",
+            "tablePrefix": "app_"
+          }
+        }
       ]
+    },
+    "api-keys": {
+      "cases": [
+        {
+          "name": "alternate-params",
+          "params": {
+            "keyPrefix": "xk_live_",
+            "tablePrefix": "app_",
+            "routePrefix": "/me/keys",
+            "cacheTtlS": "120",
+            "maxActiveKeys": "5"
+          }
+        }
+      ]
+    },
+    "d1-rate-limit": {
+      "cases": [
+        {
+          "name": "prefixed",
+          "params": {
+            "tablePrefix": "app_"
+          }
+        }
+      ]
+    },
+    "vitest-workerd-harness": {
+      "cases": []
     }
   },
-  "chains": []
+  "chains": [
+    {
+      "name": "api-keys-with-rate-limit-and-harness",
+      "steps": [
+        {
+          "block": "vitest-workerd-harness"
+        },
+        {
+          "block": "d1-rate-limit",
+          "params": {
+            "tablePrefix": "app_"
+          }
+        },
+        {
+          "block": "api-keys"
+        }
+      ]
+    }
+  ]
 }
