@@ -1,0 +1,9 @@
+{
+  "d1_databases": [
+    { "binding": "DB", "database_name": "{{kit.appSlug}}", "database_id": "REPLACE_ME", "migrations_dir": "{{paths.migrations}}" }
+  ],
+  // Optional verify cache. Remove this entry to run without a cache: every call then reads D1.
+  "kv_namespaces": [
+    { "binding": "KEY_CACHE", "id": "REPLACE_ME" }
+  ]
+}
