@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:e2e": "node --test install.test.mjs"
+    "test:e2e": "node --test install.test.mjs",
+    "test": "node --test template-cache.test.mjs pnpm-install.test.mjs"
   }
 }
