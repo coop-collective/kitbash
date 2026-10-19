@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen Sink</title>
+<style>
+  :root { font-family: system-ui, sans-serif; color: #1b1f24; background: #f5f6f8; }
+  body { margin: 0; padding: 1rem; }
+  main { max-width: 40rem; margin: 0 auto; display: grid; gap: 1rem; }
+  section { background: #fff; border: 1px solid #d8dce1; border-radius: 8px; padding: 1rem; }
+  h1 { margin: .5rem 0; } h2 { margin-top: 0; font-size: 1.1rem; }
+  label { display: block; margin: .6rem 0 .2rem; font-weight: 600; }
+  input[type=text], input[type=email], input[type=password], textarea { width: 100%; box-sizing: border-box; padding: .5rem; font: inherit; border: 1px solid #aab; border-radius: 4px; }
+  button { margin-top: .75rem; padding: .5rem 1rem; font: inherit; cursor: pointer; }
+  [hidden] { display: none !important; }
+  .status { margin-top: .5rem; min-height: 1.2em; color: #25613a; }
+  .error { color: #a12626; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kitchen Sink</h1>
+
+  <section id="login-panel">
+    <h2>Sign in</h2>
+    <form id="login-form">
+      <label for="login-email">Email</label>
+      <input id="login-email" data-testid="login-email" type="email" autocomplete="username" required>
+      <label for="login-password">Password</label>
+      <input id="login-password" data-testid="login-password" type="password" autocomplete="current-password" required>
+      <button type="submit" data-testid="login-submit">Sign in</button>
+      <div id="login-status" class="status error" role="alert"></div>
+    </form>
+  </section>
+
+  <div id="app-panel" hidden>
+    <section>
+      <h2>Signed in as <span id="who"></span></h2>
+      <button type="button" data-testid="logout" id="logout">Log out</button>
+    </section>
+
+    <section>
+      <h2>Profile</h2>
+      <form id="profile-form">
+        <label for="profile-handle">Handle</label>
+        <input id="profile-handle" data-testid="profile-handle" type="text" maxlength="30" required>
+        <label for="profile-display-name">Display name</label>
+        <input id="profile-display-name" data-testid="profile-display-name" type="text" maxlength="80" required>
+        <label for="profile-bio">Bio</label>
+        <textarea id="profile-bio" data-testid="profile-bio" rows="3" maxlength="500"></textarea>
+        <button type="submit" data-testid="profile-save">Save profile</button>
+        <div id="profile-status" class="status" data-testid="profile-status" role="status"></div>
+      </form>
+    </section>
+
+    <section>
+      <h2>Private file</h2>
+      <label for="upload-file">File (max 1 MiB)</label>
+      <input id="upload-file" data-testid="upload-file" type="file">
+      <button type="button" data-testid="upload-submit" id="upload-submit">Upload</button>
+      <div id="upload-status" class="status" role="status"></div>
+      <a id="upload-download" data-testid="upload-download" hidden>Download last upload</a>
+    </section>
+
+    <section>
+      <h2>Report</h2>
+      <button type="button" data-testid="report-refresh" id="report-refresh">Refresh report</button>
+      <div id="report-status" class="status" data-testid="report-status" role="status"></div>
+    </section>
+  </div>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const t = (id) => document.querySelector(`[data-testid="${id}"]`);
+  let revision = 0;
+
+  async function api(path, opts = {}) {
+    return fetch(path, { credentials: 'same-origin', ...opts });
+  }
+  const json = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+  function showApp(user) {
+    $('login-panel').hidden = true;
+    $('app-panel').hidden = false;
+    $('who').textContent = user.email;
+  }
+  function showLogin() {
+    $('app-panel').hidden = true;
+    $('login-panel').hidden = false;
+    $('profile-status').textContent = '';
+    $('report-status').textContent = '';
+    $('upload-status').textContent = '';
+    $('upload-download').hidden = true;
+    $('upload-download').removeAttribute('href');
+    t('login-password').value = '';
+  }
+  function fillProfile(data) {
+    revision = data.revision;
+    t('profile-handle').value = data.profile.handle;
+    t('profile-display-name').value = data.profile.display_name;
+    t('profile-bio').value = data.profile.bio;
+  }
+  async function loadProfile() {
+    const res = await api('/api/profile');
+    if (res.ok) fillProfile(await res.json());
+  }
+  async function enter(user) {
+    showApp(user);
+    await loadProfile();
+  }
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('login-status').textContent = '';
+    const res = await api('/api/login', json('POST', { email: t('login-email').value, password: t('login-password').value }));
+    if (!res.ok) { $('login-status').textContent = 'Sign in failed'; return; }
+    await enter((await res.json()).user);
+  });
+
+  $('logout').addEventListener('click', async () => {
+    await api('/api/logout', { method: 'POST' });
+    showLogin();
+  });
+
+  $('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const st = $('profile-status');
+    st.classList.remove('error');
+    const res = await api('/api/profile', json('PUT', {
+      handle: t('profile-handle').value,
+      display_name: t('profile-display-name').value,
+      bio: t('profile-bio').value,
+      avatar_id: null,
+      is_public: false,
+      revision,
+    }));
+    if (res.ok) {
+      fillProfile(await res.json());
+      st.textContent = `Saved (revision ${revision})`;
+    } else if (res.status === 409) {
+      st.classList.add('error');
+      st.textContent = 'Conflict: profile changed elsewhere, reloaded latest';
+      await loadProfile();
+    } else {
+      st.classList.add('error');
+      st.textContent = 'Could not save: check the fields';
+    }
+  });
+
+  $('upload-submit').addEventListener('click', async () => {
+    const file = t('upload-file').files[0];
+    const st = $('upload-status');
+    if (!file) { st.textContent = 'Choose a file first'; return; }
+    const res = await api('/api/uploads', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+    if (res.status === 201) {
+      const { id } = await res.json();
+      const link = $('upload-download');
+      link.href = `/api/uploads/${id}`;
+      link.download = file.name;
+      link.hidden = false;
+      st.textContent = 'Uploaded';
+    } else {
+      st.textContent = res.status === 413 ? 'File too large (max 1 MiB)' : 'Upload failed';
+    }
+  });
+
+  $('report-refresh').addEventListener('click', async () => {
+    const res = await api('/api/report');
+    $('report-status').textContent = res.ok
+      ? await res.json().then((r) => `${r.displayName} (revision ${r.revision}, ${r.cacheTier})`)
+      : 'Report failed';
+  });
+
+  (async () => {
+    const res = await api('/api/session');
+    if (res.ok) await enter((await res.json()).user);
+  })();
+})();
+</script>
+</body>
+</html>

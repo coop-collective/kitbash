@@ -1,0 +1,23 @@
+{
+  "name": "kitchen-sink",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "typecheck": "wrangler types --strict-vars=false && tsc --noEmit",
+    "test": "vitest run",
+    "db:local": "wrangler d1 migrations apply DB --local"
+  },
+  "dependencies": {
+    "hono": "4.13.9"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@types/node": "24.13.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "wrangler": "4.151.1"
+  }
+}

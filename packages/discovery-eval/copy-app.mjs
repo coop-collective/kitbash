@@ -1,4 +1,4 @@
-import { cp, mkdir, writeFile, realpath } from "node:fs/promises";
+import { cp, mkdir, writeFile, realpath, readdir } from "node:fs/promises";
 import path from "node:path";
 const [run, arm, target] = process.argv.slice(2);
 if (
@@ -15,11 +15,15 @@ const source = await realpath(
 );
 const destination = path.resolve(target);
 await mkdir(destination, { recursive: false });
-await cp(source, destination, {
-  recursive: true,
-  errorOnExist: true,
-  force: false,
-});
+// Claim the new root first, then copy its children. Copying the source directory
+// onto that claimed root with errorOnExist would reject our own mkdir.
+for (const entry of await readdir(source)) {
+  await cp(path.join(source, entry), path.join(destination, entry), {
+    recursive: true,
+    errorOnExist: true,
+    force: false,
+  });
+}
 await writeFile(
   path.join(destination, ".dev.vars"),
   "SESSION_SECRET=local-only-session-secret-at-least-32-characters\nDEMO_PASSWORD=local-demo-password\n",

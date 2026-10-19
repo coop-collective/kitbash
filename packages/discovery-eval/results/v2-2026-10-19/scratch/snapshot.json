@@ -1,0 +1,81 @@
+{
+  "source": "unmodified agent output; generated/credential/state files omitted",
+  "appSha256": "3e45482aa7cac5935f74cc9c191694028f0822be4f169a27ff4c1501ad8c80b9",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 721,
+      "sha256": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f"
+    },
+    {
+      "path": "TASK.md",
+      "bytes": 4423,
+      "sha256": "c31c85c70f5c4b8e5f4a510655a271d1836a7de80bbbc97e5ad45af794aac5f1"
+    },
+    {
+      "path": "migrations/0000_initial.sql",
+      "bytes": 85,
+      "sha256": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd"
+    },
+    {
+      "path": "migrations/0001_app.sql",
+      "bytes": 693,
+      "sha256": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31"
+    },
+    {
+      "path": "package.json",
+      "bytes": 592,
+      "sha256": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 80069,
+      "sha256": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "bytes": 45,
+      "sha256": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6"
+    },
+    {
+      "path": "public/index.html",
+      "bytes": 5813,
+      "sha256": "eb4397c8e6e1611d660f244043cf05a2781e648696b08055c2f4927d94fadba2"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 11548,
+      "sha256": "eba16948af87d0559d2fa3abd1b0bf8b918e89321f1321c6a9de634d0cb9e344"
+    },
+    {
+      "path": "test/app.test.ts",
+      "bytes": 5423,
+      "sha256": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2"
+    },
+    {
+      "path": "test/apply-migrations.ts",
+      "bytes": 215,
+      "sha256": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2"
+    },
+    {
+      "path": "test/health.test.ts",
+      "bytes": 178,
+      "sha256": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 455,
+      "sha256": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e"
+    },
+    {
+      "path": "vitest.config.ts",
+      "bytes": 399,
+      "sha256": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c"
+    },
+    {
+      "path": "wrangler.jsonc",
+      "bytes": 740,
+      "sha256": "841eadf30360447e780c1b4595b4023663d2804fb8e5fa46324d17a7c330ef73"
+    }
+  ]
+}

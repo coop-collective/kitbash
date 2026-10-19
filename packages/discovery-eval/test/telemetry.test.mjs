@@ -38,3 +38,20 @@ test("standalone failing node test really executes under the outer Node test run
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("owned process group cleanup closes an inherited-stdio grandchild after its parent exits", async () => {
+  const result = await command(
+    process.execPath,
+    [
+      "-e",
+      "const {spawn}=require('node:child_process');spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'inherit'});setTimeout(()=>process.exit(0),60)",
+    ],
+    { timeout: 3000 },
+  );
+  assert.equal(result.code, 0);
+  assert.equal(result.timedOut, false);
+  assert.ok(
+    result.wallMs < 2500,
+    "grandchild pipes must not keep completion waiting until timeout",
+  );
+});

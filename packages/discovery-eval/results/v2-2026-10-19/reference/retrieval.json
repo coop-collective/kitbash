@@ -1,0 +1,58 @@
+{
+  "toolCalls": {
+    "mcp__project__catalog_search": 1,
+    "Glob": 4,
+    "mcp__project__catalog_get": 4,
+    "mcp__project__catalog_checkout": 3,
+    "Read": 12,
+    "mcp__project__project_copy_reference": 4,
+    "Write": 6,
+    "Edit": 16,
+    "mcp__project__project_check": 5,
+    "Grep": 1,
+    "mcp__project__catalog_discard": 3
+  },
+  "mcpResponseBytes": 35944,
+  "selectedSourceBytes": 19193,
+  "checkouts": [
+    {
+      "id": "block:session-cookie",
+      "totalBytes": 5557,
+      "files": [
+        {
+          "path": "variants/hono-d1/src/session.ts",
+          "bytes": 5158,
+          "sha256": "2f5453df99e75b03d62fddad5b88f150d5be171aba52efee3d44815cd02ba0d9"
+        },
+        {
+          "path": "variants/hono-d1/migrations/0001_browser_sessions.sql",
+          "bytes": 399,
+          "sha256": "dd3e1447fc9bb63498418c583bc18a02db1e0b2805e95d3e47ecf65dfad2e3dd"
+        }
+      ]
+    },
+    {
+      "id": "block:r2-private-uploads",
+      "totalBytes": 4311,
+      "files": [
+        {
+          "path": "variants/hono-d1/src/uploads.ts",
+          "bytes": 4311,
+          "sha256": "387727b538d0499cf47779596e86e6e8dacbf9662ef12bcc120270dc7290764e"
+        }
+      ]
+    },
+    {
+      "id": "block:tiered-result-cache",
+      "totalBytes": 9325,
+      "files": [
+        {
+          "path": "variants/hono-d1/src/result-cache.ts",
+          "bytes": 9325,
+          "sha256": "9bcb4876ef0a8d4874424ec9f91529ce5bf7cf19c3636c565d788ebdcd77c3df"
+        }
+      ]
+    }
+  ],
+  "installedBlocks": []
+}
