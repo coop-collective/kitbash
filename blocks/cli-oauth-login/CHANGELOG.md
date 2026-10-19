@@ -1,3 +1,9 @@
+## 1.1.1
+
+- Reject foreign, missing and opaque Origin on browser sign-in POSTs before credentials, email-code effects or session creation.
+- Use Referrer-Policy: same-origin so native form POSTs keep a verifiable Origin without leaking authorization URLs cross-origin.
+- Add traveling regressions for all sign-in methods, untouched valid codes and the form header policy; retain the full PKCE/refresh/revoke flow.
+
 ## 1.1.0
 
 - Integrated with the real email-code-auth (>= 1.1) instead of core's fixture: email-code sign-in on the authorize page

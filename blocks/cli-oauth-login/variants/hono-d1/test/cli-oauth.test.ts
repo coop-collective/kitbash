@@ -149,11 +149,11 @@ describe("CLI sign-in over OAuth", () => {
 
 describe("authorize page edges", () => {
   it("a wrong token shows an error, and a foreign return address falls back to /authorize", async () => {
-    const bad = await raw("/authorize/signin/token", { method: "POST", body: form({ token: "{{kit.tokenPrefix}}nope", return: "/authorize?x=1" }) });
+    const bad = await raw("/authorize/signin/token", { method: "POST", headers: { origin: AS }, body: form({ token: "{{kit.tokenPrefix}}nope", return: "/authorize?x=1" }) });
     expect(bad.status).toBe(200);
     expect(await bad.text()).toContain("That token is not valid");
     const a = await member("Kit");
-    const ok = await raw("/authorize/signin/token", { method: "POST", body: form({ token: a.token, return: "https://evil.example/authorize?x" }) });
+    const ok = await raw("/authorize/signin/token", { method: "POST", headers: { origin: AS }, body: form({ token: a.token, return: "https://evil.example/authorize?x" }) });
     expect(ok.status).toBe(303);
     expect(ok.headers.get("location")).toBe("/authorize");
     expect(ok.headers.get("set-cookie")).toMatch(/^__Host-oauth_session=.+; Path=\/; Secure; HttpOnly; SameSite=Lax/);
@@ -172,12 +172,12 @@ describe("authorize page edges", () => {
 {{#kit.if emailSignIn}}
   it("email sign-in sends a code and a wrong code is refused", async () => {
     const email = `new-${crypto.randomUUID().slice(0, 8)}@example.test`;
-    const sent = await raw("/authorize/signin/email", { method: "POST", body: form({ email, return: "/authorize?x=1" }) });
+    const sent = await raw("/authorize/signin/email", { method: "POST", headers: { origin: AS }, body: form({ email, return: "/authorize?x=1" }) });
     expect(sent.status).toBe(200);
     const html = await sent.text();
     expect(html).toContain("Check your email");
     expect(html).toContain(email);
-    const wrong = await raw("/authorize/signin/code", { method: "POST", body: form({ email, code: "12345x", return: "/authorize?x=1" }) });
+    const wrong = await raw("/authorize/signin/code", { method: "POST", headers: { origin: AS }, body: form({ email, code: "12345x", return: "/authorize?x=1" }) });
     expect(await wrong.text()).toContain("That code is wrong or expired");
   });
 
@@ -186,11 +186,11 @@ describe("authorize page edges", () => {
     setMailerOverride(async (m) => void outbox.push(m));
     try {
       const email = `code-${crypto.randomUUID().slice(0, 8)}@example.test`;
-      await raw("/authorize/signin/email", { method: "POST", body: form({ email: email.toUpperCase(), return: "/authorize?x=1" }) });
+      await raw("/authorize/signin/email", { method: "POST", headers: { origin: AS }, body: form({ email: email.toUpperCase(), return: "/authorize?x=1" }) });
       const code = /\b(\d{6})\b/.exec(outbox.find((m) => m.to === email)!.subject)![1]!;
       const tokens = () => testEnv.DB.prepare("SELECT count(*) AS n FROM {{kit.authTablePrefix}}member_tokens").first<{ n: number }>();
       const before = (await tokens())!.n;
-      const ok = await raw("/authorize/signin/code", { method: "POST", body: form({ email, code, return: "/authorize?x=1" }) });
+      const ok = await raw("/authorize/signin/code", { method: "POST", headers: { origin: AS }, body: form({ email, code, return: "/authorize?x=1" }) });
       expect(ok.status).toBe(303);
       expect(ok.headers.get("set-cookie")).toMatch(/^__Host-oauth_session=/);
       expect((await tokens())!.n).toBe(before);
@@ -212,4 +212,53 @@ describe("page templates", () => {
   it("uses the loopback constant the CLI flow relies on", () => {
     expect(new URL(LOOPBACK).hostname).toBe("127.0.0.1");
   });
+});
+
+
+describe("OAuth browser login CSRF", () => {
+  it("rejects foreign, missing and opaque Origin on every sign-in method before setting cookies", async () => {
+    const attacker = await member("LoginCsrfAttacker");
+    const before = await testEnv.OAUTH_KV.list({ prefix: "oauth_session:" });
+    for (const how of ["token", "email", "code"]) {
+      for (const origin of [undefined, "null", "https://untrusted.example.test", `${AS}.evil.example.test`, `${AS}:444`]) {
+        const response = await raw(`/authorize/signin/${how}`, {
+          method: "POST",
+          headers: origin === undefined ? {} : { origin },
+          body: form({ token: attacker.token, email: attacker.email, code: "123456", return: "/authorize?client_id=example" }),
+        });
+        expect(response.status, `${how}: ${origin}`).toBe(403);
+        expect(response.headers.get("set-cookie")).toBeNull();
+        expect(response.headers.get("cache-control")).toBe("no-store");
+      }
+    }
+    expect((await testEnv.OAUTH_KV.list({ prefix: "oauth_session:" })).keys).toEqual(before.keys);
+  });
+
+  it("keeps the native form Origin available without disclosing referrers cross-origin", async () => {
+    const response = await raw("/authorize/signin/token", { method: "POST", headers: { origin: AS }, body: form({ token: "invalid" }) });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("referrer-policy")).toBe("same-origin");
+    expect(response.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
+  });
+
+{{#kit.if emailSignIn}}
+  it("rejects foreign email sends and preserves a valid code for the same-origin submission", async () => {
+    const outbox: Mail[] = [];
+    setMailerOverride(async m => void outbox.push(m));
+    try {
+      const email = `csrf-${crypto.randomUUID().slice(0, 8)}@example.test`;
+      const blocked = await raw("/authorize/signin/email", { method: "POST", headers: { origin: "https://untrusted.example.test" }, body: form({ email }) });
+      expect(blocked.status).toBe(403);
+      expect(outbox).toHaveLength(0);
+      await raw("/authorize/signin/email", { method: "POST", headers: { origin: AS }, body: form({ email }) });
+      const code = /\b(\d{6})\b/.exec(outbox[0]!.subject)![1]!;
+      const forged = await raw("/authorize/signin/code", { method: "POST", headers: { origin: "https://untrusted.example.test" }, body: form({ email, code }) });
+      expect(forged.status).toBe(403);
+      expect(forged.headers.get("set-cookie")).toBeNull();
+      const valid = await raw("/authorize/signin/code", { method: "POST", headers: { origin: AS }, body: form({ email, code }) });
+      expect(valid.status).toBe(303);
+      expect(valid.headers.get("set-cookie")).toMatch(/^__Host-oauth_session=/);
+    } finally { setMailerOverride(null); }
+  });
+{{/kit.if}}
 });

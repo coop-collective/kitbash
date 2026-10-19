@@ -37,7 +37,9 @@ export function page(title: string, body: string, status = 200, headers?: Header
   h.set("x-frame-options", "DENY");
   h.set("content-security-policy", CSP);
   h.set("cache-control", "no-store");
-  h.set("referrer-policy", "no-referrer");
+  // no-referrer can make browser form POSTs send Origin: null. same-origin preserves
+  // the sign-in Origin check without leaking authorize URLs to cross-origin destinations.
+  h.set("referrer-policy", "same-origin");
   return new Response(fill(TEMPLATES.layout, { title, body }), { status, headers: h });
 }
 

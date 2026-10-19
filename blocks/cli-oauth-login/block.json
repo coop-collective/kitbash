@@ -5,7 +5,7 @@
   "title": "OAuth sign-in for a person's own CLI (My CLI on this computer)",
   "description": "OAuth 2.1 sign-in for a person's own CLI or MCP client (PKCE, dynamic registration) on @cloudflare/workers-oauth-provider, a branded consent page, and revocable cli_logins grants.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "categories": [
     "auth",
@@ -383,7 +383,8 @@
         "pkce-flow",
         "consent",
         "revoke",
-        "refresh"
+        "refresh",
+        "login-csrf-origin"
       ]
     }
   ],
@@ -435,7 +436,7 @@
         "check": "Dry-run deploy lists OAUTH_KV."
       }
     ],
-    "author_notes": "Your own bearer prefix bypasses OAuth on purpose, so existing token clients keep working."
+    "author_notes": "Your own bearer prefix bypasses OAuth on purpose, so existing token clients keep working. Browser sign-in POSTs require an exact same-origin Origin header before sending or consuming codes or creating a session. The pages use Referrer-Policy: same-origin so native same-origin forms retain Origin while cross-origin destinations receive no referrer."
   },
   "provenance": {
     "source": {

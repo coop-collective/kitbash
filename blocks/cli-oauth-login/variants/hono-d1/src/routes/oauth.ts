@@ -8,7 +8,7 @@ import { listCliLogins, revokeCliLogin } from "{{paths.lib|rel}}/oauth/cli-login
 import { oauthOrigin, revokeCliGrants } from "{{paths.lib|rel}}/oauth/provider";
 import type { OAuthEnv, OAuthMember } from "{{paths.lib|rel}}/oauth/types";
 
-/** GET/POST /authorize and the sign-in posts. Public: the provider validates the OAuth request on each. */
+/** Browser sign-in handlers enforce Origin; the provider validates authorization and consent separately. */
 export const oauthRoutes = new Hono<{ Bindings: OAuthEnv }>();
 oauthRoutes.get("/authorize", (c) => authorizeGet(c.env, c.req.raw));
 oauthRoutes.post("/authorize", (c) => authorizePost(c.env, c.req.raw));
