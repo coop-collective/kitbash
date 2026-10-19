@@ -7,12 +7,12 @@ The block owns a configurable DO class/binding, upgrade route, browser assets an
 Verification:
 
 - `node packages/cli/src/kit.ts validate ./blocks/hibernating-websocket --json`: passed with no findings.
-- `KIT_E2E_ONLY=hibernating-websocket node --test test-e2e/install.test.mjs`: two clean-template installer cases passed with no skips. The alternate changes class, binding, migration tag, route, output names, asset directory and resource limits.
+- `KIT_E2E_ONLY=hibernating-websocket node --test test-e2e/install.test.mjs`: two clean-host installer cases passed with no skips after fixing nested Node test execution in the installer. The alternate changes class, binding, migration tag, route, output names, asset directory and resource limits.
 - Each installed case runs 11 Node/Miniflare integration tests and two browser-client tests, then the host TypeScript check through `kit verify`.
 - Integration tests bundle the installed library/router into a test-only Worker and exercise real workerd upgrades, tenant isolation, identity-header replacement, SQL snapshots/history bounds, ping auto-response, attachment reconstruction, expiry and admission/rate/message bounds. They assert the rendered Wrangler DO binding and migration.
 - Browser-client tests exercise reconnect timing, ping, teardown and no message replay using controlled sockets/timers. They do not claim Playwright coverage.
 
-The test entrypoint has connection-inspection controls and belongs only under tests. It is never patched into Wrangler's production main entrypoint. Programmatic Miniflare avoids overwriting or migrating host Vitest configuration; `node --test` is an existing allowlisted verification command. Miniflare `5.20261012.1-beta` is the exact dependency shipped by Wrangler 4.151.1, paired with esbuild 0.28.2. The test runtime date is 2026-10-12; the block does not change the host compatibility date.
+The test entrypoint has connection-inspection controls and belongs only under tests. It is never patched into Wrangler's production main entrypoint. Programmatic Miniflare avoids overwriting or migrating host Vitest configuration; `node --test` is an existing allowlisted verification command. Miniflare `5.20261012.1-beta` is the exact dependency shipped by Wrangler 4.151.1, paired with esbuild 0.28.2. Tests use its exported v4-options converter and Request implementation, with bounded test timeouts. The test runtime date is 2026-10-12; the block does not change the host compatibility date.
 
 Limits remain explicit: authorization is leased, not instantly revocable; idle expired sockets close on an application event or new handshake; automatic ping replies do not reauthorize; no replay acknowledgments or global abuse protection are provided. Constructor reconstruction does not prove platform eviction timing or billing savings. No deployment was performed.
 

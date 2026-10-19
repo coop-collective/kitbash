@@ -1,18 +1,19 @@
-import { after, afterEach, before, test } from 'node:test';
+import { after, afterEach, before, test as nodeTest } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
-import { Miniflare } from 'miniflare';
+import { Miniflare, Request, convertV4MiniflareOptions } from 'miniflare';
 import { parse } from 'jsonc-parser';
 
 let mf;
+const test = (name, run) => nodeTest(name, { timeout: 30_000 }, run);
 const sockets = [];
 before(async () => {
   const output = await build({ entryPoints: [fileURLToPath(new URL('./{{kit.fileSlug}}.fixture.ts', import.meta.url))], bundle: true,
     write: false, format: 'esm', platform: 'neutral', external: ['cloudflare:workers'] });
-  mf = new Miniflare({ modules: true, script: output.outputFiles[0].text, compatibilityDate: '2026-10-12',
-    durableObjects: { '{{kit.bindingName}}': { className: '{{kit.className}}', useSQLite: true } } });
+  mf = new Miniflare(convertV4MiniflareOptions({ modules: true, script: output.outputFiles[0].text, compatibilityDate: '2026-10-12',
+    durableObjects: { '{{kit.bindingName}}': { className: '{{kit.className}}', useSQLite: true } } }));
 });
 afterEach(() => { for (const socket of sockets.splice(0)) { try { socket.close(1000); } catch {} } });
 after(async () => { await mf?.dispose(); });
