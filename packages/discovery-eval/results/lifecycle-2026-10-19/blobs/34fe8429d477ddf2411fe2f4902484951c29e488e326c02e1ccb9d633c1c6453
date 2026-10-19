@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team review rooms</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  input:not([type=file]), select { padding: .4rem; font: inherit; }
+  button { padding: .5rem 1rem; font: inherit; }
+  ul { list-style: none; padding: 0; max-height: 16rem; overflow: auto; }
+  li { padding: .15rem 0; overflow-wrap: anywhere; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<h1>Team review rooms</h1>
+<p><a href="/">Home</a></p>
+<p id="auth-note" role="alert" hidden>Please <a href="/">sign in</a> first.</p>
+<p id="page-error" role="alert"></p>
+
+<div id="app" hidden>
+  <section>
+    <h2>Teams</h2>
+    <input data-testid="team-name" maxlength="80" placeholder="New team name" aria-label="Team name">
+    <button data-testid="team-create" type="button">Create team</button>
+    <p><select data-testid="team-select" aria-label="Team"></select></p>
+  </section>
+
+  <section>
+    <h2>Room</h2>
+    <input data-testid="room-name" value="general" maxlength="40" aria-label="Room name">
+    <button data-testid="room-connect" type="button">Connect</button>
+    <p data-testid="room-status" role="status">idle</p>
+    <ul data-testid="room-messages" aria-live="polite"></ul>
+    <input data-testid="message-text" maxlength="1000" placeholder="Message" aria-label="Message">
+    <button data-testid="message-send" type="button">Send</button>
+  </section>
+
+  <section>
+    <h2>Team files</h2>
+    <input data-testid="team-upload" type="file" aria-label="Upload a file (max 1 MiB)">
+    <p id="upload-status" role="status"></p>
+    <ul data-testid="file-list"></ul>
+  </section>
+</div>
+
+<script>
+const $ = (id) => document.querySelector(`[data-testid="${id}"]`);
+const ROOM_RE = /^[A-Za-z0-9_-]{1,40}$/;
+const MAX_UPLOAD = 1024 * 1024;
+let socket = null;
+let ready = false;
+let busy = false;
+let seen = new Set();
+
+const api = (path, opts = {}) => fetch(path, { credentials: 'same-origin', ...opts });
+const setStatus = (text) => { $('room-status').textContent = text; };
+const currentTeam = () => $('team-select').value;
+
+function refresh() {
+  const hasTeam = !!currentTeam();
+  $('team-create').disabled = busy;
+  $('team-select').disabled = busy || $('team-select').options.length === 0;
+  $('room-connect').disabled = busy || !hasTeam;
+  $('room-name').disabled = !hasTeam;
+  $('team-upload').disabled = busy || !hasTeam;
+  $('message-text').disabled = !ready;
+  $('message-send').disabled = !ready;
+}
+
+function addMessage(m) {
+  if (seen.has(m.seq)) return;
+  seen.add(m.seq);
+  const li = document.createElement('li');
+  li.dataset.seq = String(m.seq);
+  li.textContent = `${m.userId}: ${m.text}`;
+  $('room-messages').appendChild(li);
+}
+
+function closeSocket() {
+  const old = socket;
+  socket = null;
+  ready = false;
+  if (old) {
+    old.onopen = old.onmessage = old.onclose = old.onerror = null;
+    try { old.close(1000); } catch { /* already closed */ }
+  }
+}
+
+function resetRoom(status) {
+  closeSocket();
+  seen = new Set();
+  $('room-messages').replaceChildren();
+  setStatus(status);
+  refresh();
+}
+
+function connect() {
+  const team = currentTeam();
+  const room = $('room-name').value.trim();
+  if (!team) return;
+  if (!ROOM_RE.test(room)) { resetRoom('error: room names use letters, digits, _ and - (max 40)'); return; }
+  closeSocket(); // never keep two live connections
+  seen = new Set();
+  $('room-messages').replaceChildren();
+  setStatus('connecting');
+  refresh();
+  const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${scheme}://${location.host}/api/teams/${encodeURIComponent(team)}/rooms/${encodeURIComponent(room)}/ws`);
+  socket = ws;
+  ws.onmessage = (ev) => {
+    if (socket !== ws) return;
+    let data;
+    try { data = JSON.parse(ev.data); } catch { return; }
+    if (data.type === 'snapshot') {
+      seen = new Set();
+      $('room-messages').replaceChildren();
+      for (const m of data.messages) addMessage(m);
+      ready = true;
+      setStatus(`connected to ${room}`);
+      refresh();
+    } else if (data.type === 'message') addMessage(data);
+    else if (data.type === 'error') setStatus(`connected to ${room} (message rejected)`);
+  };
+  ws.onclose = () => {
+    if (socket !== ws) return;
+    socket = null;
+    ready = false;
+    setStatus('closed: reconnect to continue');
+    refresh();
+  };
+  ws.onerror = () => {
+    if (socket !== ws) return;
+    setStatus('error: could not open the room');
+  };
+}
+
+function addFileLink(team, id, name) {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.href = `/api/teams/${encodeURIComponent(team)}/uploads/${encodeURIComponent(id)}`;
+  a.download = name || 'download.bin';
+  a.textContent = name || id;
+  li.appendChild(a);
+  $('file-list').appendChild(li);
+}
+
+async function loadTeams(selectId) {
+  const r = await api('/api/teams');
+  if (!r.ok) throw new Error('teams');
+  const { teams } = await r.json();
+  const select = $('team-select');
+  select.replaceChildren();
+  for (const t of teams) {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = `${t.name} (${t.role})`;
+    select.appendChild(opt);
+  }
+  if (selectId) select.value = selectId;
+}
+
+$('team-create').addEventListener('click', async () => {
+  const name = $('team-name').value.trim();
+  const err = $('page-error');
+  if (!name || name.length > 80) { err.textContent = 'Team name must be 1-80 characters'; return; }
+  busy = true; refresh();
+  try {
+    const r = await api('/api/teams', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+    if (!r.ok) throw new Error('create');
+    const team = await r.json();
+    await loadTeams(team.id);
+    $('team-name').value = '';
+    err.textContent = '';
+    resetRoom('idle');
+    $('file-list').replaceChildren();
+  } catch { err.textContent = 'Could not create the team'; }
+  finally { busy = false; refresh(); }
+});
+
+$('team-select').addEventListener('change', () => {
+  $('file-list').replaceChildren();
+  resetRoom('idle');
+});
+
+$('room-connect').addEventListener('click', connect);
+
+function send() {
+  const input = $('message-text');
+  if (!ready || !socket || !input.value.trim()) return;
+  socket.send(JSON.stringify({ text: input.value }));
+  input.value = '';
+}
+$('message-send').addEventListener('click', send);
+$('message-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+$('team-upload').addEventListener('change', async (e) => {
+  const input = e.target;
+  const file = input.files[0];
+  const team = currentTeam();
+  const status = document.getElementById('upload-status');
+  if (!file || !team) return;
+  if (file.size > MAX_UPLOAD) { status.textContent = 'File too large (max 1 MiB)'; input.value = ''; return; }
+  busy = true; refresh();
+  status.textContent = 'Uploading';
+  try {
+    const r = await api(`/api/teams/${encodeURIComponent(team)}/uploads`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+    if (!r.ok) throw new Error(String(r.status));
+    const { id } = await r.json();
+    addFileLink(team, id, file.name);
+    status.textContent = 'Uploaded';
+  } catch (err) {
+    status.textContent = err.message === '413' ? 'File too large (max 1 MiB)' : 'Upload failed';
+  } finally {
+    input.value = '';
+    busy = false; refresh();
+  }
+});
+
+async function boot() {
+  refresh();
+  try {
+    const s = await api('/api/session');
+    if (!s.ok) { document.getElementById('auth-note').hidden = false; return; }
+    await loadTeams();
+    document.getElementById('app').hidden = false;
+  } catch { $('page-error').textContent = 'Could not load teams'; }
+  refresh();
+}
+boot();
+</script>
+</body>
+</html>

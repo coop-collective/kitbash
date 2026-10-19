@@ -1,0 +1,2 @@
+// Unused: the catalog block's standalone Miniflare fixture was replaced by test/teams.test.ts.
+export {};

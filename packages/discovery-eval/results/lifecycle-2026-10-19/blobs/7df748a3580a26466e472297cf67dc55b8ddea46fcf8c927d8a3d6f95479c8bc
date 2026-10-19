@@ -1,0 +1,17 @@
+-- Widen the role CHECK to include 'viewer' (SQLite cannot alter a CHECK in place, so the table is rebuilt)
+-- and add grant_id: a token minted when a membership is created and kept across role changes, so open
+-- sockets from a revoked membership stay dead even if the user is later re-added.
+CREATE TABLE team_members_v2 (
+  team_id TEXT NOT NULL REFERENCES teams (id),
+  user_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('owner', 'member', 'viewer')),
+  created_at INTEGER NOT NULL,
+  grant_id TEXT NOT NULL,
+  PRIMARY KEY (team_id, user_id)
+);
+INSERT INTO team_members_v2 (team_id, user_id, role, created_at, grant_id)
+  SELECT team_id, user_id, role, created_at, lower(hex(randomblob(16))) FROM team_members;
+DROP TABLE team_members;
+ALTER TABLE team_members_v2 RENAME TO team_members;
+CREATE INDEX IF NOT EXISTS team_members_user ON team_members (user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS team_members_one_owner ON team_members (team_id) WHERE role = 'owner';

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS team_uploads (
+  id TEXT PRIMARY KEY,
+  team_id TEXT NOT NULL REFERENCES teams (id),
+  object_key TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  content_type TEXT NOT NULL,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS team_uploads_team ON team_uploads (team_id);

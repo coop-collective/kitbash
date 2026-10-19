@@ -1,0 +1,10 @@
+{"time":"2026-10-19T14:11:45.704Z","phase":"integration/0","tool":"catalog_search","query":"team rooms websocket durable object hibernation","durationMs":4.043792000000394,"outcome":"success","responseBytes":2284}
+{"time":"2026-10-19T14:11:48.149Z","phase":"integration/0","tool":"catalog_get","id":"block:hibernating-websocket","durationMs":0.7960830000001806,"outcome":"success","responseBytes":8288}
+{"time":"2026-10-19T14:11:56.383Z","phase":"integration/0","tool":"project_init","durationMs":11.018582999999126,"outcome":"success","responseBytes":489}
+{"time":"2026-10-19T14:11:59.353Z","phase":"integration/0","tool":"block_install","id":"block:hibernating-websocket","dryRun":true,"durationMs":43.24883299999783,"outcome":"success","responseBytes":4082}
+{"time":"2026-10-19T14:12:03.031Z","phase":"integration/0","tool":"block_install","id":"block:hibernating-websocket","dryRun":false,"durationMs":28.518083999999362,"outcome":"success","responseBytes":6549}
+{"time":"2026-10-19T14:14:40.150Z","phase":"integration/0","tool":"project_check","check":"typecheck","durationMs":2104.4209580000024,"outcome":"success","responseBytes":1696}
+{"time":"2026-10-19T14:14:44.122Z","phase":"integration/0","tool":"project_check","check":"test","durationMs":2590.100458000001,"outcome":"success","responseBytes":2856}
+{"time":"2026-10-19T14:14:51.165Z","phase":"integration/0","tool":"project_check","check":"build","durationMs":1048.5061249999853,"outcome":"success","responseBytes":1279}
+{"time":"2026-10-19T14:14:52.217Z","phase":"integration/0","tool":"project_check","check":"migrate","durationMs":1405.8600839999854,"outcome":"success","responseBytes":1608}
+{"time":"2026-10-19T14:15:04.654Z","phase":"integration/0","tool":"project_check","check":"test","durationMs":2407.6741249999905,"outcome":"success","responseBytes":1054}

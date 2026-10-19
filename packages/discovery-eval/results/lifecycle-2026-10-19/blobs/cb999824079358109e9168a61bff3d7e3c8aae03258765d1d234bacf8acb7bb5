@@ -1,0 +1,24 @@
+# Shared review rooms
+
+## Architecture
+
+- **D1** (`migrations/0002_teams.sql`, append-only): `teams`, `team_members` (role `owner`/`member`), `team_uploads`. Membership is read from D1 on every request and every WebSocket handshake; there is no authorization cache.
+- **`src/teams.ts`**: team, membership, team-upload and room-handshake routes, registered from `src/index.ts` and reusing the host's `requireAuth`, same-origin mutation middleware and bounded body reader. `requireAuth` now also exposes the session expiry.
+- **Team uploads**: R2 key `teams/<team>/<server-uuid>`, derived from verified membership. Metadata lookups are by `(id, team_id)`, so an id from another team returns 404 and deletes nothing. Personal `/api/uploads` is unchanged.
+- **Rooms**: `GET /api/teams/:team/rooms/:room/ws` checks session, room name, no query string, same Origin and current membership. It then calls the `TeamRoom` SQLite Durable Object (named `[team, room]`) through `src/routes/team-room.ts`, which drops all client headers and sends only verified identity headers. The DO has no public route. It uses `acceptWebSocket`, serialized attachments, SQL history (latest 50, `AUTOINCREMENT` seq), a `ping`/`pong` auto-response, and no socket map or timers. Messages are committed before broadcast. A per-connection token bucket allows 100 messages/s.
+- **Leases**: an authorized socket lasts at most 5 minutes, capped by session expiry.
+- **UI**: `/teams.html` with `public/room-chat/room-client.js` (reconnecting client; only one live connection; text rendered with `textContent`).
+- The room DO and UI started from the catalog block `hibernating-websocket`, adapted to team routes.
+
+## Commands
+
+`pnpm typecheck`, `pnpm test` (vitest in workerd, `test/teams.test.ts` plus the original suites), `pnpm build` (dry-run), `pnpm db:local`.
+
+## Limitations
+
+- Removing a member or logging out blocks new requests and handshakes immediately, but an already-open socket may stay usable until its lease expires (at most 5 minutes) or its next event after that.
+- History is the latest 50 messages. There is no durable replay or exactly-once delivery, and the client never resends. Snapshots are replaced on reconnect.
+- Membership management is API-only, for the two demo accounts only. There are no invitations, no ownership transfer and no team deletion.
+- Rate limiting is per connection only, not per account or IP.
+- The block's standalone Node/Miniflare tests are stubbed out (`test/team-room*.mjs`, `test/team-room.fixture.ts`) because they targeted the block's own route and needed extra dev dependencies. I had no tool to delete them. Equivalent coverage is in `test/teams.test.ts`. `public/room-chat/index.html` just redirects to `/teams.html`.
+- Browser flows in `teams.html` were not exercised in a real browser here. Only the API and WebSocket paths are covered by automated tests.

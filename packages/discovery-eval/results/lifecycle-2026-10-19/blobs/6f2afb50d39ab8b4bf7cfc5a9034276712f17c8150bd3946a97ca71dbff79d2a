@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team review rooms</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  input:not([type=file]), select { padding: .4rem; font: inherit; }
+  button { padding: .4rem 1rem; font: inherit; }
+  #room-messages { list-style: none; padding: 0; max-height: 16rem; overflow-y: auto; border: 1px solid #eee; min-height: 3rem; }
+  #room-messages li { padding: .2rem .4rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<h1>Team review rooms</h1>
+<p><a href="/">Home</a></p>
+<p id="signin" hidden>Please <a href="/">sign in</a> first.</p>
+
+<div id="app" hidden>
+  <section>
+    <h2>Teams</h2>
+    <input data-testid="team-name" maxlength="80" placeholder="New team name" aria-label="Team name">
+    <button data-testid="team-create" type="button" disabled>Create team</button>
+    <p><select data-testid="team-select" aria-label="Team"></select></p>
+    <p id="team-error" role="alert"></p>
+  </section>
+
+  <section>
+    <h2>Room</h2>
+    <input data-testid="room-name" value="general" maxlength="40" aria-label="Room name">
+    <button data-testid="room-connect" type="button" disabled>Connect</button>
+    <p data-testid="room-status" role="status">idle</p>
+    <ul data-testid="room-messages" id="room-messages" aria-live="polite"></ul>
+    <input data-testid="message-text" aria-label="Message" disabled>
+    <button data-testid="message-send" type="button" disabled>Send</button>
+  </section>
+
+  <section>
+    <h2>Team files</h2>
+    <input data-testid="team-upload" type="file" aria-label="Upload file" disabled>
+    <p id="upload-status" role="status"></p>
+    <ul data-testid="file-list"></ul>
+  </section>
+</div>
+
+<script>
+const $ = (id) => document.querySelector(`[data-testid="${id}"]`);
+const ROOM_RE = /^[A-Za-z0-9_-]{1,40}$/;
+let socket = null;
+let generation = 0; // ignores events from superseded sockets
+let connected = false;
+let busy = false;
+
+const api = (path, opts = {}) => fetch(path, { credentials: 'same-origin', ...opts });
+const setError = (msg) => { document.getElementById('team-error').textContent = msg || ''; };
+const setStatus = (s) => { $('room-status').textContent = s; };
+
+function refresh() {
+  const hasTeam = !!$('team-select').value;
+  $('team-create').disabled = busy;
+  $('room-connect').disabled = busy || !hasTeam;
+  $('team-upload').disabled = !hasTeam;
+  $('message-text').disabled = !connected;
+  $('message-send').disabled = !connected;
+}
+
+function addMessage(m) {
+  const li = document.createElement('li');
+  li.textContent = `${m.userId}: ${m.text}`;
+  const list = $('room-messages');
+  list.appendChild(li);
+  list.scrollTop = list.scrollHeight;
+}
+
+function disconnect(statusText) {
+  generation++;
+  connected = false;
+  if (socket) {
+    const old = socket;
+    socket = null;
+    old.onopen = old.onmessage = old.onclose = old.onerror = null;
+    try { old.close(1000); } catch {}
+  }
+  if (statusText) setStatus(statusText);
+  refresh();
+}
+
+function connect() {
+  const team = $('team-select').value;
+  const room = $('room-name').value;
+  if (!team) return;
+  if (!ROOM_RE.test(room)) { setStatus('error: invalid room name'); return; }
+  disconnect();
+  const gen = generation;
+  setStatus('connecting');
+  $('room-messages').replaceChildren();
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/api/teams/${encodeURIComponent(team)}/rooms/${encodeURIComponent(room)}/ws`);
+  socket = ws;
+  ws.onmessage = (ev) => {
+    if (gen !== generation) return;
+    let d;
+    try { d = JSON.parse(ev.data); } catch { return; }
+    if (d.type === 'snapshot') {
+      $('room-messages').replaceChildren();
+      for (const m of d.messages) addMessage(m);
+      connected = true;
+      setStatus('connected');
+      refresh();
+    } else if (d.type === 'message') {
+      addMessage(d);
+    } else if (d.type === 'error') {
+      setStatus(connected ? 'connected (message rejected)' : `error: ${d.error}`);
+    }
+  };
+  ws.onclose = () => { if (gen === generation) { socket = null; disconnect('closed'); } };
+  ws.onerror = () => { if (gen === generation) setStatus('error: connection failed'); };
+}
+
+async function loadTeams(selectId) {
+  const r = await api('/api/teams');
+  if (!r.ok) throw new Error('load failed');
+  const { teams } = await r.json();
+  const sel = $('team-select');
+  const prev = selectId || sel.value;
+  sel.replaceChildren();
+  for (const t of teams) {
+    const o = document.createElement('option');
+    o.value = t.id;
+    o.textContent = `${t.name} (${t.role})`;
+    sel.appendChild(o);
+  }
+  if (teams.some((t) => t.id === prev)) sel.value = prev;
+  refresh();
+}
+
+async function boot() {
+  const r = await api('/api/session');
+  if (!r.ok) { document.getElementById('signin').hidden = false; return; }
+  document.getElementById('app').hidden = false;
+  try { await loadTeams(); } catch { setError('Could not load teams'); }
+}
+
+$('team-create').addEventListener('click', async () => {
+  const name = $('team-name').value.trim();
+  if (!name || name.length > 80) { setError('Team name must be 1-80 characters'); return; }
+  busy = true; refresh(); setError('');
+  try {
+    const r = await api('/api/teams', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+    if (!r.ok) { setError('Could not create team'); return; }
+    const { id } = await r.json();
+    $('team-name').value = '';
+    await loadTeams(id);
+    if ($('team-select').value !== id) $('team-select').value = id;
+    disconnect('idle');
+  } catch { setError('Could not create team'); }
+  finally { busy = false; refresh(); }
+});
+
+$('team-select').addEventListener('change', () => { disconnect('idle'); $('file-list').replaceChildren(); $('room-messages').replaceChildren(); });
+$('room-connect').addEventListener('click', connect);
+
+function send() {
+  const text = $('message-text').value;
+  if (!connected || !socket || !text.trim()) return;
+  socket.send(JSON.stringify({ text }));
+  $('message-text').value = '';
+}
+$('message-send').addEventListener('click', send);
+$('message-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); send(); } });
+
+$('team-upload').addEventListener('change', async (e) => {
+  const input = e.target;
+  const file = input.files[0];
+  const team = $('team-select').value;
+  const status = document.getElementById('upload-status');
+  if (!file || !team) return;
+  if (file.size > 1024 * 1024) { status.textContent = 'File too large (max 1 MiB)'; input.value = ''; return; }
+  input.disabled = true;
+  status.textContent = 'Uploading';
+  try {
+    const r = await api(`/api/teams/${encodeURIComponent(team)}/uploads`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+    if (!r.ok) { status.textContent = r.status === 413 ? 'File too large (max 1 MiB)' : 'Upload failed'; return; }
+    const { id } = await r.json();
+    const a = document.createElement('a');
+    a.href = `/api/teams/${encodeURIComponent(team)}/uploads/${encodeURIComponent(id)}`;
+    a.download = file.name;
+    a.textContent = file.name;
+    const li = document.createElement('li');
+    li.appendChild(a);
+    $('file-list').appendChild(li);
+    status.textContent = 'Uploaded';
+  } catch { status.textContent = 'Upload failed'; }
+  finally { input.value = ''; refresh(); }
+});
+
+boot();
+</script>
+</body>
+</html>

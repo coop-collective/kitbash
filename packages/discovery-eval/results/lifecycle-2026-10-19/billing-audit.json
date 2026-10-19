@@ -1,0 +1,2322 @@
+{
+  "run": "kit-lifecycle-XIWZPD",
+  "protocol": "lifecycle-2",
+  "catalogCommit": "8aef03249175ce7972c29bf099e9c84900386d2f",
+  "updatedAtUtc": "2026-10-19T14:45:38Z",
+  "auditScope": "Read-only protocol, raw billing/tool telemetry, immutable source manifests and saved verification. No app code or paid calls. Costs are CLI list-price estimates, not invoice charges.",
+  "completedCallCount": 12,
+  "knownCostUsd": 6.547302500000001,
+  "runningOrIncompleteCallCount": 0,
+  "problems": [],
+  "attempts": [
+    {
+      "attempt": "pair-1/scratch/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T13:57:01Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "Bash": 1,
+        "Read": 10,
+        "Write": 8,
+        "Edit": 7,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [
+        {
+          "tool": "Bash",
+          "denied": true,
+          "unavailable": true,
+          "resultPresent": true
+        }
+      ],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "4f38fb04f1f5b59e9ee399a003de79fb8262e50e279ca27fb78376771b604dc1",
+      "rawLogBytes": 446573,
+      "costUsd": 0.6227096000000001,
+      "usage": {
+        "input_tokens": 28,
+        "cache_creation_input_tokens": 70259,
+        "cache_read_input_tokens": 613786,
+        "output_tokens": 38490,
+        "output_tokens_details": {
+          "thinking_tokens": 15093
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 485,
+          "ephemeral_5m_input_tokens": 69774
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 28,
+          "outputTokens": 38490,
+          "cacheReadInputTokens": 613786,
+          "cacheCreationInputTokens": 70259,
+          "webSearchRequests": 0,
+          "costUSD": 0.6227096000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 15093,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 36,
+      "durationMs": 293419,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 22,
+      "mcpAuditCount": 5,
+      "mcpAuditTools": {
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 5
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 8118,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 31512,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 294827,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-1/reuse/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:02:03Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 6,
+        "mcp__project__catalog_search": 1,
+        "mcp__project__catalog_get": 1,
+        "Read": 11,
+        "mcp__project__project_init": 1,
+        "mcp__project__block_install": 1,
+        "mcp__project__catalog_checkout": 1,
+        "Write": 7,
+        "Edit": 6,
+        "mcp__project__project_check": 4,
+        "mcp__project__catalog_discard": 1
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "205ac4d3da8bf9039b8af0181e3ad9e93b9d827c8a07fd1e3d1d4aecc6c853f7",
+      "rawLogBytes": 462806,
+      "costUsd": 0.5841831,
+      "usage": {
+        "input_tokens": 42,
+        "cache_creation_input_tokens": 73823,
+        "cache_read_input_tokens": 1044096,
+        "output_tokens": 29434,
+        "output_tokens_details": {
+          "thinking_tokens": 5519
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 528,
+          "ephemeral_5m_input_tokens": 73295
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 42,
+          "outputTokens": 29434,
+          "cacheReadInputTokens": 1044096,
+          "cacheCreationInputTokens": 73823,
+          "webSearchRequests": 0,
+          "costUSD": 0.5841831,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 5519,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 41,
+      "durationMs": 256704,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 21,
+      "mcpAuditCount": 10,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "catalog_get": 1,
+        "project_init": 1,
+        "block_install": 1,
+        "catalog_checkout": 1,
+        "project_check": 4,
+        "catalog_discard": 1
+      },
+      "mcpOutcomes": {
+        "success": 10
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "team rooms websocket durable object hibernation",
+          "durationMs": 2.8063750000001164,
+          "outcome": "success",
+          "responseBytes": 2284
+        },
+        {
+          "tool": "catalog_get",
+          "id": "block:hibernating-websocket",
+          "durationMs": 0.9176250000000437,
+          "outcome": "success",
+          "responseBytes": 8288
+        },
+        {
+          "tool": "project_init",
+          "durationMs": 44.56091699999888,
+          "outcome": "success",
+          "responseBytes": 489
+        },
+        {
+          "tool": "block_install",
+          "id": "block:hibernating-websocket",
+          "dryRun": true,
+          "durationMs": 42.495291000006546,
+          "outcome": "success",
+          "responseBytes": 4082
+        },
+        {
+          "tool": "catalog_checkout",
+          "id": "block:hibernating-websocket",
+          "durationMs": 8.593874999998661,
+          "outcome": "success",
+          "responseBytes": 707
+        },
+        {
+          "tool": "catalog_discard",
+          "id": "block:hibernating-websocket",
+          "durationMs": 3.1848750000062864,
+          "outcome": "success",
+          "responseBytes": 43
+        }
+      ],
+      "mcpResponseBytes": 21123,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 28179,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "dryRunIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "successfulAppliedInstalls": [],
+        "checkouts": [
+          {
+            "id": "block:hibernating-websocket",
+            "files": [
+              {
+                "path": "variants/hono-d1/src/room.ts",
+                "bytes": 4250,
+                "sha256": "2cfd2cf72fc1076a43ed2aa850b7cf05439efd83c9571d8e8862248206c75ece"
+              },
+              {
+                "path": "variants/hono-d1/src/upgrade.ts",
+                "bytes": 2380,
+                "sha256": "7495a323c78e5aa4b88bcc98f0c76cd719f319460704333440232800240c77ee"
+              },
+              {
+                "path": "variants/hono-d1/public/room-client.js",
+                "bytes": 1711,
+                "sha256": "11d33232cc52b32da74d8928134da0da0a9eae77e3736118e4e1514f5b3087e4"
+              }
+            ],
+            "sourceBytesMaterialized": 8341
+          }
+        ],
+        "copyCalls": [],
+        "referenceReads": [
+          {
+            "path": ".catalog-cache/block-hibernating-websocket/variants/hono-d1/src/room.ts",
+            "success": true
+          },
+          {
+            "path": ".catalog-cache/block-hibernating-websocket/variants/hono-d1/src/upgrade.ts",
+            "success": true
+          },
+          {
+            "path": ".catalog-cache/block-hibernating-websocket/variants/hono-d1/public/room-client.js",
+            "success": true
+          }
+        ],
+        "discardIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "materializedBytesIncludingRepeatedCheckouts": 8341,
+        "distinctMaterializedSourceBytes": 8341,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 257618,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-1/reuse/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:06:04Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "mcp__project__catalog_search": 1,
+        "Read": 7,
+        "Write": 3,
+        "Edit": 14,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "f706a250f499796ee45e01a5cc4ef4d45813a10b167bc6b60e42de4462b7cc88",
+      "rawLogBytes": 545639,
+      "costUsd": 0.5642925999999999,
+      "usage": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 75413,
+        "cache_read_input_tokens": 923301,
+        "output_tokens": 27734,
+        "output_tokens_details": {
+          "thinking_tokens": 7378
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4012,
+          "ephemeral_5m_input_tokens": 71401
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 36,
+          "outputTokens": 27734,
+          "cacheReadInputTokens": 923301,
+          "cacheCreationInputTokens": 75413,
+          "webSearchRequests": 0,
+          "costUSD": 0.5642925999999999,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 7378,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 35,
+      "durationMs": 217681,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 23,
+      "mcpAuditCount": 6,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 5,
+        "error": 1
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "durable object websocket room hibernation team membership",
+          "durationMs": 3.5404170000001614,
+          "outcome": "success",
+          "responseBytes": 2728
+        }
+      ],
+      "mcpResponseBytes": 10258,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 38734,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 218763,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-1/scratch/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:10:35Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 2,
+        "Grep": 1,
+        "Read": 13,
+        "Write": 4,
+        "Edit": 17,
+        "mcp__project__project_check": 6
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "904b352156665ced88843a8291158ede40bd94570a686a9d9a2542f84c874d5e",
+      "rawLogBytes": 589223,
+      "costUsd": 0.5375782,
+      "usage": {
+        "input_tokens": 30,
+        "cache_creation_input_tokens": 72219,
+        "cache_read_input_tokens": 672927,
+        "output_tokens": 28381,
+        "output_tokens_details": {
+          "thinking_tokens": 6686
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3912,
+          "ephemeral_5m_input_tokens": 68307
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 30,
+          "outputTokens": 28381,
+          "cacheReadInputTokens": 672927,
+          "cacheCreationInputTokens": 72219,
+          "webSearchRequests": 0,
+          "costUSD": 0.5375782,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6686,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 44,
+      "durationMs": 234381,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 24,
+      "mcpAuditCount": 6,
+      "mcpAuditTools": {
+        "project_check": 6
+      },
+      "mcpOutcomes": {
+        "success": 6
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 11036,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 44250,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 235596,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-2/reuse/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:15:06Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 6,
+        "mcp__project__catalog_search": 1,
+        "mcp__project__catalog_get": 1,
+        "Read": 12,
+        "mcp__project__project_init": 1,
+        "mcp__project__block_install": 2,
+        "Edit": 6,
+        "Write": 11,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "d529fdc0655217266c2ee55f65a162d975a1f1714d644461a09ffeb9cc8345ff",
+      "rawLogBytes": 491456,
+      "costUsd": 0.5361677,
+      "usage": {
+        "input_tokens": 40,
+        "cache_creation_input_tokens": 71650,
+        "cache_read_input_tokens": 906907,
+        "output_tokens": 26548,
+        "output_tokens_details": {
+          "thinking_tokens": 5293
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 528,
+          "ephemeral_5m_input_tokens": 71122
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 40,
+          "outputTokens": 26548,
+          "cacheReadInputTokens": 906907,
+          "cacheCreationInputTokens": 71650,
+          "webSearchRequests": 0,
+          "costUSD": 0.5361677,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 5293,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 46,
+      "durationMs": 212780,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 26,
+      "mcpAuditCount": 10,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "catalog_get": 1,
+        "project_init": 1,
+        "block_install": 2,
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 10
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "team rooms websocket durable object hibernation",
+          "durationMs": 4.043792000000394,
+          "outcome": "success",
+          "responseBytes": 2284
+        },
+        {
+          "tool": "catalog_get",
+          "id": "block:hibernating-websocket",
+          "durationMs": 0.7960830000001806,
+          "outcome": "success",
+          "responseBytes": 8288
+        },
+        {
+          "tool": "project_init",
+          "durationMs": 11.018582999999126,
+          "outcome": "success",
+          "responseBytes": 489
+        },
+        {
+          "tool": "block_install",
+          "id": "block:hibernating-websocket",
+          "dryRun": true,
+          "durationMs": 43.24883299999783,
+          "outcome": "success",
+          "responseBytes": 4082
+        },
+        {
+          "tool": "block_install",
+          "id": "block:hibernating-websocket",
+          "dryRun": false,
+          "durationMs": 28.518083999999362,
+          "outcome": "success",
+          "responseBytes": 6549
+        }
+      ],
+      "mcpResponseBytes": 30185,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 23236,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "dryRunIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "successfulAppliedInstalls": [
+          {
+            "id": "block:hibernating-websocket",
+            "block": "@local/hibernating-websocket@1.0.0",
+            "variant": "hono-d1",
+            "writes": [
+              {
+                "path": "package.json",
+                "action": "patch",
+                "role": "dependencies"
+              },
+              {
+                "path": "wrangler.jsonc",
+                "action": "patch",
+                "role": "config-patch"
+              },
+              {
+                "path": ".kit/blocks/hibernating-websocket/SKILL.md",
+                "action": "create",
+                "role": "doc",
+                "bytes": 2422
+              },
+              {
+                "path": "public/room-chat/index.html",
+                "action": "create",
+                "role": "ui",
+                "bytes": 1745
+              },
+              {
+                "path": "public/room-chat/room-client.js",
+                "action": "create",
+                "role": "ui",
+                "bytes": 1702
+              },
+              {
+                "path": "src/lib/team-room.ts",
+                "action": "create",
+                "role": "service",
+                "bytes": 4130
+              },
+              {
+                "path": "src/routes/team-room.ts",
+                "action": "create",
+                "role": "route",
+                "bytes": 2282
+              },
+              {
+                "path": "test/team-room-client.test.mjs",
+                "action": "create",
+                "role": "test",
+                "bytes": 2113
+              },
+              {
+                "path": "test/team-room.fixture.ts",
+                "action": "create",
+                "role": "fixture",
+                "bytes": 2449
+              },
+              {
+                "path": "test/team-room.test.mjs",
+                "action": "create",
+                "role": "test",
+                "bytes": 5918
+              }
+            ],
+            "declaredCreatedBytes": 22761,
+            "declaredUiServiceRouteBytes": 9859,
+            "byteCaveat": "Rendered create bytes declared in successful apply receipt; excludes merge-patch byte sizes and later adaptations."
+          }
+        ],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 213752,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-2/scratch/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:18:07Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "Bash": 1,
+        "Read": 9,
+        "Write": 7,
+        "Edit": 6,
+        "mcp__project__project_check": 6
+      },
+      "forbiddenAttempts": [
+        {
+          "tool": "Bash",
+          "denied": true,
+          "unavailable": true,
+          "resultPresent": true
+        }
+      ],
+      "outsideFileAttempts": [
+        {
+          "tool": "Write",
+          "path": "<RUN_DIRECTORY>/pair-2/test/teams.test.ts",
+          "denied": true,
+          "resultPresent": true
+        }
+      ],
+      "rawLogSha256": "7dc0ec00a58dec08f38c39d3c74c9fb00d00a1d4747c1f89bbe2f9c7cdd820d9",
+      "rawLogBytes": 381834,
+      "costUsd": 0.5145554000000001,
+      "usage": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 57849,
+        "cache_read_input_tokens": 575014,
+        "output_tokens": 31164,
+        "output_tokens_details": {
+          "thinking_tokens": 5255
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 485,
+          "ephemeral_5m_input_tokens": 57364
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 32,
+          "outputTokens": 31164,
+          "cacheReadInputTokens": 575014,
+          "cacheCreationInputTokens": 57849,
+          "webSearchRequests": 0,
+          "costUSD": 0.5145554000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 5255,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 34,
+      "durationMs": 224058,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 20,
+      "mcpAuditCount": 6,
+      "mcpAuditTools": {
+        "project_check": 6
+      },
+      "mcpOutcomes": {
+        "success": 6
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 8605,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 27406,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 224840,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-2/scratch/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:23:04Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "Bash": 1,
+        "Read": 10,
+        "Write": 3,
+        "Edit": 15,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [
+        {
+          "tool": "Bash",
+          "denied": true,
+          "unavailable": true,
+          "resultPresent": true
+        }
+      ],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "e43e640ab5c151618f92baafe1f9be6efb24d40595be279ea9048ab5c81c810c",
+      "rawLogBytes": 520333,
+      "costUsd": 0.5116343,
+      "usage": {
+        "input_tokens": 34,
+        "cache_creation_input_tokens": 69284,
+        "cache_read_input_tokens": 774088,
+        "output_tokens": 26022,
+        "output_tokens_details": {
+          "thinking_tokens": 7714
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 485,
+          "ephemeral_5m_input_tokens": 68799
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 34,
+          "outputTokens": 26022,
+          "cacheReadInputTokens": 774088,
+          "cacheCreationInputTokens": 69284,
+          "webSearchRequests": 0,
+          "costUSD": 0.5116343,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 7714,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 39,
+      "durationMs": 201290,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 22,
+      "mcpAuditCount": 5,
+      "mcpAuditTools": {
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 5
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 8496,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 40221,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 201941,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-2/reuse/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:28:05Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 5,
+        "mcp__project__catalog_search": 1,
+        "mcp__project__catalog_get": 1,
+        "Read": 13,
+        "Write": 4,
+        "Edit": 15,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "417f9a1364852b9be5f86b09b74bf5f2a6575ea1f31b25151da592ea5cc56c47",
+      "rawLogBytes": 564778,
+      "costUsd": 0.5726685000000001,
+      "usage": {
+        "input_tokens": 30,
+        "cache_creation_input_tokens": 77985,
+        "cache_read_input_tokens": 774140,
+        "output_tokens": 29944,
+        "output_tokens_details": {
+          "thinking_tokens": 9842
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 528,
+          "ephemeral_5m_input_tokens": 77457
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 30,
+          "outputTokens": 29944,
+          "cacheReadInputTokens": 774140,
+          "cacheCreationInputTokens": 77985,
+          "webSearchRequests": 0,
+          "costUSD": 0.5726685000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 9842,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 45,
+      "durationMs": 263539,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 28,
+      "mcpAuditCount": 7,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "catalog_get": 1,
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 6,
+        "error": 1
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "team rooms websocket durable object hibernation",
+          "durationMs": 2.191584000000148,
+          "outcome": "success",
+          "responseBytes": 2284
+        },
+        {
+          "tool": "catalog_get",
+          "id": "block:hibernating-websocket",
+          "durationMs": 0.6636250000001382,
+          "outcome": "success",
+          "responseBytes": 8288
+        }
+      ],
+      "mcpResponseBytes": 17905,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 36872,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 264219,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-3/scratch/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:33:06Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "Bash": 1,
+        "Read": 9,
+        "Write": 6,
+        "Edit": 15,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [
+        {
+          "tool": "Bash",
+          "denied": true,
+          "unavailable": true,
+          "resultPresent": true
+        }
+      ],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "bffbcd65dd1db95904302be79d540c6067613bb5a0f6c23553a87c0a4511e1b2",
+      "rawLogBytes": 481195,
+      "costUsd": 0.5437936,
+      "usage": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 62678,
+        "cache_read_input_tokens": 742991,
+        "output_tokens": 31200,
+        "output_tokens_details": {
+          "thinking_tokens": 6502
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 485,
+          "ephemeral_5m_input_tokens": 62193
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 36,
+          "outputTokens": 31200,
+          "cacheReadInputTokens": 742991,
+          "cacheCreationInputTokens": 62678,
+          "webSearchRequests": 0,
+          "costUSD": 0.5437936,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6502,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 41,
+      "durationMs": 249098,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 20,
+      "mcpAuditCount": 5,
+      "mcpAuditTools": {
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 4,
+        "error": 1
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 6785,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 21078,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 249858,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-3/reuse/integration/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:36:36Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 4,
+        "mcp__project__catalog_search": 1,
+        "mcp__project__catalog_get": 2,
+        "Read": 10,
+        "mcp__project__catalog_checkout": 1,
+        "Write": 7,
+        "Edit": 7,
+        "mcp__project__project_check": 5,
+        "mcp__project__catalog_discard": 1
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "bbbb3399f44852448223327dab48c0b015508e5cfc1e5a1386d353cf068c69b5",
+      "rawLogBytes": 439608,
+      "costUsd": 0.5032010000000001,
+      "usage": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 66027,
+        "cache_read_input_tokens": 742675,
+        "output_tokens": 26301,
+        "output_tokens_details": {
+          "thinking_tokens": 4592
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 528,
+          "ephemeral_5m_input_tokens": 65499
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 32,
+          "outputTokens": 26301,
+          "cacheReadInputTokens": 742675,
+          "cacheCreationInputTokens": 66027,
+          "webSearchRequests": 0,
+          "costUSD": 0.5032010000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 4592,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 39,
+      "durationMs": 196830,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 21,
+      "mcpAuditCount": 10,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "catalog_get": 2,
+        "catalog_checkout": 1,
+        "project_check": 5,
+        "catalog_discard": 1
+      },
+      "mcpOutcomes": {
+        "success": 10
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "team rooms websocket durable object upload",
+          "durationMs": 2.197584000000461,
+          "outcome": "success",
+          "responseBytes": 2973
+        },
+        {
+          "tool": "catalog_get",
+          "id": "block:hibernating-websocket",
+          "durationMs": 0.6551250000002256,
+          "outcome": "success",
+          "responseBytes": 8288
+        },
+        {
+          "tool": "catalog_get",
+          "id": "block:r2-private-uploads",
+          "durationMs": 0.29054199999973207,
+          "outcome": "success",
+          "responseBytes": 4670
+        },
+        {
+          "tool": "catalog_checkout",
+          "id": "block:hibernating-websocket",
+          "durationMs": 2.598541999999725,
+          "outcome": "success",
+          "responseBytes": 568
+        },
+        {
+          "tool": "catalog_discard",
+          "id": "block:hibernating-websocket",
+          "durationMs": 1.725458000000799,
+          "outcome": "success",
+          "responseBytes": 43
+        }
+      ],
+      "mcpResponseBytes": 23464,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 21323,
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          },
+          {
+            "id": "block:r2-private-uploads",
+            "success": true
+          }
+        ],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [
+          {
+            "id": "block:hibernating-websocket",
+            "files": [
+              {
+                "path": "variants/hono-d1/src/room.ts",
+                "bytes": 4250,
+                "sha256": "2cfd2cf72fc1076a43ed2aa850b7cf05439efd83c9571d8e8862248206c75ece"
+              },
+              {
+                "path": "variants/hono-d1/src/upgrade.ts",
+                "bytes": 2380,
+                "sha256": "7495a323c78e5aa4b88bcc98f0c76cd719f319460704333440232800240c77ee"
+              }
+            ],
+            "sourceBytesMaterialized": 6630
+          }
+        ],
+        "copyCalls": [],
+        "referenceReads": [
+          {
+            "path": ".catalog-cache/block-hibernating-websocket/variants/hono-d1/src/room.ts",
+            "success": true
+          },
+          {
+            "path": ".catalog-cache/block-hibernating-websocket/variants/hono-d1/src/upgrade.ts",
+            "success": true
+          }
+        ],
+        "discardIds": [
+          {
+            "id": "block:hibernating-websocket",
+            "success": true
+          }
+        ],
+        "materializedBytesIncludingRepeatedCheckouts": 6630,
+        "distinctMaterializedSourceBytes": 6630,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 197515,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-3/reuse/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__block_install",
+        "mcp__project__catalog_checkout",
+        "mcp__project__catalog_discard",
+        "mcp__project__catalog_get",
+        "mcp__project__catalog_search",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference",
+        "mcp__project__project_init"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:40:07Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 5,
+        "mcp__project__catalog_search": 1,
+        "Read": 8,
+        "Write": 3,
+        "Edit": 21,
+        "mcp__project__project_check": 4
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        },
+        {
+          "tool": "Edit",
+          "path": "<RUN_DIRECTORY>/pair-3/reuse/public/teams.html",
+          "denied": true,
+          "resultPresent": true
+        }
+      ],
+      "rawLogSha256": "623dbaa6fce23d3715b78580c890c94c5f7bd1a7e0a1075af7fcbc29741e4565",
+      "rawLogBytes": 523062,
+      "costUsd": 0.5256626999999999,
+      "usage": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 70684,
+        "cache_read_input_tokens": 780767,
+        "output_tokens": 27002,
+        "output_tokens_details": {
+          "thinking_tokens": 6985
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 528,
+          "ephemeral_5m_input_tokens": 70156
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 32,
+          "outputTokens": 27002,
+          "cacheReadInputTokens": 780767,
+          "cacheCreationInputTokens": 70684,
+          "webSearchRequests": 0,
+          "costUSD": 0.5256626999999999,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6985,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 43,
+      "durationMs": 202813,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 23,
+      "mcpAuditCount": 5,
+      "mcpAuditTools": {
+        "catalog_search": 1,
+        "project_check": 4
+      },
+      "mcpOutcomes": {
+        "success": 5
+      },
+      "catalogActions": [
+        {
+          "tool": "catalog_search",
+          "query": "websocket durable object room team",
+          "durationMs": 4.324666999999863,
+          "outcome": "success",
+          "responseBytes": 2284
+        }
+      ],
+      "mcpResponseBytes": 7677,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 35485,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 1,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 203545,
+      "attemptPassed": true
+    },
+    {
+      "attempt": "pair-3/scratch/maintenance/attempt-0",
+      "stageStatus": "complete",
+      "attemptStatus": "complete",
+      "model": "claude-sonnet-5-5",
+      "toolsExposed": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write",
+        "mcp__project__project_check",
+        "mcp__project__project_copy_reference"
+      ],
+      "observedLaunch": {
+        "restricted": true,
+        "modelSonnet55": true,
+        "effortHigh": true,
+        "fixedBuiltinTools": true,
+        "strictMcpConfig": true,
+        "forbiddenList": true,
+        "observedAtUtc": "2026-10-19T14:44:38Z"
+      },
+      "resultPresent": true,
+      "finalEvents": 1,
+      "malformedLogLines": 0,
+      "toolCalls": {
+        "Glob": 5,
+        "Read": 8,
+        "Grep": 2,
+        "Write": 3,
+        "Edit": 17,
+        "mcp__project__project_check": 5
+      },
+      "forbiddenAttempts": [],
+      "outsideFileAttempts": [],
+      "rawLogSha256": "4bf2deedcdb0c2b4d5e483a263b14678d82f4a3fd11e357043a08ef983dd656d",
+      "rawLogBytes": 576701,
+      "costUsd": 0.5308558,
+      "usage": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 71547,
+        "cache_read_input_tokens": 912388,
+        "output_tokens": 25995,
+        "output_tokens_details": {
+          "thinking_tokens": 6979
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 485,
+          "ephemeral_5m_input_tokens": 71062
+        },
+        "inference_geo": "global",
+        "iterations": [],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-sonnet-5-5": {
+          "inputTokens": 36,
+          "outputTokens": 25995,
+          "cacheReadInputTokens": 912388,
+          "cacheCreationInputTokens": 71547,
+          "webSearchRequests": 0,
+          "costUSD": 0.5308558,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 6979,
+          "canonicalModel": "claude-sonnet-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "numTurns": 41,
+      "durationMs": 213487,
+      "summaryMatchesRaw": true,
+      "snapshotVerified": true,
+      "snapshotFiles": 22,
+      "mcpAuditCount": 5,
+      "mcpAuditTools": {
+        "project_check": 5
+      },
+      "mcpOutcomes": {
+        "success": 4,
+        "error": 1
+      },
+      "catalogActions": [],
+      "mcpResponseBytes": 6943,
+      "mcpAuditMatchesCallCount": true,
+      "validationMatchesLedger": true,
+      "passed": true,
+      "validationWallMs": 36398,
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "failedChecks": [],
+      "failedAcceptanceGroups": [],
+      "reuse": {
+        "searchCalls": 0,
+        "getIds": [],
+        "dryRunIds": [],
+        "successfulAppliedInstalls": [],
+        "checkouts": [],
+        "copyCalls": [],
+        "referenceReads": [],
+        "discardIds": [],
+        "materializedBytesIncludingRepeatedCheckouts": 0,
+        "distinctMaterializedSourceBytes": 0,
+        "interpretation": "New retrieval/install actions in this attempt only. Maintenance also inherits its own earlier app. Search/get/dry-run is not an applied install. Read calls are observations, not inferred token savings or a count of source bytes copied manually."
+      },
+      "modelWallMs": 214209,
+      "attemptPassed": true
+    }
+  ],
+  "stages": [
+    {
+      "pair": 1,
+      "arm": "scratch",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.6227096000000001,
+      "modelWallMs": 294827,
+      "validationWallMs": 31512,
+      "tokens": {
+        "input_tokens": 28,
+        "cache_creation_input_tokens": 70259,
+        "cache_read_input_tokens": 613786,
+        "output_tokens": 38490
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 1,
+      "arm": "reuse",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5841831,
+      "modelWallMs": 257618,
+      "validationWallMs": 28179,
+      "tokens": {
+        "input_tokens": 42,
+        "cache_creation_input_tokens": 73823,
+        "cache_read_input_tokens": 1044096,
+        "output_tokens": 29434
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [],
+      "checkoutIds": [
+        "block:hibernating-websocket"
+      ],
+      "materializedBytes": 8341
+    },
+    {
+      "pair": 1,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5642925999999999,
+      "modelWallMs": 218763,
+      "validationWallMs": 38734,
+      "tokens": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 75413,
+        "cache_read_input_tokens": 923301,
+        "output_tokens": 27734
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 1,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5375782,
+      "modelWallMs": 235596,
+      "validationWallMs": 44250,
+      "tokens": {
+        "input_tokens": 30,
+        "cache_creation_input_tokens": 72219,
+        "cache_read_input_tokens": 672927,
+        "output_tokens": 28381
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 2,
+      "arm": "reuse",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5361677,
+      "modelWallMs": 213752,
+      "validationWallMs": 23236,
+      "tokens": {
+        "input_tokens": 40,
+        "cache_creation_input_tokens": 71650,
+        "cache_read_input_tokens": 906907,
+        "output_tokens": 26548
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [
+        "block:hibernating-websocket"
+      ],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 2,
+      "arm": "scratch",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5145554000000001,
+      "modelWallMs": 224840,
+      "validationWallMs": 27406,
+      "tokens": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 57849,
+        "cache_read_input_tokens": 575014,
+        "output_tokens": 31164
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 2,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5116343,
+      "modelWallMs": 201941,
+      "validationWallMs": 40221,
+      "tokens": {
+        "input_tokens": 34,
+        "cache_creation_input_tokens": 69284,
+        "cache_read_input_tokens": 774088,
+        "output_tokens": 26022
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 2,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5726685000000001,
+      "modelWallMs": 264219,
+      "validationWallMs": 36872,
+      "tokens": {
+        "input_tokens": 30,
+        "cache_creation_input_tokens": 77985,
+        "cache_read_input_tokens": 774140,
+        "output_tokens": 29944
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 3,
+      "arm": "scratch",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5437936,
+      "modelWallMs": 249858,
+      "validationWallMs": 21078,
+      "tokens": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 62678,
+        "cache_read_input_tokens": 742991,
+        "output_tokens": 31200
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 3,
+      "arm": "reuse",
+      "phase": "integration",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5032010000000001,
+      "modelWallMs": 197515,
+      "validationWallMs": 21323,
+      "tokens": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 66027,
+        "cache_read_input_tokens": 742675,
+        "output_tokens": 26301
+      },
+      "acceptance": {
+        "passed": 11,
+        "total": 11
+      },
+      "appliedIds": [],
+      "checkoutIds": [
+        "block:hibernating-websocket"
+      ],
+      "materializedBytes": 6630
+    },
+    {
+      "pair": 3,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5256626999999999,
+      "modelWallMs": 203545,
+      "validationWallMs": 35485,
+      "tokens": {
+        "input_tokens": 32,
+        "cache_creation_input_tokens": 70684,
+        "cache_read_input_tokens": 780767,
+        "output_tokens": 27002
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    },
+    {
+      "pair": 3,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "status": "complete",
+      "passed": true,
+      "attempts": 1,
+      "costUsd": 0.5308558,
+      "modelWallMs": 214209,
+      "validationWallMs": 36398,
+      "tokens": {
+        "input_tokens": 36,
+        "cache_creation_input_tokens": 71547,
+        "cache_read_input_tokens": 912388,
+        "output_tokens": 25995
+      },
+      "acceptance": {
+        "passed": 16,
+        "total": 16
+      },
+      "appliedIds": [],
+      "checkoutIds": [],
+      "materializedBytes": 0
+    }
+  ],
+  "pairTotals": [
+    {
+      "pair": 1,
+      "scratch": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.1602878,
+        "modelWallMs": 530423,
+        "validationWallMs": 75762,
+        "tokens": {
+          "input_tokens": 58,
+          "cache_creation_input_tokens": 142478,
+          "cache_read_input_tokens": 1286713,
+          "output_tokens": 66871
+        },
+        "modelPlusValidationWallMs": 606185
+      },
+      "reuse": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.1484756999999999,
+        "modelWallMs": 476381,
+        "validationWallMs": 66913,
+        "tokens": {
+          "input_tokens": 78,
+          "cache_creation_input_tokens": 149236,
+          "cache_read_input_tokens": 1967397,
+          "output_tokens": 57168
+        },
+        "modelPlusValidationWallMs": 543294
+      }
+    },
+    {
+      "pair": 2,
+      "scratch": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.0261897000000002,
+        "modelWallMs": 426781,
+        "validationWallMs": 67627,
+        "tokens": {
+          "input_tokens": 66,
+          "cache_creation_input_tokens": 127133,
+          "cache_read_input_tokens": 1349102,
+          "output_tokens": 57186
+        },
+        "modelPlusValidationWallMs": 494408
+      },
+      "reuse": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.1088362000000003,
+        "modelWallMs": 477971,
+        "validationWallMs": 60108,
+        "tokens": {
+          "input_tokens": 70,
+          "cache_creation_input_tokens": 149635,
+          "cache_read_input_tokens": 1681047,
+          "output_tokens": 56492
+        },
+        "modelPlusValidationWallMs": 538079
+      }
+    },
+    {
+      "pair": 3,
+      "scratch": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.0746494,
+        "modelWallMs": 464067,
+        "validationWallMs": 57476,
+        "tokens": {
+          "input_tokens": 72,
+          "cache_creation_input_tokens": 134225,
+          "cache_read_input_tokens": 1655379,
+          "output_tokens": 57195
+        },
+        "modelPlusValidationWallMs": 521543
+      },
+      "reuse": {
+        "phasesComplete": true,
+        "phasesPassed": 2,
+        "attempts": 2,
+        "costUsd": 1.0288637,
+        "modelWallMs": 401060,
+        "validationWallMs": 56808,
+        "tokens": {
+          "input_tokens": 64,
+          "cache_creation_input_tokens": 136711,
+          "cache_read_input_tokens": 1523442,
+          "output_tokens": 53303
+        },
+        "modelPlusValidationWallMs": 457868
+      }
+    }
+  ],
+  "aggregateTotals": {
+    "scratch": {
+      "phasesPassed": 6,
+      "attempts": 6,
+      "costUsd": 3.2611269000000003,
+      "modelWallMs": 1421271,
+      "validationWallMs": 200865,
+      "modelPlusValidationWallMs": 1622136,
+      "tokens": {
+        "input_tokens": 196,
+        "cache_creation_input_tokens": 403836,
+        "cache_read_input_tokens": 4291194,
+        "output_tokens": 181252
+      }
+    },
+    "reuse": {
+      "phasesPassed": 6,
+      "attempts": 6,
+      "costUsd": 3.2861756,
+      "modelWallMs": 1355412,
+      "validationWallMs": 183829,
+      "modelPlusValidationWallMs": 1539241,
+      "tokens": {
+        "input_tokens": 212,
+        "cache_creation_input_tokens": 435582,
+        "cache_read_input_tokens": 5171886,
+        "output_tokens": 166963
+      }
+    }
+  },
+  "sourceReuseCaveat": "Source bytes are materialized or declared rendered bytes, not token counts. Applied code can later be edited or removed; source references can be consulted without direct copying. No inference of safety, maintainability or universal savings follows from these observations.",
+  "exportAudit": {
+    "stages": 12,
+    "sourceManifestFileReferencesVerified": 544,
+    "sourceBlobs": 110,
+    "billingUsageAndPassStatusMatchSourceLedger": true,
+    "privateFixtureValuesChecked": 18,
+    "privateFixtureLeaks": 0
+  }
+}

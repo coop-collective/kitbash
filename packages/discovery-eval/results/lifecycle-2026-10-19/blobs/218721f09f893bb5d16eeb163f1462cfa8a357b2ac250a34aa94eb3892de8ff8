@@ -1,0 +1,6 @@
+export const DEMO_USERS: Record<string, string> = {
+  'alice@example.test': 'user_alice',
+  'bob@example.test': 'user_bob',
+};
+
+export const isKnownUserId = (id: string) => Object.values(DEMO_USERS).includes(id);

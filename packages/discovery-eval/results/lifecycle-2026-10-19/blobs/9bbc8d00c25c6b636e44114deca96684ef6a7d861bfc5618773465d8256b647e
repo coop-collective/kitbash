@@ -1,0 +1,86 @@
+import { DurableObject } from 'cloudflare:workers';
+
+const MAX_MESSAGE_BYTES = 4096;
+const MAX_TEXT_CHARS = 1000;
+const SNAPSHOT_SIZE = 50;
+const RETAINED = 200;
+const MAX_CONNECTIONS = 100;
+
+type Attachment = { userId: string; expiresAt: number };
+type Message = { seq: number; userId: string; text: string };
+
+/**
+ * One instance per team/room. Reachable only through the authorizing gateway in teams.ts:
+ * the namespace binding is not exposed on any route. SQLite is authoritative for history;
+ * each socket's identity and lease live in its hibernation-safe attachment (no socket map).
+ */
+export class TeamRoom extends DurableObject<Env> {
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    // AUTOINCREMENT keeps seq strictly increasing even after old rows are pruned.
+    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS messages (seq INTEGER PRIMARY KEY AUTOINCREMENT, userId TEXT NOT NULL, text TEXT NOT NULL)');
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') return new Response('Upgrade required', { status: 426 });
+    // Created only by the gateway, which strips every client-supplied copy first.
+    const userId = request.headers.get('x-room-user');
+    const expiresAt = Number(request.headers.get('x-room-expires'));
+    if (!userId || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) return new Response('Unauthorized', { status: 401 });
+
+    let active = 0;
+    for (const peer of this.ctx.getWebSockets()) {
+      const attached = peer.deserializeAttachment() as Attachment | null;
+      if (!attached || attached.expiresAt <= Date.now()) {
+        try { peer.close(1008, 'Lease expired'); } catch { /* already closed */ }
+      } else active++;
+    }
+    if (active >= MAX_CONNECTIONS) return new Response('Room full', { status: 503 });
+
+    const pair = new WebSocketPair();
+    this.ctx.acceptWebSocket(pair[1]);
+    pair[1].serializeAttachment({ userId, expiresAt } satisfies Attachment);
+    const messages = this.ctx.storage.sql
+      .exec<Message>('SELECT seq, userId, text FROM (SELECT seq, userId, text FROM messages ORDER BY seq DESC LIMIT ?) ORDER BY seq', SNAPSHOT_SIZE)
+      .toArray();
+    pair[1].send(JSON.stringify({ type: 'snapshot', messages }));
+    return new Response(null, { status: 101, webSocket: pair[0] });
+  }
+
+  webSocketMessage(socket: WebSocket, input: string | ArrayBuffer): void {
+    const who = socket.deserializeAttachment() as Attachment | null;
+    if (!who || who.expiresAt <= Date.now()) { socket.close(1008, 'Lease expired'); return; }
+    if (typeof input !== 'string') { socket.close(1003, 'Text only'); return; }
+    if (new TextEncoder().encode(input).byteLength > MAX_MESSAGE_BYTES) { socket.close(1009, 'Message too large'); return; }
+    let text: unknown;
+    try {
+      const parsed = JSON.parse(input) as { text?: unknown } | null;
+      text = parsed && typeof parsed === 'object' ? parsed.text : undefined;
+    } catch { /* falls through to the error below */ }
+    if (typeof text !== 'string' || !text.trim() || text.length > MAX_TEXT_CHARS) {
+      socket.send(JSON.stringify({ type: 'error', error: 'invalid message' }));
+      return;
+    }
+    // Persist first; the handler is synchronous so concurrent senders are serialized by the DO.
+    const row = this.ctx.storage.transactionSync(() => {
+      const inserted = this.ctx.storage.sql
+        .exec<Message>('INSERT INTO messages (userId, text) VALUES (?, ?) RETURNING seq, userId, text', who.userId, text as string)
+        .one();
+      this.ctx.storage.sql.exec('DELETE FROM messages WHERE seq <= ?', inserted.seq - RETAINED);
+      return inserted;
+    });
+    const event = JSON.stringify({ type: 'message', ...row });
+    for (const peer of this.ctx.getWebSockets()) {
+      try { peer.send(event); } catch { try { peer.close(1011, 'Send failed'); } catch { /* already closed */ } }
+    }
+  }
+
+  webSocketClose(socket: WebSocket): void {
+    try { socket.close(1000, 'Closed'); } catch { /* already closed */ }
+  }
+
+  webSocketError(socket: WebSocket): void {
+    try { socket.close(1011, 'Connection error'); } catch { /* already closed */ }
+  }
+}

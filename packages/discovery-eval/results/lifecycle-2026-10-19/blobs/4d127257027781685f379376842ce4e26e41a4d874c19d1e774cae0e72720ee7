@@ -1,0 +1,231 @@
+import { describe, expect, it } from 'vitest';
+import { SELF } from 'cloudflare:test';
+
+const BASE = 'http://localhost';
+const json = { 'Content-Type': 'application/json' };
+
+async function login(email: string) {
+  const r = await SELF.fetch(BASE + '/api/login', { method: 'POST', headers: { Origin: BASE, ...json }, body: JSON.stringify({ email, password: 'local-demo-password' }) });
+  expect(r.status).toBe(200);
+  return r.headers.get('Set-Cookie')!.split(';')[0];
+}
+
+const call = (cookie: string | null, path: string, init: RequestInit = {}) =>
+  SELF.fetch(BASE + path, { ...init, headers: { Origin: BASE, ...(cookie ? { Cookie: cookie } : {}), ...(init.headers as object) } });
+
+const send = (cookie: string | null, method: string, path: string, body?: unknown) =>
+  call(cookie, path, { method, headers: json, body: body === undefined ? undefined : JSON.stringify(body) });
+
+async function team(owner: string, bob?: 'member' | 'viewer') {
+  const r = await send(owner, 'POST', '/api/teams', { name: 'Perm' });
+  const id = ((await r.json()) as { id: string }).id;
+  if (bob) expect((await send(owner, 'PUT', `/api/teams/${id}/members/user_bob`, { role: bob })).status).toBe(204);
+  return id;
+}
+
+async function open(cookie: string, t: string, room = 'general') {
+  const r = await SELF.fetch(`${BASE}/api/teams/${t}/rooms/${room}/ws`, { headers: { Upgrade: 'websocket', Origin: BASE, Cookie: cookie } });
+  expect(r.status).toBe(101);
+  const ws = r.webSocket!;
+  const events: any[] = [];
+  let closed = false;
+  ws.addEventListener('message', (e) => { events.push(JSON.parse(e.data as string)); });
+  ws.addEventListener('close', () => { closed = true; });
+  ws.accept();
+  await until(() => events.length >= 1);
+  return { ws, events, isClosed: () => closed, tell: (m: unknown) => ws.send(JSON.stringify(m)), ofType: (type: string) => events.filter((e) => e.type === type) };
+}
+
+const until = async (cond: () => boolean) => {
+  for (let i = 0; i < 200 && !cond(); i++) await new Promise((r) => setTimeout(r, 25));
+  expect(cond()).toBe(true);
+};
+const settle = () => new Promise((r) => setTimeout(r, 300));
+const history = async (cookie: string, t: string, room = 'general') => {
+  const c = await open(cookie, t, room);
+  c.ws.close();
+  return c.events[0].messages as any[];
+};
+
+describe('viewer role', () => {
+  it('is assignable, listed, and read-only over HTTP', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'viewer');
+    expect((await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'admin' })).status).toBe(400);
+    expect(((await (await call(b, '/api/teams')).json()) as any).teams).toContainEqual({ id: t, name: 'Perm', role: 'viewer' });
+
+    const up = await call(a, `/api/teams/${t}/uploads`, { method: 'POST', body: new Uint8Array([9, 8, 7]) });
+    const { id } = (await up.json()) as { id: string };
+    expect((await call(b, `/api/teams/${t}/uploads`, { method: 'POST', body: new Uint8Array([1]) })).status).toBe(403);
+    expect((await call(b, `/api/teams/${t}/uploads/${id}`, { method: 'DELETE' })).status).toBe(403);
+    expect((await send(b, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'member' })).status).toBe(403);
+    expect((await send(b, 'DELETE', `/api/teams/${t}/members/user_alice`)).status).toBe(403);
+    const dl = await call(b, `/api/teams/${t}/uploads/${id}`);
+    expect(new Uint8Array(await dl.arrayBuffer())).toEqual(new Uint8Array([9, 8, 7]));
+    // Owner stays immutable and viewers can be promoted again.
+    expect((await send(a, 'PUT', `/api/teams/${t}/members/user_alice`, { role: 'viewer' })).status).toBe(409);
+    expect((await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'member' })).status).toBe(204);
+    expect((await call(b, `/api/teams/${t}/uploads`, { method: 'POST', body: new Uint8Array([1]) })).status).toBe(201);
+  });
+
+  it('receives but cannot send; downgrade applies to an open socket', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'viewer');
+    const alice = await open(a, t);
+    const bob = await open(b, t);
+    bob.tell({ text: 'nope' });
+    await until(() => bob.ofType('error').length === 1);
+    expect(bob.ofType('error')[0].code).toBe('read_only');
+    alice.tell({ text: 'hello' });
+    await until(() => bob.ofType('message').length === 1);
+    expect(await history(a, t)).toHaveLength(1);
+
+    // Promote, send, then downgrade the same open socket.
+    await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'member' });
+    bob.tell({ text: 'now allowed' });
+    await until(() => alice.ofType('message').length === 2);
+    await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'viewer' });
+    bob.tell({ text: 'blocked again' });
+    await until(() => bob.ofType('error').length === 2);
+    alice.tell({ text: 'still delivered' });
+    await until(() => bob.ofType('message').length === 3);
+    expect((await history(a, t)).map((m) => m.text)).toEqual(['hello', 'now allowed', 'still delivered']);
+  });
+});
+
+describe('revocation on open sockets', () => {
+  it('stops commits and delivery after removal, and does not revive on re-add', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'member');
+    const alice = await open(a, t);
+    const bob = await open(b, t);
+    expect((await send(a, 'DELETE', `/api/teams/${t}/members/user_bob`)).status).toBe(204);
+    bob.tell({ text: 'ghost' });
+    alice.tell({ text: 'private now' });
+    await until(() => alice.ofType('message').length === 1);
+    await settle();
+    expect(bob.ofType('message')).toHaveLength(0);
+    expect((await history(a, t)).map((m) => m.text)).toEqual(['private now']);
+
+    // The revoked socket was closed by the server; re-adding does not revive it.
+    await until(() => bob.isClosed());
+    await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'member' });
+    expect((await history(a, t)).map((m) => m.text)).toEqual(['private now']);
+    const fresh = await open(b, t);
+    fresh.tell({ text: 'fresh' });
+    await until(() => alice.ofType('message').length === 2);
+  });
+
+  it('stops a logged-out session without restoring it on re-add', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'member');
+    const alice = await open(a, t);
+    const bob = await open(b, t);
+    expect((await call(b, '/api/logout', { method: 'POST' })).status).toBe(204);
+    bob.tell({ text: 'after logout' });
+    alice.tell({ text: 'hi' });
+    await until(() => alice.ofType('message').length === 1);
+    await settle();
+    expect(bob.ofType('message')).toHaveLength(0);
+    await send(a, 'DELETE', `/api/teams/${t}/members/user_bob`);
+    await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'member' });
+    expect((await SELF.fetch(`${BASE}/api/teams/${t}/rooms/general/ws`, { headers: { Upgrade: 'websocket', Origin: BASE, Cookie: b } })).status).toBe(401);
+    expect((await history(a, t)).map((m) => m.text)).toEqual(['hi']);
+  });
+});
+
+describe('clientId retry safety', () => {
+  it('acks exact retries, flags conflicts and scopes ids', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'member');
+    const alice = await open(a, t);
+    const bob = await open(b, t);
+    alice.tell({ text: 'one', clientId: 'id-1' });
+    await until(() => bob.ofType('message').length === 1);
+    expect(bob.ofType('message')[0]).toEqual({ type: 'message', seq: 1, userId: 'user_alice', text: 'one', clientId: 'id-1' });
+
+    alice.tell({ text: 'one', clientId: 'id-1' });
+    await until(() => alice.ofType('ack').length === 1);
+    expect(alice.ofType('ack')[0]).toEqual({ type: 'ack', seq: 1, clientId: 'id-1' });
+    alice.tell({ text: 'different', clientId: 'id-1' });
+    await until(() => alice.ofType('error').length === 1);
+    expect(alice.ofType('error')[0]).toEqual({ type: 'error', code: 'conflict', clientId: 'id-1' });
+    alice.tell({ text: 'bad', clientId: 'has space' });
+    await until(() => alice.ofType('error').length === 2);
+
+    // Another user (and another room) may reuse the same id independently.
+    bob.tell({ text: 'bob one', clientId: 'id-1' });
+    await until(() => alice.ofType('message').length === 2);
+    const other = await open(a, t, 'second');
+    other.tell({ text: 'elsewhere', clientId: 'id-1' });
+    await until(() => other.ofType('message').length === 1);
+
+    await settle();
+    expect(bob.ofType('message')).toHaveLength(2);
+    expect(bob.ofType('ack')).toHaveLength(0);
+    expect((await history(a, t)).map((m) => [m.seq, m.text, m.clientId])).toEqual([[1, 'one', 'id-1'], [2, 'bob one', 'id-1']]);
+  });
+
+  it('deduplicates simultaneous retries on two sockets', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'member');
+    const s1 = await open(a, t);
+    const s2 = await open(a, t);
+    const bob = await open(b, t);
+    s1.tell({ text: 'twice', clientId: 'race' });
+    s2.tell({ text: 'twice', clientId: 'race' });
+    await until(() => s1.ofType('ack').length + s2.ofType('ack').length === 1);
+    await settle();
+    for (const c of [s1, s2, bob]) expect(c.ofType('message')).toHaveLength(1);
+    expect(bob.ofType('ack')).toHaveLength(0);
+    const ack = [...s1.ofType('ack'), ...s2.ofType('ack')][0];
+    expect(ack.seq).toBe(bob.ofType('message')[0].seq);
+    expect(await history(a, t)).toHaveLength(1);
+  });
+
+  it('keeps records outside the history window and checks authority first', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await team(a, 'member');
+    const alice = await open(a, t);
+    const bob = await open(b, t);
+    for (let i = 0; i < 55; i++) alice.tell({ text: `m${i}`, clientId: `k${i}` });
+    await until(() => alice.ofType('message').length === 55);
+    alice.tell({ text: 'm0', clientId: 'k0' });
+    await until(() => alice.ofType('ack').length === 1);
+    expect(alice.ofType('ack')[0].seq).toBe(1);
+    const snap = await history(a, t);
+    expect(snap).toHaveLength(50);
+    expect(snap[0].seq).toBe(6);
+
+    // Bob's earlier success grants nothing once he is a viewer or removed; no ack, no conflict.
+    bob.tell({ text: 'bob', clientId: 'bobid' });
+    await until(() => bob.ofType('message').length === 56);
+    await send(a, 'PUT', `/api/teams/${t}/members/user_bob`, { role: 'viewer' });
+    bob.tell({ text: 'bob', clientId: 'bobid' });
+    bob.tell({ text: 'changed', clientId: 'bobid' });
+    await until(() => bob.ofType('error').length === 2);
+    expect(bob.ofType('error').map((e) => e.code)).toEqual(['read_only', 'read_only']);
+    expect(bob.ofType('ack')).toHaveLength(0);
+    await send(a, 'DELETE', `/api/teams/${t}/members/user_bob`);
+    bob.tell({ text: 'bob', clientId: 'bobid' });
+    await until(() => bob.isClosed());
+    expect(bob.ofType('ack')).toHaveLength(0);
+    expect((await history(a, t)).filter((m) => m.userId === 'user_bob')).toHaveLength(1);
+  });
+
+  it('still accepts plain {text} clients', async () => {
+    const a = await login('alice@example.test');
+    const t = await team(a);
+    const alice = await open(a, t);
+    alice.tell({ text: 'plain' });
+    await until(() => alice.ofType('message').length === 1);
+    expect(alice.ofType('message')[0]).toEqual({ type: 'message', seq: 1, userId: 'user_alice', text: 'plain' });
+  });
+});

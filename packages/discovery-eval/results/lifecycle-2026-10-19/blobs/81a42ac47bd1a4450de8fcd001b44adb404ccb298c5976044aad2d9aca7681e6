@@ -1,0 +1,21 @@
+# Shared review rooms — notes
+
+## Architecture
+- `src/teams.ts` (mounted from `src/index.ts`): team, membership, team-upload and room-handshake routes. All sit behind the existing `requireAuth` (signed cookie + D1 session row, so logout takes effect immediately) and the existing same-origin check for non-GET methods.
+- Membership lives in D1 (`migrations/0002_teams.sql`: `teams`, `team_members`, `team_uploads`; existing migrations untouched). Every request queries `team_members` directly; there is no authorization cache.
+- Team files are stored in R2 under `teams/<teamId>/<server-generated uuid>`; the D1 row is looked up by `(id, team_id)`, so an ID from another team resolves to nothing. Bodies are bounded while streaming (`readBounded`), so chunked uploads are cut off at 1 MiB with 413. Personal `/api/uploads` is unchanged.
+- `src/room.ts`: `Room`, a SQLite Durable Object per `teamId:room`, using the hibernation API (`acceptWebSocket`, `serializeAttachment`, `webSocketMessage`/`Close`/`Error`). Messages go into a `messages` table (`AUTOINCREMENT` seq, so it never repeats after pruning) before being broadcast. The last 500 rows are kept; new sockets get the latest 50. `ping` is answered with `pong` through `setWebSocketAutoResponse`.
+- The DO is only reachable through the membership-checked Worker route. The Worker builds a fresh header set (client identity headers are dropped) and adds `X-Verified-User` and a lease expiry. There is no other forwarding or admin endpoint.
+- Authorization lease: min(now + 5 min, session expiry), stored in the socket attachment. After it passes, the next message (or broadcast) closes that socket with 1008, and the client must reconnect through a fresh handshake.
+- `public/teams.html`: UI using the `data-testid` controls from the spec. Text is rendered with `textContent`; reconnecting closes the previous socket first, and a generation counter ignores events from superseded sockets.
+
+## Commands
+`pnpm run typecheck`, `pnpm test`, `pnpm run build`, `pnpm run db:local` (or the project check tools).
+
+## Limitations
+- Removing a member or logging out does not close sockets that are already open; they continue until the lease (at most 5 minutes, capped by session expiry) lapses. New handshakes and HTTP requests are refused immediately.
+- Delivery is at-least-best-effort: there is no replay or exactly-once guarantee. A client that misses a broadcast sees it in the next snapshot, within the latest 50.
+- Room history is pruned to the last 500 messages. Oversized frames (> 4096 bytes) close the socket (1009); other invalid input gets an `error` event.
+- Membership management is API-only, and only the two demo accounts can be added. Only the `member` role can be assigned.
+- If a team upload's metadata insert fails after the R2 write, the object is orphaned (no cleanup job).
+- Restart persistence of room history relies on Durable Object SQLite storage and was not exercised in an automated test.

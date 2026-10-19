@@ -1,0 +1,159 @@
+import { DurableObject } from 'cloudflare:workers';
+
+const MAX_FRAME_BYTES = 4096;
+const MAX_TEXT_CHARS = 1000;
+const SNAPSHOT_SIZE = 50;
+const RETAIN = 500;
+const LEASE_S = 5 * 60;
+const CLOSE_LEASE = 4401;
+
+interface Attachment {
+  userId: string;
+  sessionId: string;
+  teamId: string;
+  leaseExpires: number; // epoch seconds
+}
+
+interface MessageRow extends Record<string, SqlStorageValue> {
+  seq: number;
+  user_id: string;
+  text: string;
+}
+
+const enc = new TextEncoder();
+const nowS = () => Math.floor(Date.now() / 1000);
+
+/**
+ * One instance per team/room. Reachable only through the ROOMS binding from the
+ * authenticated Worker route; it trusts the X-Room-* headers that route sets
+ * (the Worker builds that header set from scratch, never from client input).
+ * Connections are hibernatable: all per-socket state lives in the attachment
+ * and all history lives in SQLite.
+ */
+export class ReviewRoom extends DurableObject<Env> {
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    ctx.blockConcurrencyWhile(async () => {
+      this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS messages (seq INTEGER PRIMARY KEY, user_id TEXT NOT NULL, text TEXT NOT NULL, created_at INTEGER NOT NULL)');
+      this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v INTEGER NOT NULL)');
+      this.ctx.storage.sql.exec("INSERT OR IGNORE INTO meta (k, v) VALUES ('last_seq', 0)");
+    });
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected websocket', { status: 426 });
+    const userId = request.headers.get('X-Room-User');
+    const sessionId = request.headers.get('X-Room-Session');
+    const teamId = request.headers.get('X-Room-Team');
+    const lease = Number(request.headers.get('X-Room-Lease'));
+    if (!userId || !sessionId || !teamId || !Number.isFinite(lease)) return new Response('forbidden', { status: 403 });
+
+    const pair = new WebSocketPair();
+    const [client, server] = [pair[0], pair[1]];
+    this.ctx.acceptWebSocket(server);
+    const att: Attachment = { userId, sessionId, teamId, leaseExpires: Math.min(lease, nowS() + LEASE_S) };
+    server.serializeAttachment(att);
+    // Accept and snapshot happen in one synchronous section, so the new socket sees
+    // every message either in the snapshot or as a later broadcast, never both.
+    server.send(JSON.stringify({ type: 'snapshot', messages: this.latest() }));
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  private latest() {
+    const rows = this.ctx.storage.sql
+      .exec<MessageRow>('SELECT seq, user_id, text FROM messages ORDER BY seq DESC LIMIT ?', SNAPSHOT_SIZE)
+      .toArray();
+    return rows.reverse().map((r) => ({ seq: r.seq, userId: r.user_id, text: r.text }));
+  }
+
+  /** Re-check session and membership against D1; used when the lease has run out. */
+  private async stillAuthorized(att: Attachment): Promise<number | null> {
+    const row = await this.env.DB.prepare(
+      'SELECT s.expires_at AS expires_at FROM sessions s JOIN team_members m ON m.user_id = s.user_id ' +
+        'WHERE s.id = ? AND s.user_id = ? AND s.revoked_at IS NULL AND s.expires_at > ? AND m.team_id = ?',
+    )
+      .bind(att.sessionId, att.userId, nowS(), att.teamId)
+      .first<{ expires_at: number }>();
+    return row ? Math.min(nowS() + LEASE_S, row.expires_at) : null;
+  }
+
+  private reject(ws: WebSocket, error: string) {
+    try {
+      ws.send(JSON.stringify({ type: 'error', error }));
+    } catch {
+      /* socket already gone */
+    }
+  }
+
+  async webSocketMessage(ws: WebSocket, raw: string | ArrayBuffer): Promise<void> {
+    const stored = ws.deserializeAttachment() as Attachment | null;
+    if (!stored) return ws.close(1008, 'unauthorized');
+    let att: Attachment = stored;
+
+    if (att.leaseExpires <= nowS()) {
+      const renewed = await this.stillAuthorized(att);
+      if (renewed === null) return ws.close(CLOSE_LEASE, 'authorization expired');
+      att = { ...att, leaseExpires: renewed };
+      ws.serializeAttachment(att);
+    }
+    const sender = att;
+
+    if (typeof raw !== 'string') return this.reject(ws, 'text frames only');
+    if (enc.encode(raw).byteLength > MAX_FRAME_BYTES) return this.reject(ws, 'message too large');
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return this.reject(ws, 'invalid json');
+    }
+    const text = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as { text?: unknown }).text : undefined;
+    if (typeof text !== 'string' || text.trim().length === 0) return this.reject(ws, 'text required');
+    if ([...text].length > MAX_TEXT_CHARS) return this.reject(ws, 'text too long');
+
+    // Persist first (synchronous, atomic), then broadcast.
+    const sql = this.ctx.storage.sql;
+    const seq = this.ctx.storage.transactionSync(() => {
+      const next = sql.exec<{ v: number }>("UPDATE meta SET v = v + 1 WHERE k = 'last_seq' RETURNING v").one().v;
+      sql.exec('INSERT INTO messages (seq, user_id, text, created_at) VALUES (?, ?, ?, ?)', next, sender.userId, text, nowS());
+      sql.exec('DELETE FROM messages WHERE seq <= ?', next - RETAIN);
+      return next;
+    });
+    const frame = JSON.stringify({ type: 'message', seq, userId: sender.userId, text });
+    const now = nowS();
+    for (const peer of this.ctx.getWebSockets()) {
+      const pa = peer.deserializeAttachment() as Attachment | null;
+      if (!pa || pa.leaseExpires <= now) {
+        // Lease ran out without renewal: drop the socket; a fresh handshake re-checks membership.
+        try {
+          peer.close(CLOSE_LEASE, 'authorization expired');
+        } catch {
+          /* ignore */
+        }
+        continue;
+      }
+      try {
+        peer.send(frame);
+      } catch {
+        /* peer is closing */
+      }
+    }
+  }
+
+  async webSocketClose(ws: WebSocket, code: number): Promise<void> {
+    try {
+      // 1005/1006 are reserved and must not be echoed back.
+      ws.close(code === 1005 || code === 1006 || code === 1015 ? 1000 : code);
+    } catch {
+      /* already closed */
+    }
+  }
+
+  async webSocketError(ws: WebSocket): Promise<void> {
+    try {
+      ws.close(1011, 'error');
+    } catch {
+      /* already closed */
+    }
+  }
+}

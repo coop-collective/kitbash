@@ -1,8 +1,8 @@
 # Local discovery and fullstack reuse experiment
 
-This package tests whether reusable source helps an agent complete one fixed fullstack task. It is an opt-in experiment, separate from Kitbash's production MCP contract. It indexes local installable blocks and labels recipes as reference-only. Historical catalogs can contain reference-only templates; the current catalog has 17 blocks, 7 recipes, and no public templates.
+This package tests whether reusable source helps an agent complete fullstack work. It contains opt-in experiments, separate from Kitbash's production MCP contract. It indexes local installable blocks and labels recipes as reference-only. Historical catalogs can contain reference-only templates; the current catalog has 17 blocks, 7 recipes, and no public templates.
 
-**Measured result:** selective reference passed 10/10 groups but cost 62% more and took 15% longer than scratch in this one task. The installer arm cost 36% more and passed 9/10. All arms already shared framework dependencies. See the [full negative result, token counters, and limitations](../../docs/research/kitchen-sink-discovery.md); security/review/maintenance benefits were not measured.
+**Measured results:** the [small kitchen-sink study](../../docs/research/kitchen-sink-discovery.md) found higher costs with reuse. The [larger integration-and-maintenance follow-up](../../docs/research/lifecycle-reuse.md) ran three pairs: reuse cost 0.8% more and used 4.6% less agent time overall. Every stage passed automated checks, while separate source review found two defects. Both studies already shared framework dependencies; neither establishes end-to-end savings. See [lifecycle protocol and commands](lifecycle/README.md) for the follow-up; the commands below describe the earlier study.
 
 The kitchen-sink task includes revocable sessions, optimistic-concurrency profiles, private R2 files, revision-aware cached reports, and a browser login/edit/upload/download/logout journey. The saved apps are immutable experimental outputs, **not public starter templates or production-ready authentication systems**.
 
