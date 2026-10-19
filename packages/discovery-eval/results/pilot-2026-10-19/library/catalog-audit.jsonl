@@ -1,0 +1,12 @@
+{"time":"2026-10-19T12:36:51.764Z","tool":"catalog_search","query":"session auth cookie csrf origin","responseBytes":4237}
+{"time":"2026-10-19T12:36:54.140Z","tool":"catalog_get","id":"block:session-cookie","responseBytes":4271}
+{"time":"2026-10-19T12:36:54.471Z","tool":"catalog_get","id":"block:member-profiles","responseBytes":4049}
+{"time":"2026-10-19T12:36:54.601Z","tool":"catalog_get","id":"block:r2-private-uploads","responseBytes":4570}
+{"time":"2026-10-19T12:36:54.638Z","tool":"project_init","responseBytes":489}
+{"time":"2026-10-19T12:36:57.954Z","tool":"block_install","id":"block:session-cookie","responseBytes":3834}
+{"time":"2026-10-19T12:36:58.302Z","tool":"block_install","id":"block:member-profiles","responseBytes":3341}
+{"time":"2026-10-19T12:36:58.421Z","tool":"block_install","id":"block:r2-private-uploads","responseBytes":3472}
+{"time":"2026-10-19T12:37:01.622Z","tool":"block_install","id":"block:session-cookie","responseBytes":5691}
+{"time":"2026-10-19T12:37:02.014Z","tool":"block_install","id":"block:member-profiles","responseBytes":249}
+{"time":"2026-10-19T12:37:02.619Z","tool":"block_install","id":"block:r2-private-uploads","responseBytes":5003}
+{"time":"2026-10-19T12:37:04.991Z","tool":"block_install","id":"block:member-profiles","responseBytes":5125}

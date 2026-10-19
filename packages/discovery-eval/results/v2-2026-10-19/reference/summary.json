@@ -1,0 +1,211 @@
+{
+  "arm": "reference",
+  "code": 0,
+  "signal": null,
+  "wallMs": 166660,
+  "resultPresent": true,
+  "subtype": "success",
+  "isError": false,
+  "model": "claude-sonnet-5-5",
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 28,
+      "outputTokens": 22325,
+      "cacheReadInputTokens": 616049,
+      "cacheCreationInputTokens": 70605,
+      "webSearchRequests": 0,
+      "costUSD": 0.47306040000000005,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2884,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "costUsd": 0.47306040000000005,
+  "usage": {
+    "input_tokens": 28,
+    "cache_creation_input_tokens": 70605,
+    "cache_read_input_tokens": 616049,
+    "output_tokens": 22325,
+    "output_tokens_details": {
+      "thinking_tokens": 2884
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 7758,
+      "ephemeral_5m_input_tokens": 62847
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "durationMs": 165413,
+  "numTurns": 60,
+  "toolCalls": {
+    "mcp__project__catalog_search": 1,
+    "Glob": 4,
+    "mcp__project__catalog_get": 4,
+    "mcp__project__catalog_checkout": 3,
+    "Read": 12,
+    "mcp__project__project_copy_reference": 4,
+    "Write": 6,
+    "Edit": 16,
+    "mcp__project__project_check": 5,
+    "Grep": 1,
+    "mcp__project__catalog_discard": 3
+  },
+  "mcpServers": [
+    {
+      "name": "project",
+      "status": "connected",
+      "source": "dynamic"
+    }
+  ],
+  "checks": {
+    "typecheck": {
+      "check": "typecheck",
+      "passed": true,
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "wrangler",
+            "types",
+            "--strict-vars=false"
+          ],
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "wallMs": 1227
+        },
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "tsc",
+            "--noEmit"
+          ],
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "wallMs": 1196
+        }
+      ]
+    },
+    "test": {
+      "check": "test",
+      "passed": true,
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "vitest",
+            "run"
+          ],
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "wallMs": 2869
+        }
+      ]
+    },
+    "build": {
+      "check": "build",
+      "passed": true,
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "wrangler",
+            "deploy",
+            "--dry-run",
+            "--outdir",
+            "dist"
+          ],
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "wallMs": 1964
+        }
+      ]
+    },
+    "migrate": {
+      "check": "migrate",
+      "passed": true,
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "exec",
+            "wrangler",
+            "d1",
+            "migrations",
+            "apply",
+            "DB",
+            "--local"
+          ],
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "wallMs": 1724
+        }
+      ]
+    },
+    "acceptance": {
+      "passed": 10,
+      "total": 10,
+      "results": [
+        {
+          "name": "demo login, private session cookie, authenticated identity",
+          "passed": true
+        },
+        {
+          "name": "unsafe APIs reject missing, foreign and null Origin",
+          "passed": true
+        },
+        {
+          "name": "profile persists and stale writes conflict",
+          "passed": true
+        },
+        {
+          "name": "profiles are isolated between session owners",
+          "passed": true
+        },
+        {
+          "name": "private upload byte fidelity and response headers",
+          "passed": true
+        },
+        {
+          "name": "private upload isolation and deletion",
+          "passed": true
+        },
+        {
+          "name": "upload actual body bound",
+          "passed": true
+        },
+        {
+          "name": "report hits cache and immediately follows new revision",
+          "passed": true
+        },
+        {
+          "name": "logout revokes replayed session server-side",
+          "passed": true
+        },
+        {
+          "name": "real browser login/profile reload/upload/download/report/logout journey",
+          "passed": true
+        }
+      ]
+    }
+  }
+}

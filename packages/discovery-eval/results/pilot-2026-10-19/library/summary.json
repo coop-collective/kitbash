@@ -1,0 +1,128 @@
+{
+  "arm": "library",
+  "code": 0,
+  "signal": null,
+  "wallMs": 178078,
+  "resultPresent": true,
+  "subtype": "success",
+  "isError": false,
+  "model": "claude-sonnet-5-5",
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 36,
+      "outputTokens": 14242,
+      "cacheReadInputTokens": 898163,
+      "cacheCreationInputTokens": 72853,
+      "webSearchRequests": 0,
+      "costUSD": 0.4443883,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1787,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "costUsd": 0.4443883,
+  "usage": {
+    "input_tokens": 36,
+    "cache_creation_input_tokens": 72853,
+    "cache_read_input_tokens": 898163,
+    "output_tokens": 14242,
+    "output_tokens_details": {
+      "thinking_tokens": 1787
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 19965,
+      "ephemeral_5m_input_tokens": 52888
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "durationMs": 177286,
+  "numTurns": 27,
+  "toolCalls": {
+    "ToolSearch": 1,
+    "Bash": 13,
+    "mcp__catalog__catalog_search": 1,
+    "mcp__catalog__catalog_get": 3,
+    "mcp__catalog__project_init": 1,
+    "mcp__catalog__block_install": 7
+  },
+  "checks": {
+    "typecheck": {
+      "code": 0,
+      "signal": null,
+      "wallMs": 2771
+    },
+    "test": {
+      "code": 0,
+      "signal": null,
+      "wallMs": 4184
+    },
+    "build": {
+      "code": 0,
+      "signal": null,
+      "wallMs": 1885
+    },
+    "db:local": {
+      "code": 0,
+      "signal": null,
+      "wallMs": 2246
+    },
+    "acceptance": {
+      "passed": 9,
+      "total": 10,
+      "results": [
+        {
+          "name": "demo login, private session cookie, authenticated identity",
+          "passed": true
+        },
+        {
+          "name": "unsafe APIs reject missing, foreign and null Origin",
+          "passed": true
+        },
+        {
+          "name": "profile persists and stale writes conflict",
+          "passed": true
+        },
+        {
+          "name": "profiles are isolated between session owners",
+          "passed": true
+        },
+        {
+          "name": "private upload byte fidelity and response headers",
+          "passed": true
+        },
+        {
+          "name": "private upload isolation and deletion",
+          "passed": false,
+          "error": "Expected values to be strictly equal:\n\n204 !== 404\n"
+        },
+        {
+          "name": "upload actual body bound",
+          "passed": true
+        },
+        {
+          "name": "report hits cache and immediately follows new revision",
+          "passed": true
+        },
+        {
+          "name": "logout revokes replayed session server-side",
+          "passed": true
+        },
+        {
+          "name": "real browser login/profile reload/upload/download/report/logout journey",
+          "passed": true
+        }
+      ]
+    }
+  }
+}

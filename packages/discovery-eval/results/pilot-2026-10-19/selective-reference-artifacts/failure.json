@@ -1,0 +1,7 @@
+{
+  "classification": "interrupted-to-protect-shared-host-processes",
+  "costUsd": null,
+  "billing": "No final billing event; cost unknown, not zero.",
+  "outcome": "Not scored as a completed selective-reference arm.",
+  "partialTelemetry": "partial-telemetry.json"
+}
