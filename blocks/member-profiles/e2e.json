@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "name": "alternate-params",
+      "params": {
+        "tablePrefix": "app_",
+        "routePrefix": "/account/profile",
+        "avatarCount": 3
+      }
+    }
+  ]
+}

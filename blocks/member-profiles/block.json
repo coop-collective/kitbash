@@ -1,0 +1,243 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "member-profiles",
+  "type": "registry:block",
+  "title": "Owner-editable profiles with unique handles and revision-safe updates",
+  "description": "Adds a private-by-default profile record with a unique normalized handle, display name, bio and local avatar id. Owner-authenticated Hono routes validate bounded JSON, reject stale updates and expose only opted-in public fields.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "accounts"
+  ],
+  "meta": {
+    "maturity": "experimental",
+    "origin": "harvested",
+    "est_hours_saved": 4
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=22.18",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "SQL table prefix to avoid conflicts."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/profiles",
+      "description": "Mount point for this block."
+    },
+    {
+      "name": "avatarCount",
+      "type": "integer",
+      "default": 19,
+      "min": 1,
+      "max": 1000,
+      "description": "Number of local avatar ids in the host application catalog; null means initials."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_member_profiles.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_member_profiles.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/profiles.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/member-profiles/profiles.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/routes.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/member-profiles/routes.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/member-profiles.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/member-profiles.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/member-profiles/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_member_profiles.sql",
+      "name": "member_profiles",
+      "creates": [
+        "{{kit.tablePrefix}}member_profiles"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}member_profiles"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/me",
+      "auth": "session",
+      "description": "Read the caller profile, or an empty revision-zero view."
+    },
+    {
+      "method": "PUT",
+      "path": "{{kit.routePrefix}}/me",
+      "auth": "session",
+      "description": "Replace the caller profile with a matching revision."
+    },
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/public/:handle",
+      "auth": "public",
+      "description": "Read explicitly published profile fields."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "getProfile",
+      "from": "src/profiles.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "saveProfile",
+      "from": "src/profiles.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "getPublicProfile",
+      "from": "src/profiles.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "profileRoutes",
+      "from": "src/routes.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/member-profiles.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "authorization",
+        "validation",
+        "storage",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/member-profiles.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds a private-by-default profile record with a unique normalized handle, display name, bio and local avatar id. Owner-authenticated Hono routes validate bounded JSON, reject stale updates and expose only opted-in public fields.",
+    "when_to_use": [
+      "Owner-editable profiles with unique handles and revision-safe updates"
+    ],
+    "when_not_to_use": [
+      "No identity provider, email/role editing, uploaded avatars, social graph or profile UI. Public profiles require explicit opt-in. The host supplies identity resolution, local avatar assets, account deletion cleanup, rate limits and text escaping."
+    ],
+    "adapt": [
+      {
+        "id": "mount",
+        "required": true,
+        "title": "Supply authenticated identity and mount the routes",
+        "where": "{{paths.app}}/index.ts",
+        "do": "Mount profileRoutes(resolveOwner) at {{kit.routePrefix}}. resolveOwner receives the Request and host bindings and returns the verified owner id or null; never derive identity from an unverified header/body.",
+        "check": "GET /me without sign-in is 401; a signed-in caller can only edit its own profile."
+      },
+      {
+        "id": "ui",
+        "required": true,
+        "title": "Connect profile settings and avatar catalog",
+        "do": "Render text through normal escaped UI text nodes. PUT the complete allowed profile fields and the revision returned by GET /me. On 409 reload before offering another save. Serve avatar ids from a local catalog of avatarCount entries.",
+        "check": "Two open tabs cannot silently overwrite one another; invalid avatar ids return 400."
+      },
+      {
+        "id": "lifecycle",
+        "required": true,
+        "title": "Apply host lifecycle policies",
+        "do": "Delete member_profiles by trusted owner_id on account deletion. Rate-limit profile edits and choose reserved/moderated handle rules appropriate for the product.",
+        "check": "Account removal removes its public profile."
+      }
+    ],
+    "author_notes": "No identity provider, email/role editing, uploaded avatars, social graph or profile UI. Public profiles require explicit opt-in. The host supplies identity resolution, local avatar assets, account deletion cleanup, rate limits and text escaping."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/null-shot/platform",
+      "commit": "8f8ed9c2a44507490912f8631806664c724be767",
+      "paths": [
+        "packages/website/src/app/api/auth/update-username/route.ts",
+        "packages/website/src/app/api/graphql/user/user-repository.ts",
+        "packages/website/src/lib/username-utils.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}
