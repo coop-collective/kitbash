@@ -83,4 +83,5 @@ Open question: Nullshot already calls its registry items "blocks"; Kitbash's uni
   `templates/hono-d1`, with 1 file edited outside block files, all block tests passing, in 203 s for $0.93.
   The Codex repeat installed and verified the same blocks but edited 6 files (sandbox workarounds and extras), so its
   ≤ 3 edits criterion is open. kit-api's own bearer tokens now come from `email-code-auth`, installed from the registry.
+- 2026-10-19: block `cf-analytics` (hono-d1): first-party analytics SDK for Canvalytics (signed `track`/`fact`/`log`/`identify`, relay, 1 KB snippet).
 - Nothing is deployed or published; local git repository only. Next: v1 (WP-10…WP-19).

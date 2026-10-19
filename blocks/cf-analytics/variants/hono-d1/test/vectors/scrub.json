@@ -1,0 +1,363 @@
+{
+  "description": "PII scrubbing (DESIGN §12.3). `keys`: isDeniedKey(key). `strings`: scrubString(input) for a prop value (≤ 256 chars). `bodies`: scrubBody(input) for a log/message body (line by line, ≤ 4096 UTF-8 bytes). `props`: scrubProps(input). Every implementation (core, the cf-analytics block) must pass all of them.",
+  "keys": {
+    "denied": [
+      "prompt",
+      "prompts",
+      "system_prompt",
+      "message",
+      "messages",
+      "error_message",
+      "input",
+      "inputs",
+      "output",
+      "outputs",
+      "content",
+      "completion",
+      "choices",
+      "text",
+      "body",
+      "email",
+      "user_email",
+      "email_address",
+      "phone",
+      "phone_number",
+      "name",
+      "first_name",
+      "username",
+      "address",
+      "billing_address",
+      "wallet",
+      "wallet_address",
+      "walletId",
+      "api_key",
+      "openai_api_key",
+      "token",
+      "access_token",
+      "authorization",
+      "cookie",
+      "password",
+      "password_hash",
+      "secret",
+      "client_secret",
+      "ssn",
+      "iban",
+      "card",
+      "card_number",
+      "cardholder",
+      "credit_card",
+      "ip",
+      "client_ip",
+      "userEmail",
+      "__proto__",
+      "constructor",
+      "prototype"
+    ],
+    "allowed": [
+      "method",
+      "amount_usd",
+      "model",
+      "model_name",
+      "plan_name",
+      "prompt_tokens",
+      "input_tokens",
+      "output_tokens",
+      "completion_tokens",
+      "tokens",
+      "label",
+      "href",
+      "path",
+      "status",
+      "duration_ms",
+      "country",
+      "ship",
+      "tip",
+      "count",
+      "level",
+      "kind",
+      "source",
+      "variant",
+      "label_text_length"
+    ]
+  },
+  "strings": [
+    {
+      "name": "email",
+      "input": "contact jane.doe+tag@example.co.uk now",
+      "expected": "contact [email] now"
+    },
+    {
+      "name": "two emails",
+      "input": "a@b.io,c@d.dev",
+      "expected": "[email],[email]"
+    },
+    {
+      "name": "ipv4",
+      "input": "from 203.0.113.42:443",
+      "expected": "from [ip]:443"
+    },
+    {
+      "name": "ipv4 at sentence end",
+      "input": "client 10.0.0.1.",
+      "expected": "client [ip]."
+    },
+    {
+      "name": "version string is not an ip",
+      "input": "v1.2.3.4",
+      "expected": "v1.2.3.4"
+    },
+    {
+      "name": "out-of-range octets",
+      "input": "999.1.1.1",
+      "expected": "999.1.1.1"
+    },
+    {
+      "name": "ipv6 full",
+      "input": "peer 2001:0db8:85a3:0000:0000:8a2e:0370:7334 ok",
+      "expected": "peer [ip] ok"
+    },
+    {
+      "name": "ipv6 compressed",
+      "input": "peer 2001:db8::1 ok",
+      "expected": "peer [ip] ok"
+    },
+    {
+      "name": "ipv6 loopback",
+      "input": "bind ::1",
+      "expected": "bind [ip]"
+    },
+    {
+      "name": "ipv4-mapped ipv6",
+      "input": "x ::ffff:192.0.2.128 y",
+      "expected": "x [ip] y"
+    },
+    {
+      "name": "time is not an ip",
+      "input": "at 12:30:45",
+      "expected": "at 12:30:45"
+    },
+    {
+      "name": "mac address is not an ip",
+      "input": "mac aa:bb:cc:dd:ee:ff",
+      "expected": "mac aa:bb:cc:dd:ee:ff"
+    },
+    {
+      "name": "stripe live key",
+      "input": "key=\u0073k_live_51HxAbCdEfGhIjKlMnOp",
+      "expected": "key=[secret]"
+    },
+    {
+      "name": "stripe restricted key",
+      "input": "\u0072k_live_abcdefgh12345678",
+      "expected": "[secret]"
+    },
+    {
+      "name": "posthog personal key",
+      "input": "phx_abcdefghijklmnop1234",
+      "expected": "[secret]"
+    },
+    {
+      "name": "ideator token",
+      "input": "\u0068q_0123456789abcdef",
+      "expected": "[secret]"
+    },
+    {
+      "name": "canvalytics server key",
+      "input": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A.test_secret_not_real",
+      "expected": "[secret]"
+    },
+    {
+      "name": "canvalytics read token",
+      "input": "cr_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A.abcdefghijklmnop",
+      "expected": "[secret]"
+    },
+    {
+      "name": "openai style key",
+      "input": "sk-proj-abcdefghijklmnopqrstuvwx",
+      "expected": "[secret]"
+    },
+    {
+      "name": "jwt",
+      "input": "t=\u0065yJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+      "expected": "t=[secret]"
+    },
+    {
+      "name": "bearer header",
+      "input": "Authorization: Bearer abc.def-ghi_jkl012",
+      "expected": "Authorization: [secret]"
+    },
+    {
+      "name": "bearer alone",
+      "input": "sent Bearer abcdefgh12345678",
+      "expected": "sent Bearer [secret]"
+    },
+    {
+      "name": "basic auth credentials",
+      "input": "Basic dXNlcjpwYXNzd29yZA==",
+      "expected": "Basic [secret]"
+    },
+    {
+      "name": "the word basic is kept",
+      "input": "Basic configuration done",
+      "expected": "Basic configuration done"
+    },
+    {
+      "name": "query-string token",
+      "input": "/cb?token=abc123&x=1",
+      "expected": "/cb?token=[secret]&x=1"
+    },
+    {
+      "name": "password assignment",
+      "input": "login password=hunter2 ok",
+      "expected": "login password=[secret] ok"
+    },
+    {
+      "name": "json api_key",
+      "input": "{\"api_key\": \"abc123\"}",
+      "expected": "{\"api_key\": \"[secret]\"}"
+    },
+    {
+      "name": "aws key id",
+      "input": "\u0041KIAIOSFODNN7EXAMPLE",
+      "expected": "[secret]"
+    },
+    {
+      "name": "visa card",
+      "input": "card 4111111111111111 used",
+      "expected": "card [card] used"
+    },
+    {
+      "name": "spaced mastercard",
+      "input": "5555 5555 5555 4444",
+      "expected": "[card]"
+    },
+    {
+      "name": "dashed amex",
+      "input": "3782-822463-10005",
+      "expected": "[card]"
+    },
+    {
+      "name": "luhn-invalid run kept",
+      "input": "4111111111111112",
+      "expected": "4111111111111112"
+    },
+    {
+      "name": "ms timestamp kept",
+      "input": "ts 1760000000000",
+      "expected": "ts 1760000000000"
+    },
+    {
+      "name": "long base64 blob",
+      "input": "data:QmFzZTY0RW5jb2RlZERhdGFXaXRoTnVtYmVyczEyMzQ1Njc4OTBBQkNERUY=",
+      "expected": "data:[blob]"
+    },
+    {
+      "name": "sha256 hex kept",
+      "input": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "path kept",
+      "input": "/Users/coop/Workspace2/project/src/analytics/client.ts",
+      "expected": "/Users/coop/Workspace2/project/src/analytics/client.ts"
+    },
+    {
+      "name": "dashed title kept",
+      "input": "Some-Long-Title-With-Words-And-Numbers-2026",
+      "expected": "Some-Long-Title-With-Words-And-Numbers-2026"
+    },
+    {
+      "name": "ulid kept",
+      "input": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2A",
+      "expected": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2A"
+    },
+    {
+      "name": "newline collapsed in a prop",
+      "input": "a\nb",
+      "expected": "a b"
+    },
+    {
+      "name": "control characters removed",
+      "input": "a\u0000b\u001bc",
+      "expected": "abc"
+    },
+    {
+      "name": "plain text untouched",
+      "input": "Get started — it's free",
+      "expected": "Get started — it's free"
+    }
+  ],
+  "bodies": [
+    {
+      "name": "multi-line log",
+      "input": "upstream timeout for user bob@example.com\nretrying 198.51.100.7\nAuthorization: Bearer abcdefghijklmnop\ncard 4242424242424242",
+      "expected": "upstream timeout for user [email]\nretrying [ip]\nAuthorization: [secret]\ncard [card]"
+    },
+    {
+      "name": "CRLF normalised",
+      "input": "line one\r\nline two\rline three",
+      "expected": "line one\nline two\nline three"
+    }
+  ],
+  "props": [
+    {
+      "name": "denylist and values",
+      "input": {
+        "method": "card",
+        "email": "x@y.com",
+        "prompt": "write me a poem",
+        "note": "mail me at x@y.com",
+        "amount_usd": 20,
+        "ok": true,
+        "missing": null
+      },
+      "expected": {
+        "method": "card",
+        "note": "mail me at [email]",
+        "amount_usd": 20,
+        "ok": true,
+        "missing": null
+      }
+    },
+    {
+      "name": "card number as a number",
+      "input": {
+        "n": 4111111111111111,
+        "ts_ms": 1760000000000
+      },
+      "expected": {
+        "n": "[card]",
+        "ts_ms": 1760000000000
+      }
+    },
+    {
+      "name": "non-scalars dropped",
+      "input": {
+        "nested": {
+          "a": 1
+        },
+        "list": [
+          1,
+          2
+        ],
+        "kept": "x"
+      },
+      "expected": {
+        "kept": "x"
+      }
+    },
+    {
+      "name": "usage counts survive",
+      "input": {
+        "prompt_tokens": 120,
+        "completion_tokens": 30,
+        "model": "openai/gpt-5"
+      },
+      "expected": {
+        "prompt_tokens": 120,
+        "completion_tokens": 30,
+        "model": "openai/gpt-5"
+      }
+    }
+  ]
+}

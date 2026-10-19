@@ -1,0 +1,400 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "cf-analytics",
+  "type": "registry:block",
+  "title": "First-party analytics SDK for Canvalytics: signed server events, facts, logs and a 1 KB client relay",
+  "description": "Server track, fact, log and identify that scrub PII and send one HMAC-signed POST per invocation to a Canvalytics ingest, plus an anonymous-id middleware, a browser relay route and a 1 KB client snippet. The server key is a Worker secret read by name.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "analytics",
+    "observability"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "original",
+    "est_hours_saved": 8,
+    "network_hosts": [
+      "ingest.canvalytics_host"
+    ]
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "appSlug",
+      "type": "identifier",
+      "default": "my-app",
+      "description": "Short app name."
+    },
+    {
+      "name": "ingestUrl",
+      "type": "string",
+      "default": "https://ingest.CANVALYTICS_HOST/v1/ingest",
+      "description": "Ingest endpoint for the CANVALYTICS_URL var; replace the placeholder host."
+    },
+    {
+      "name": "projectId",
+      "type": "string",
+      "default": "prj_REPLACE_ME",
+      "description": "Canvalytics project id for the CANVALYTICS_PROJECT var."
+    },
+    {
+      "name": "keySecretName",
+      "type": "identifier",
+      "default": "CANVALYTICS_KEY",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+      "description": "Name of the Worker secret holding the server key (ck_<id>.<secret>)."
+    },
+    {
+      "name": "relayPath",
+      "type": "path",
+      "default": "/e",
+      "description": "Same-origin path of the browser relay."
+    },
+    {
+      "name": "cookieName",
+      "type": "identifier",
+      "default": "ca",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$",
+      "description": "First-party anonymous-id cookie name."
+    },
+    {
+      "name": "clientEvents",
+      "type": "string",
+      "default": "$pageview,$pageleave,cta_click,navigation_clicked,model_selected,model_filter_changed,code_copy_clicked,theme_toggle",
+      "description": "Comma-separated event names the relay accepts; never list server facts such as signup."
+    },
+    {
+      "name": "clientProps",
+      "type": "string",
+      "default": "label,href,category,mode,model_id,resend,outcome,duration_ms,filter,value,location",
+      "description": "Comma-separated prop keys the relay keeps on browser events."
+    },
+    {
+      "name": "transport",
+      "type": "enum",
+      "default": "https",
+      "values": [
+        "https",
+        "service-binding"
+      ],
+      "description": "https posts to CANVALYTICS_URL; service-binding posts only through env.CANVALYTICS (add the binding yourself)."
+    },
+    {
+      "name": "ingestService",
+      "type": "identifier",
+      "default": "canvalytics-ingest",
+      "description": "Ingest Worker name for the CANVALYTICS binding (service-binding only)."
+    },
+    {
+      "name": "libName",
+      "type": "identifier",
+      "default": "my-app",
+      "description": "Shown in the X-Canvalytics-Lib header."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/analytics/client.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/client.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/analytics/track.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/track.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/analytics/scrub.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/scrub.ts",
+      "role": "service",
+      "variant": "hono-d1",
+      "template": false
+    },
+    {
+      "path": "src/analytics/middleware.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/middleware.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/analytics/relay.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/relay.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/analytics/snippet.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/analytics/snippet.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/analytics.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/analytics.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/vectors/signature.json",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/vectors/signature.json",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "template": false
+    },
+    {
+      "path": "test/vectors/ids.json",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/vectors/ids.json",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "template": false
+    },
+    {
+      "path": "test/vectors/scrub.json",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/vectors/scrub.json",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "template": false
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "config/dev.vars.example",
+      "type": "registry:file",
+      "target": ".dev.vars.example",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "append-missing-lines"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/cf-analytics/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "envVars": {
+    "CANVALYTICS_URL": "{{kit.ingestUrl}}",
+    "CANVALYTICS_PROJECT": "{{kit.projectId}}"
+  },
+  "env": [
+    {
+      "name": "CANVALYTICS_URL",
+      "secret": false,
+      "default": "{{kit.ingestUrl}}",
+      "description": "Ingest endpoint."
+    },
+    {
+      "name": "CANVALYTICS_PROJECT",
+      "secret": false,
+      "default": "{{kit.projectId}}",
+      "description": "Project id."
+    }
+  ],
+  "secrets": [
+    {
+      "name": "CANVALYTICS_KEY",
+      "description": "Server key ck_<id>.<secret>; if keySecretName changes, use that name.",
+      "obtain": "Shown once when the Canvalytics project is created; wrangler secret put CANVALYTICS_KEY.",
+      "required": true
+    }
+  ],
+  "bindings": [
+    {
+      "type": "service",
+      "name": "CANVALYTICS",
+      "required": false,
+      "note": "Used only when transport is service-binding. Not added to wrangler.jsonc: a missing local service stops vitest-pool-workers."
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "{{kit.relayPath}}",
+      "auth": "public",
+      "description": "Browser events from the snippet; allowlisted, 4 KB cap."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "track",
+      "from": "src/analytics/track.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "fact",
+      "from": "src/analytics/track.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "log",
+      "from": "src/analytics/track.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "identify",
+      "from": "src/analytics/track.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "flush",
+      "from": "src/analytics/client.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "analytics",
+      "from": "src/analytics/middleware.ts",
+      "kind": "hono-middleware"
+    },
+    {
+      "symbol": "handleRelay",
+      "from": "src/analytics/relay.ts",
+      "kind": "hono-handler"
+    },
+    {
+      "symbol": "CLIENT_SNIPPET",
+      "from": "src/analytics/snippet.ts",
+      "kind": "constant"
+    },
+    {
+      "symbol": "scrub",
+      "from": "src/analytics/scrub.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/analytics.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "signing",
+        "batching",
+        "fact-ids",
+        "scrub",
+        "relay",
+        "dnt-gpc",
+        "failures",
+        "snippet"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/analytics.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds first-party analytics to a Hono Worker: track/fact/log/identify send one signed batch per request to a Canvalytics ingest; a middleware and relay route record browser events. No tables. Needs a server key secret and two vars.",
+    "when_to_use": [
+      "Report signups, activations and usage to your own Canvalytics project."
+    ],
+    "when_not_to_use": [
+      "No Canvalytics ingest exists yet.",
+      "Next.js backends (no nextjs-d1 variant yet)."
+    ],
+    "adapt": [
+      {
+        "id": "mount",
+        "required": true,
+        "title": "Mount the middleware and relay",
+        "where": "{{paths.app}}/index.ts",
+        "do": "app.use('*', analytics()); app.post('{{kit.relayPath}}', handleRelay); import both from './lib/analytics/...'.",
+        "check": "POST {{kit.relayPath}} with a $pageview body answers 204 and sets the cookie once."
+      },
+      {
+        "id": "config",
+        "required": true,
+        "title": "Set vars and the key secret",
+        "where": "wrangler.jsonc, .dev.vars",
+        "do": "Fix the host in CANVALYTICS_URL, set CANVALYTICS_PROJECT, wrangler secret put CANVALYTICS_KEY.",
+        "check": "Tests pass; a fact() reaches the ingest with 202."
+      },
+      {
+        "id": "facts",
+        "required": true,
+        "title": "Call fact() at canonical moments",
+        "where": "signup, activation, first use, payment code",
+        "do": "fact(c.env, c.executionCtx, 'signup', { user_id: account.id });",
+        "check": "Each fact is counted once even when retried."
+      },
+      {
+        "id": "snippet",
+        "required": false,
+        "title": "Add the browser snippet",
+        "do": "Inline CLIENT_SNIPPET in a page script.",
+        "check": "Page views arrive as client events."
+      }
+    ],
+    "author_notes": "Keep server fact names out of clientEvents. Relay and identify batches carry X-Canvalytics-Trust: client."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/disturbing/canvalytics (docs/DESIGN-analytics.md section 10)",
+      "commit": "d6501c9",
+      "paths": [
+        "packages/core/src/sign.ts",
+        "packages/core/src/ids.ts",
+        "packages/core/src/scrub.ts"
+      ]
+    },
+    "origin": "original",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T12:00:00Z"
+  }
+}

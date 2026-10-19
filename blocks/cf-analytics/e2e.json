@@ -1,0 +1,16 @@
+{
+  "_doc": "Cases for test-e2e/install.test.mjs, read from this block directory (never installed into projects). The defaults case always runs; transport=service-binding adds a services binding to wrangler.jsonc and the suite passes with it.",
+  "cases": [
+    {
+      "name": "service-binding",
+      "params": {
+        "transport": "service-binding",
+        "relayPath": "/t",
+        "cookieName": "xa",
+        "keySecretName": "ANALYTICS_SERVER_KEY",
+        "projectId": "prj_example",
+        "libName": "shop"
+      }
+    }
+  ]
+}

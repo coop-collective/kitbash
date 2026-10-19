@@ -1,0 +1,2 @@
+# cf-analytics: the project's SERVER key from Canvalytics, ck_<id>.<secret>, shown once at creation. Never a var.
+{{kit.keySecretName}}=
