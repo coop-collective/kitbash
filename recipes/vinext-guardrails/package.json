@@ -1,0 +1,7 @@
+{
+  "name": "kit-recipe-vinext-guardrails",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "dependencies": { "jsonc-parser": "3.3.1" }
+}
