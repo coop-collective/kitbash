@@ -59,6 +59,8 @@ The Bun template uses [`devEngines.runtime`](https://github.com/pnpm/pnpm/blob/v
 
 Run root installs in this repository; the root JS lock is the single reviewed dependency graph. Copy only source/configuration, leaving out `node_modules`, `.pnpm`, `target`, `.wrangler`, build output, generated types and secrets. In the new directory, run `pnpm install`, commit the generated `pnpm-lock.yaml`, then use frozen installs in its CI. Native `Cargo.lock` remains part of the Rust template. Direct Cargo and Go commands also work independently of pnpm.
 
+`recipes/tiered-result-cache-do` is a repository integration fixture, not a standalone copyable recipe: its preparation step needs the `@kitbash/core` workspace package and `blocks/tiered-result-cache` source. Run its tests from this workspace. To adopt the pattern in an application, install the [result-cache block](../blocks/tiered-result-cache/docs/README.md) and adapt the fixture's authorization and Durable Object revision checks.
+
 Worker templates and recipes retain local `pnpm-workspace.yaml` files to approve esbuild/workerd's install scripts after copying. Root installs intentionally use the root settings and pnpm prints a warning about those local settings being ignored. The Rust template instead supplies `pnpm-workspace.standalone.yaml`; rename it after copying. A nested workspace file would hide its Cargo manifest from root native discovery in pnpm 12.14.0.
 
 Cloudflare workflow recipes remain inert under `recipes/cloudflare-ci/workflows/`. Their standalone adoption instructions require committing the new project's lockfile before enabling frozen-install CI. No recursive root command performs a remote deployment or database migration.

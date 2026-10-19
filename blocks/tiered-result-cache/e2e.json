@@ -1,0 +1,1 @@
+{"cases": [{"name": "custom-namespace-and-bounds", "params": {"cacheNamespace": "reports", "maxBytes": 2048, "maxLifetimeSeconds": 120}}]}

@@ -345,6 +345,27 @@ importers:
         specifier: 4.137.0
         version: 4.137.0(@types/node@24.10.1)
 
+  recipes/tiered-result-cache-do:
+    devDependencies:
+      '@cloudflare/vitest-plugin':
+        specifier: 1.4.4
+        version: 1.4.4(@types/node@24.10.1)(vitest@4.1.12)
+      '@kitbash/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.12
+        version: 4.1.12(@types/node@24.10.1)(vite@8.3.4(@types/node@24.10.1)(esbuild@0.28.2)(yaml@2.9.1))
+      wrangler:
+        specifier: 4.151.1
+        version: 4.151.1(@types/node@24.10.1)
+
   recipes/typescript-lint:
     devDependencies:
       '@eslint/js':
