@@ -5,21 +5,21 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
 import { execRunner } from "@kitbash/cli";
-import { FIXTURE_BLOCK, call, connect, execFileP, exists, readJson, templateCopy } from "./helpers.mjs";
+import { FIXTURE_BLOCK, call, connect, execFileP, readJson, templateCopy } from "./helpers.mjs";
 
 async function preparedTemplate() {
   const dir = await templateCopy();
   try {
-    await execFileP("pnpm", ["install", "--offline", "--ignore-workspace", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
-  } catch {
-    // pnpm exits non-zero for ignored build scripts while still linking node_modules; checked below
-  }
-  if (!(await exists(path.join(dir, "node_modules", ".bin", "vitest")))) return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in templates/hono-d1 once)" };
-  try {
-    await execFileP(path.join(dir, "node_modules", ".bin", "wrangler"), ["types", "--strict-vars=false"], { cwd: dir, timeout: 120_000, env: { ...process.env, WRANGLER_SEND_METRICS: "false" } });
+    // This temp copy has its own allowBuilds config and may not have a lockfile yet.
+    await execFileP("pnpm", ["install", "--offline", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
   } catch (e) {
-    return { skip: `wrangler types failed: ${String(e.message).split("\n")[0]}` };
+    if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(`${e.message}\n${e.stdout}\n${e.stderr}`)) {
+      return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
+    }
+    throw e;
   }
+  await execFileP("pnpm", ["install", "--offline", "--frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
+  await execFileP(path.join(dir, "node_modules", ".bin", "wrangler"), ["types", "--strict-vars=false"], { cwd: dir, timeout: 120_000, env: { ...process.env, WRANGLER_SEND_METRICS: "false" } });
   return { dir };
 }
 
