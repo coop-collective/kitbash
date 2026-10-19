@@ -22,5 +22,6 @@ reading it. A project with its own, different `vitest.config.ts` gets the same c
 ## Replay test
 
 `shippedThrough=N` means production has run migrations 1..N. The test applies those to `PROD_SIM_DB`, inserts the rows in
-`prod-seed.ts`, applies all migrations, then checks that each seeded row still exists with its values (in tables that
-still exist) and that `PRAGMA foreign_key_check` is empty. Raise `shippedThrough` when a release ships.
+`prod-seed.ts`, applies all migrations, then checks that each seeded row still exists with its values (including all original tables and columns) and that `PRAGMA foreign_key_check` is empty. Reapplying migrations must preserve the resulting rows too. Raise `shippedThrough` when a release ships; it must match an existing migration. Duplicate rows count separately. Intentional destructive changes require domain-specific assertions.
+
+`history-snapshot.test.ts` exercises the preservation guard, including table/column removal, changed values, duplicate loss and blobs.
