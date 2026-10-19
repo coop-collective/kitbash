@@ -8,6 +8,8 @@ Reviewed 2026-10-19. New minimal implementation informed by these local sources:
 | `~/Workspace/platform/packages/client/src/realtime/reconnect-policy.ts` | `8f8ed9c2a44507490912f8631806664c724be767` | Stable-open reset, capped retry, jitter and app ping. Exclude product-specific room phases and reconnect ownership. |
 | `~/Workspace/platform/packages/jams/src/jam-do.ts` | `8f8ed9c2a44507490912f8631806664c724be767` | Evidence of hibernating room architecture; no Jam-specific state machine is copied. |
 
+The current JamDO constructor deliberately disables auto-response pings: its loaded-facet supervisor needs ping events to keep that facet resident. The shared reconnect-policy comment still describes the older auto-response behavior. This is an important divergence, not a pattern to copy blindly. This template owns ordinary platform Durable Objects and has no facet supervisor, so auto-response ping is appropriate; virtualized/facet deployments must reassess that lifecycle.
+
 [Hibernation guidance](https://developers.cloudflare.com/durable-objects/best-practices/websockets/) describes `acceptWebSocket` and attachment persistence. The template avoids regular server WebSocket event listeners, connection maps and interval heartbeats. SQL owns the durable message history; attachments own only live-connection metadata.
 
 [Test APIs](https://developers.cloudflare.com/workers/testing/vitest-integration/test-apis/) support running assertions in the actual Durable Object. Tests open real upgrade connections, exercise broadcast/tenant isolation, and reconstruct the class using the same storage and sockets. This deliberately makes a narrower claim than an actual platform eviction test.
