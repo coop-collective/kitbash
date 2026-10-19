@@ -242,7 +242,7 @@
   },
   "provenance": {
     "source": {
-      "repo": "github.com/Disturbing/mailcheap",
+      "repo": "github.com/coop-collective/mailcheap",
       "commit": "6fd333e2b9a66d65785958de40061afa72fa6059",
       "paths": [
         "lib/request-body.js",
