@@ -1,0 +1,38 @@
+{
+  "name": "kitchen-sink-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "ENVIRONMENT": "dev"
+  },
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "local-kitchen-sink",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "local-private-uploads"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RESULT_CACHE",
+      "id": "00000000000000000000000000000000"
+    }
+  ]
+}

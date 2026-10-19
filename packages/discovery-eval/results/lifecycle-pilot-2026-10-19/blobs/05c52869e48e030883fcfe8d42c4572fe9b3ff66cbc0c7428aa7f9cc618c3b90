@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS teams (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  owner_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS team_members (
+  team_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('owner', 'member')),
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (team_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS team_members_user ON team_members (user_id);
+
+CREATE TABLE IF NOT EXISTS team_uploads (
+  id TEXT PRIMARY KEY,
+  team_id TEXT NOT NULL,
+  uploaded_by TEXT NOT NULL,
+  object_key TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  content_type TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS team_uploads_team ON team_uploads (team_id);

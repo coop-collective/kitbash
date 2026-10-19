@@ -1,0 +1,4 @@
+{"time":"2026-10-19T13:42:44.005Z","phase":"integration/0","tool":"catalog_search","query":"team rooms websocket durable object hibernation uploads r2","durationMs":3.464082999999846,"outcome":"success","responseBytes":2730}
+{"time":"2026-10-19T13:42:44.014Z","phase":"integration/0","tool":"project_init","durationMs":7.951624999999694,"outcome":"success","responseBytes":489}
+{"time":"2026-10-19T13:42:45.828Z","phase":"integration/0","tool":"catalog_get","id":"block:hibernating-websocket","durationMs":1.1502909999999247,"outcome":"success","responseBytes":8288}
+{"time":"2026-10-19T13:42:46.247Z","phase":"integration/0","tool":"catalog_get","id":"block:r2-private-uploads","durationMs":1.0278749999997672,"outcome":"success","responseBytes":4670}

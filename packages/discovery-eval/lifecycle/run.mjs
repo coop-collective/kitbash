@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
-import { mkdir, mkdtemp, readFile, writeFile, cp, readdir, rename } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, rename, access } from 'node:fs/promises';
 import { finished } from 'node:stream/promises';
 import { createServer } from 'node:net';
 import { randomUUID } from 'node:crypto';
@@ -15,6 +15,8 @@ import { command, cleanEnv, stopOwnedGroup, installLifecycleCleanup } from './pr
 import { projectCheck, assertLocalConfig } from './project-tools.mjs';
 import { sourceFiles, snapshotApp, sha256, totals } from './snapshots.mjs';
 import { acceptLifecycle, verifyCheckpoint } from './acceptance.mjs';
+import { accept as acceptLegacy } from '../acceptance.mjs';
+import { copyLifecycleBaseline } from './baseline.mjs';
 
 const here = import.meta.dirname;
 const repository = path.resolve(here,'../../..');
@@ -29,10 +31,11 @@ export const schedule = [0,1,2].flatMap(pair => {
   const first = pair % 2 ? ['reuse','scratch'] : ['scratch','reuse'];
   return [ ...first.map(arm=>({pair:pair+1,arm,phase:'integration'})), ...[...first].reverse().map(arm=>({pair:pair+1,arm,phase:'maintenance'})) ];
 });
-export const budget = {integration:[1.5,.75], maintenance:[1,.75], maxUsd:24, timeoutMs:900000};
+export const budget = {integration:[1,.75], maintenance:[1,.75], maxUsd:21, priorKnownUsd:.7133287, priorUnknownReservedUsd:1.5, overallLimitUsd:24, timeoutMs:900000};
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const json = async (file,value) => { await mkdir(path.dirname(file),{recursive:true}); await writeFile(file+'.next',JSON.stringify(value,null,2)+'\n'); await rename(file+'.next',file); };
 const readJson = async file => JSON.parse(await readFile(file,'utf8'));
+const stopRequested = async destination => {try {await access(path.join(destination,'STOP'));return true;} catch(error) {if(error.code==='ENOENT')return false;throw error;}};
 const location = (destination,entry) => path.join(destination,`pair-${entry.pair}`,entry.arm);
 
 async function lockedInputs(root) {
@@ -40,6 +43,7 @@ async function lockedInputs(root) {
     'catalog.mjs','server.mjs','project-tools.mjs','process.mjs','run.mjs','acceptance.mjs',
     'lifecycle/run.mjs','lifecycle/process.mjs','lifecycle/project-tools.mjs','lifecycle/server.mjs',
     'lifecycle/snapshots.mjs','lifecycle/acceptance.mjs','lifecycle/task-integration.md','lifecycle/task-maintenance.md',
+    'lifecycle/baseline.mjs',
   ];
   const hashes = {};
   for (const name of names) hashes[name] = sha256(await readFile(path.resolve(here,'..',name)));
@@ -164,7 +168,8 @@ async function validate(project,artifacts,{phase,checkpoint,legacy,prior}) {
 }
 async function prepare(destination,root) {
   const metadata = {
-    protocol:'lifecycle-1',lockedAt:new Date().toISOString(),catalogRoot:root,
+    protocol:'lifecycle-2',lockedAt:new Date().toISOString(),catalogRoot:root,
+    harnessCommit:(await command('git',['rev-parse','HEAD'],{cwd:repository})).stdout.trim(),
     catalogCommit:(await command('git',['rev-parse','HEAD'],{cwd:root})).stdout.trim(),
     locked:await lockedInputs(root),schedule,budget,model:'claude-sonnet-5-5',effort:'high',
     treatment:'Catalog availability: reuse may inspect/copy/adapt or install suitable blocks; scratch uses existing app and ordinary dependencies. No forced checkout/discard ritual.',
@@ -178,22 +183,31 @@ async function prepare(destination,root) {
   const blobRoot=path.join(destination,'blobs');
   for (const entry of schedule.filter(e=>e.phase==='integration')) {
     const home=location(destination,entry),project=path.join(home,'app');
-    await mkdir(home,{recursive:true}); await mkdir(project);
-    for (const file of await readdir(baseline)) await cp(path.join(baseline,file),path.join(project,file),{recursive:true,errorOnExist:true});
+    await mkdir(home,{recursive:true});
+    await copyLifecycleBaseline(baseline,project);
     await writeFile(path.join(project,'.dev.vars'),'SESSION_SECRET=local-only-session-secret-at-least-32-characters\nDEMO_PASSWORD=local-demo-password\n');
     const start=Date.now(),preflight={};
     for(const name of ['install','typecheck','test','build','migrate']) {
       preflight[name]=await projectCheck(project,name);
       if(!preflight[name].passed) {await json(path.join(home,'preflight.json'),preflight);throw new Error(`Baseline preflight failed: ${entry.pair}/${entry.arm}/${name}`);}
     }
-    const legacy=await withServer(project,path.join(home,'preflight'),seedLegacy);
+    const legacy=await withServer(project,path.join(home,'preflight'),async base=>{
+      const seed=await seedLegacy(base);
+      preflight.acceptance=await acceptLegacy(base,path.join(home,'preflight'));
+      if(preflight.acceptance.passed!==preflight.acceptance.total) {
+        await json(path.join(home,'preflight.json'),preflight);
+        throw new Error(`Baseline browser/API preflight failed: ${entry.pair}/${entry.arm}`);
+      }
+      await verifyLegacy(base,seed);
+      return seed;
+    });
     await json(path.join(home,'private-legacy.json'),legacy);
     await json(path.join(home,'baseline.json'),await snapshotApp(project,blobRoot));
     metadata.preparation[`${entry.pair}/${entry.arm}`]={wallMs:Date.now()-start,preflight};
     await json(path.join(destination,'protocol.json'),metadata);
     console.log(JSON.stringify({event:'prepared-host',pair:entry.pair,arm:entry.arm}));
   }
-  await json(path.join(destination,'results.json'),{protocol:'lifecycle-1',stages:[]});
+  await json(path.join(destination,'results.json'),{protocol:'lifecycle-2',stages:[]});
   return metadata;
 }
 function feedback(validation) {
@@ -223,6 +237,11 @@ async function runStage(destination,metadata,entry,results) {
   results.stages.push(stage); await json(path.join(destination,'results.json'),results);
   let last;
   for(let attempt=0;attempt<2;attempt++) {
+    if(await stopRequested(destination)) {
+      stage.status='stopped-before-call';stage.passed=last?.passed===true;stage.totals=totals(stage.attempts);
+      await json(path.join(destination,'results.json'),results);
+      throw new Error('STOP requested; current known billing is preserved and no next model call was made');
+    }
     await assertLocked(metadata);
     const artifacts=path.join(phaseDir,`attempt-${attempt}`); await mkdir(artifacts);
     const mcp={mcpServers:{project:{command:process.execPath,args:[path.join(here,'server.mjs'),metadata.catalogRoot,project,path.join(artifacts,'tool-audit.jsonl'),entry.arm==='scratch'?'scratch':'install',`${entry.phase}/${attempt}`]}}};
@@ -269,7 +288,7 @@ async function runStage(destination,metadata,entry,results) {
 }
 export async function main(args=process.argv.slice(2)) {
   const {values}=parseArgs({args,options:{output:{type:'string'},resume:{type:'string'},'catalog-root':{type:'string'},'prepare-only':{type:'boolean'},'run-paid':{type:'boolean'}}});
-  if(Boolean(values['prepare-only'])===Boolean(values['run-paid'])) throw new Error('Choose --prepare-only OR --run-paid (maximum $24 CLI list-price limits across three pairs).');
+  if(Boolean(values['prepare-only'])===Boolean(values['run-paid'])) throw new Error('Choose --prepare-only OR --run-paid ($21 corrected-run CLI limits; pilot known cost plus full aborted-call reserve keep the combined allowance below $24).');
   if(values.resume&&values.output) throw new Error('Choose resume or new output');
   const root=path.resolve(values['catalog-root']??repository);
   const destination=values.resume?path.resolve(values.resume):values.output?path.resolve(values.output):await mkdtemp(path.join(os.tmpdir(),'kit-lifecycle-'));
@@ -282,6 +301,7 @@ export async function main(args=process.argv.slice(2)) {
   const results=await readJson(path.join(destination,'results.json'));
   if(results.stages.some(s=>s.status!=='complete')) throw new Error('Interrupted stage exists; preserve it and review billing before any further paid call');
   for(const entry of schedule) {
+    if(await stopRequested(destination)) {console.log(JSON.stringify({event:'stopped-before-next-stage',destination}));return;}
     if(results.stages.some(s=>s.pair===entry.pair&&s.arm===entry.arm&&s.phase===entry.phase))continue;
     await runStage(destination,metadata,entry,results);
   }
