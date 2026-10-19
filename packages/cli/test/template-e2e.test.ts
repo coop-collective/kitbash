@@ -1,6 +1,6 @@
 /**
  * The proof for the e2e harness: install core's fixture block from its local directory (no server) into a temp copy of
- * templates/hono-d1, then run the block's own verify commands for real through the allowlist (execFile, no shell).
+ * test-e2e/fixtures/hono-d1, then run the block's own verify commands for real through the allowlist (execFile, no shell).
  *
  * Dependencies come from the local pnpm store with `pnpm install --offline` (no network). When the store lacks them
  * (a fresh machine that never installed the template), the test is skipped with the reason.
@@ -22,7 +22,7 @@ async function preparedTemplate(): Promise<{ dir: string } | { skip: string }> {
   } catch (e) {
     const error = e as Error & { stdout?: string; stderr?: string };
     if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(`${error.message}\n${error.stdout}\n${error.stderr}`)) {
-      return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
+      return { skip: "test-e2e/fixtures/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
     }
     throw e;
   }
@@ -32,7 +32,7 @@ async function preparedTemplate(): Promise<{ dir: string } | { skip: string }> {
   return { dir };
 }
 
-describe("fixture block into templates/hono-d1, verified for real", () => {
+describe("fixture block into test-e2e/fixtures/hono-d1, verified for real", () => {
   it("kit install <dir> --apply, then kit verify runs vitest-in-workerd and tsc and records passed", async (ctx) => {
     const t = await preparedTemplate();
     if ("skip" in t) {

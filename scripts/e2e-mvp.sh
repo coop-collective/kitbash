@@ -4,7 +4,7 @@
 #   1. boots kit-api with `wrangler dev` on 127.0.0.1 (isolated state, throwaway pepper and registry key in a temp env
 #      file; nothing under packages/api is written), seeds @coop and mints an owner token;
 #   2. `kit login` (temp KIT_HOME) and `kit publish` of every blocks/* (private, dependencies first);
-#   3. copies templates/hono-d1 to a temp dir, installs its npm dependencies, commits a git baseline;
+#   3. copies test-e2e/fixtures/hono-d1 to a temp dir, installs its npm dependencies, commits a git baseline;
 #   4. runs a headless Claude Code session with the kitbash plugin and the prompt "add email-code sign-in, CLI OAuth
 #      login and orgs using the registry" (time- and budget-capped, push/deploy forbidden);
 #   5. asserts the lock has the three blocks, runs `kit verify` for each, and counts the agent's edits outside block
@@ -108,7 +108,7 @@ pnpm_install() { # $1: dir
 
 fresh_project() { # $1: dir
   mkdir -p "$1"
-  (cd "$REPO/templates/hono-d1" && tar --exclude node_modules --exclude .wrangler --exclude dist -cf - .) | (cd "$1" && tar -xf -)
+  (cd "$REPO/test-e2e/fixtures/hono-d1" && tar --exclude node_modules --exclude .wrangler --exclude dist -cf - .) | (cd "$1" && tar -xf -)
   pnpm_install "$1"
   (cd "$1" && git init -q && git add -A && git -c user.email=e2e@kit.local -c user.name=e2e commit -qm baseline)
 }

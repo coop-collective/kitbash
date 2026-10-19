@@ -9,7 +9,7 @@ import type { Runner } from "../src/verify.ts";
 
 export const here = path.dirname(fileURLToPath(import.meta.url));
 export const repo = path.resolve(here, "../../..");
-export const TEMPLATE = path.join(repo, "templates", "hono-d1");
+export const TEMPLATE = path.join(repo, "test-e2e", "fixtures", "hono-d1");
 export const FIXTURE_BLOCK = path.join(repo, "packages", "core", "test", "fixtures", "blocks", "email-code-auth-fixture");
 export const FIXTURE_LOCAL_ID = "@local/email-code-auth-fixture";
 export const FIXTURE_ID = "@coop/email-code-auth-fixture";
@@ -28,7 +28,7 @@ export async function tmpDir(prefix = "kit-cli-"): Promise<string> {
   return d;
 }
 
-/** A temp copy of templates/hono-d1 without node_modules. */
+/** A temp copy of test-e2e/fixtures/hono-d1 without node_modules. */
 export async function templateCopy(): Promise<string> {
   const d = await tmpDir("kit-proj-");
   await cp(TEMPLATE, d, { recursive: true, filter: (src) => !/(^|\/)(node_modules|\.wrangler|dist)(\/|$)/.test(path.relative(TEMPLATE, src)) });

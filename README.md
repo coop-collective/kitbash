@@ -95,7 +95,7 @@ Open question: Nullshot already calls its registry items "blocks"; Kitbash's uni
   `d1-rate-limit`, `vitest-workerd-harness`). Tests: core 171, api 86, cli 71, plugin 19, contract examples 15, e2e
   harness 28/28 (every block, conflict resolutions, the three-block MVP chain). `scripts/e2e-mvp.sh`: a headless Claude
   Code session installed email-code-auth + cli-oauth-login + orgs-roles-invites from the local registry into a fresh
-  `templates/hono-d1`, with 1 file edited outside block files, all block tests passing, in 203 s for $0.93.
+  `test-e2e/fixtures/hono-d1`, with 1 file edited outside block files, all block tests passing, in 203 s for $0.93.
   The Codex repeat installed and verified the same blocks but edited 6 files (sandbox workarounds and extras), so its
   ≤ 3 edits criterion is open. kit-api's own bearer tokens now come from `email-code-auth`, installed from the registry.
 - 2026-10-19: block `cf-analytics` (hono-d1): first-party analytics SDK for Canvalytics (signed `track`/`fact`/`log`/`identify`, relay, 1 KB snippet).

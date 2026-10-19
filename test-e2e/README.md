@@ -1,6 +1,6 @@
 # test-e2e (WP-05 G3)
 
-`install.test.mjs` (node --test) installs real block directories into a copy of `templates/hono-d1` with the kit CLI
+`install.test.mjs` (node --test) installs real block directories into a copy of `test-e2e/fixtures/hono-d1` with the kit CLI
 (local path, no server), applies, runs each block's `verify.commands` through `kit verify`, and asserts they pass.
 
 ```
@@ -41,7 +41,7 @@ listed conflicts and no lock, then installs with `resolve.params` / `resolve.on_
 
 - Every `blocks/<name>/block.json` runs once with default params, with no entry needed.
 - A block's own cases live in `blocks/<name>/e2e.json` (core allows the file undeclared; it is never installed):
-  `cases` (`{ "name", "params", "dependencyParams"?: { "<dep>": { ... } } }`), `conflicts`
+  `cases` (`{ "name", "params", "variant"?: "variant-id", "dependencyParams"?: { "<dep>": { ... } } }`), `conflicts`
   (`{ "name", "setup": { "<path>": "<content>" }, "params"?, "expect": [{ "kind", "name", "resolve_with_param"? }],
   "resolve": { "params"?, "on_conflict"? } }`) and `chains`.
 - `test-e2e/cases.json` has the same keys under `blocks.<name>` (merged by case name; the block's file wins), entries

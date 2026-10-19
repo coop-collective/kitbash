@@ -17,7 +17,7 @@ packages/core   packages/api   packages/cli   packages/plugin   templates/   blo
 
 ## MVP: private registry for the owner, MCP search/get/install, 5 harvested blocks
 
-Exit (from DESIGN §7): a fresh `templates/hono-d1` project gets `email-code-auth` + `cli-oauth-login` +
+Exit (from DESIGN §7): a fresh `test-e2e/fixtures/hono-d1` project gets `email-code-auth` + `cli-oauth-login` +
 `orgs-roles-invites` installed by Claude Code through the `registry_*` tools in one session, adapts in ≤ 3 edits, and
 every block test passes; the same with Codex; `kit-api` itself has `email-code-auth` installed from the registry.
 
@@ -117,7 +117,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
     timeout, captured tail; `src/keys.ts` keychain via `security`/`secret-tool` with file fallback.
   - Single-file build (`tsup`), runnable as `node packages/cli/dist/kit.js` and via `pnpm kit`.
 - **Acceptance**
-  - Against the mock server and `templates/hono-d1` (copied to a temp dir): `kit install @coop/fixture` prints a plan with
+  - Against the mock server and `test-e2e/fixtures/hono-d1` (copied to a temp dir): `kit install @coop/fixture` prints a plan with
     the renumbered migration and the config hunks and writes nothing; `--apply` writes exactly the planned files, patches
     `wrangler.jsonc` preserving comments, writes the lock; `kit verify` runs the block's vitest and records `passed`;
     editing an installed file then `kit diff` shows the hunk; `kit propose` produces a patch with `{{kit.tokenPrefix}}`
@@ -148,7 +148,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
     matches the contract) and `test/*.test.mjs`.
 - **Acceptance:** `claude --plugin-dir packages/plugin/plugins/kitbash` lists the tools; `registry_search` → `registry_get` →
   `registry_install` (dry run) → `registry_install {dry_run:false}` → `registry_verify` complete in a headless Claude Code
-  session against `templates/hono-d1` and the mock or dev server; the same tool list appears in Codex. `pnpm -F plugin
+  session against `test-e2e/fixtures/hono-d1` and the mock or dev server; the same tool list appears in Codex. `pnpm -F plugin
   validate` and `test` green.
 - **Tests:** `node --test`: validate, tool list/schemas, one `tools/call` round trip with a stubbed CLI.
 
@@ -157,7 +157,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
 - **Model:** sonnet · **Group:** G1 (template), G3 (harness) · **Depends on:** WP-01 for the harness only
 - **Owns:** `templates/**`, `test-e2e/**`
 - **Deliverables**
-  - `templates/hono-d1`: Hono Worker, `wrangler.jsonc` with a D1 `DB` placeholder, `migrations/0001_init.sql` (a
+  - `test-e2e/fixtures/hono-d1`: Hono Worker, `wrangler.jsonc` with a D1 `DB` placeholder, `migrations/0001_init.sql` (a
     `meta` table), one `/health` route, vitest-in-workerd config with `apply-migrations` (block #11), `.dev.vars.example`,
     `.kit/project.json`, README. Builds, tests pass.
   - `templates/nextjs-d1` (stretch): OpenNext or vinext minimal with a route handler and D1 binding, same test harness.
@@ -175,7 +175,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
 - **Deliverables:** three block directories per BLOCK-SPEC with the `hono-d1` variant, params (`appSlug`, `tokenPrefix`,
   `tablePrefix`, `routePrefix`, `appDomain`, `codeTtlMin`, `mailer`), tests (the scenario in BLOCK-SPEC §10), `SKILL.md`
   ≤ 1,500 tokens, CHANGELOG, `provenance.source` filled, `registryDependencies` wiring (`email-code-auth` → the other two).
-- **Acceptance:** `kit validate` clean (scanner too); `test-e2e` installs all three into `templates/hono-d1` with defaults and
+- **Acceptance:** `kit validate` clean (scanner too); `test-e2e` installs all three into `test-e2e/fixtures/hono-d1` with defaults and
   with `tokenPrefix=mc_ tablePrefix=app_` and both pass; summary and SKILL.md within budget; a second install of
   `email-code-auth` into a project with a `members` table reports the conflict and `tablePrefix=auth_` resolves it.
 
@@ -222,7 +222,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
   only, `packages/api/**` to install blocks into it (WP-02 is finished by then)
 - **Deliverables**
   - `scripts/e2e-mvp.sh`: boots `wrangler dev`, seeds `@coop`, publishes `blocks/*` with `kit publish`, copies
-    `templates/hono-d1` to a temp dir, runs a headless Claude Code session with the plugin and the prompt "add email-code
+    `test-e2e/fixtures/hono-d1` to a temp dir, runs a headless Claude Code session with the plugin and the prompt "add email-code
     sign-in, CLI OAuth login and orgs using the registry", asserts the lock has three blocks, runs `kit verify` for each,
     counts the agent's edits outside block files (≤ 3), repeats with Codex.
   - Dogfood: `kit install @coop/email-code-auth --param tokenPrefix=kit_` into `packages/api`, replacing WP-02's minted-
@@ -290,7 +290,7 @@ Parallel groups: K1 {WP-20, WP-21} → K2 {WP-22, WP-26, WP-27} → K3 {WP-23, W
     `api-keys-with-rate-limit-and-harness`. The harness reads `blocks/*/e2e.json`, installs through `kit install
     --blocks-dir`, runs `pnpm install` when a block adds npm dependencies, and verifies every block in the lock.
   - `scripts/e2e-mvp.sh`: local `wrangler dev` of kit-api (temp state, throwaway pepper and registry key), seed, token,
-    `kit login`, `kit publish` of all 8 blocks, a fresh `templates/hono-d1` copy, a headless Claude Code session with
+    `kit login`, `kit publish` of all 8 blocks, a fresh `test-e2e/fixtures/hono-d1` copy, a headless Claude Code session with
     the plugin (allowlisted tools only; push/deploy/publish/curl/web denied; $5 and 30 min caps), then lock check,
     `kit verify` of every block and the edit count. `--no-agent` runs the same with a scripted install; `--codex` adds
     the Codex repeat.

@@ -1,5 +1,5 @@
 /**
- * Kitbash e2e: install real block directories into a copy of templates/hono-d1 with the kit CLI (local path, no server),
+ * Kitbash e2e: install real block directories into a copy of test-e2e/fixtures/hono-d1 with the kit CLI (local path, no server),
  * apply, run each block's verify.commands through `kit verify`, and assert they pass.
  *
  *   node --test test-e2e/install.test.mjs            (from the repo root; also: node test-e2e/install.test.mjs)
@@ -20,7 +20,7 @@ import { installStandalone } from "./pnpm-install.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "..");
-const TEMPLATE = path.join(repo, "templates", "hono-d1");
+const TEMPLATE = path.join(repo, "test-e2e", "fixtures", "hono-d1");
 const KIT = path.join(repo, "packages", "cli", "src", "kit.ts");
 // top level only: node_modules has dist dirs of its own
 const SKIP_COPY = /^(\.wrangler|dist|\.kit\/plans)(\/|$)/;
@@ -126,7 +126,7 @@ async function loadPlan() {
   const step = (block, s = {}) => {
     const dir = dirs.get(block);
     if (!dir) throw new Error(`unknown block ${block} (not in blocks/ and no cases.json "path")`);
-    return { block, dir, params: s.params ?? {}, dependencyParams: s.dependencyParams ?? {} };
+    return { block, dir, variant: s.variant, params: s.params ?? {}, dependencyParams: s.dependencyParams ?? {} };
   };
   const entries = [];
   const chains = [...(cfg.chains ?? [])];
@@ -155,7 +155,7 @@ const kit = (args, cwd, home) => sh("node", [KIT, ...args], { cwd, timeout: 600_
 const paramArgs = (p) => Object.entries(p).flatMap(([k, v]) => ["--param", `${k}=${v}`]);
 const depParamArgs = (dp) => Object.entries(dp).flatMap(([dep, p]) => paramArgs(Object.fromEntries(Object.entries(p).map(([k, v]) => [`${dep}.${k}`, v]))));
 /** `kit install` resolves the block's registryDependencies itself (from blocks/, by directory name) and installs them first. */
-const installArgs = (s, extra = []) => ["install", s.dir, "--blocks-dir", BLOCKS, ...paramArgs(s.params), ...depParamArgs(s.dependencyParams), ...extra];
+const installArgs = (s, extra = []) => ["install", s.dir, "--blocks-dir", BLOCKS, ...(s.variant ? ["--variant", s.variant] : []), ...paramArgs(s.params), ...depParamArgs(s.dependencyParams), ...extra];
 const fmt = (r) => `exit ${r.code}\n${r.out}\n${r.err}`.slice(-4000);
 
 /** Blocks that add npm dependencies change package.json: install them (offline first) as a person would. */
@@ -174,7 +174,7 @@ async function installAddedDependencies(dir, base) {
 const problem = await toolingProblem();
 const plan = await loadPlan();
 
-describe("kitbash e2e: blocks installed into templates/hono-d1 and verified", () => {
+describe("kitbash e2e: blocks installed into test-e2e/fixtures/hono-d1 and verified", () => {
   if (plan.length === 0) it("has cases", { skip: "no blocks found (blocks/* is empty and cases.json lists none)" }, () => {});
   for (const c of plan) {
     it(c.title, { timeout: 900_000 }, async () => {
@@ -221,6 +221,7 @@ describe("kitbash e2e: blocks installed into templates/hono-d1 and verified", ()
         const manifest = await readJson(path.join(s.dir, "block.json"));
         const id = byBlock(manifest.name);
         assert.ok(id, `lock records ${manifest.name}`);
+        if (s.variant) assert.equal(lock.blocks[id].variant, s.variant, `lock variant for ${id}`);
         for (const [k, v] of Object.entries(s.params)) {
           const recorded = lock.blocks[id].params?.[k];
           if (recorded !== undefined) assert.equal(String(recorded), String(v), `lock params.${k} for ${id}`);

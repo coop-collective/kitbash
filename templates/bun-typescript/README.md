@@ -13,4 +13,4 @@ The server exposes `GET /healthz`, defaults to loopback port 3000, validates `PO
 
 Bun executes TypeScript, while the pinned TypeScript 7 compiler performs the explicit typecheck. Tests include an actual ephemeral-port HTTP listener. `pnpm build` emits a Bun-target bundle, not a standalone executable. A standalone copy generates its own `pnpm-lock.yaml`; commit it and use frozen installs in CI. Inside Kitbash, use the root lockfile. Secrets and build output are ignored.
 
-This is a Bun service/CLI foundation, not a Cloudflare Worker runtime. Worker bindings require workerd tests and Wrangler; use `templates/hono-d1` for that target. No remote service, authentication, deployment, or production application is included.
+This is a Bun service/CLI foundation, not a Cloudflare Worker runtime. Worker bindings require workerd tests and Wrangler; use `test-e2e/fixtures/hono-d1` for that target. No remote service, authentication, deployment, or production application is included.

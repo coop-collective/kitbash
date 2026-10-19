@@ -11,7 +11,7 @@ import { createKitServer } from "../plugins/kitbash/scripts/server.mjs";
 export const here = path.dirname(fileURLToPath(import.meta.url));
 export const pluginRoot = path.resolve(here, "..");
 export const repo = path.resolve(here, "../../..");
-export const TEMPLATE = path.join(repo, "templates", "hono-d1");
+export const TEMPLATE = path.join(repo, "test-e2e", "fixtures", "hono-d1");
 export const FIXTURE_BLOCK = path.join(repo, "packages", "core", "test", "fixtures", "blocks", "email-code-auth-fixture");
 export const NOW = "2026-10-20T10:11:12.000Z";
 export const API = "http://127.0.0.1:8787";
@@ -28,7 +28,7 @@ export async function tmpDir(prefix = "kit-plugin-") {
   return d;
 }
 
-/** A temp copy of templates/hono-d1 without node_modules. */
+/** A temp copy of test-e2e/fixtures/hono-d1 without node_modules. */
 export async function templateCopy() {
   const d = await tmpDir("kit-plugin-proj-");
   await cp(TEMPLATE, d, { recursive: true, filter: (src) => !/(^|\/)(node_modules|\.wrangler|dist)(\/|$)/.test(path.relative(TEMPLATE, src)) });

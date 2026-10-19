@@ -1,5 +1,5 @@
 /**
- * Local-path installs: the fixture block into a temp copy of templates/hono-d1, with no server (fetch throws).
+ * Local-path installs: the fixture block into a temp copy of test-e2e/fixtures/hono-d1, with no server (fetch throws).
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";

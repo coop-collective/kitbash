@@ -1,5 +1,5 @@
 {
-  "name": "kit-template-hono-d1",
+  "name": "@kitbash/fixture-hono-d1",
   "version": "0.1.0",
   "private": true,
   "type": "module",
