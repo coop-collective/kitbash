@@ -1,0 +1,341 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "hibernating-websocket",
+  "type": "registry:block",
+  "title": "Tenant-scoped hibernating WebSocket rooms",
+  "description": "Install a SQLite Durable Object, authorized same-origin upgrade handler, browser client and tests into an existing Worker. Bounded history, attachment-based session leases, ping auto-response and configurable bindings/routes.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "durable-objects",
+    "websocket",
+    "fullstack"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "original"
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=22.18",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "className",
+      "type": "identifier",
+      "default": "HibernatingRoom",
+      "pattern": "^[A-Z][A-Za-z0-9]{0,62}$"
+    },
+    {
+      "name": "bindingName",
+      "type": "identifier",
+      "default": "ROOM_SOCKETS",
+      "pattern": "^[A-Z][A-Z0-9_]{0,62}$"
+    },
+    {
+      "name": "fileSlug",
+      "type": "identifier",
+      "default": "hibernating-room",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$"
+    },
+    {
+      "name": "assetsDirectory",
+      "type": "identifier",
+      "default": "public",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$"
+    },
+    {
+      "name": "assetSlug",
+      "type": "identifier",
+      "default": "room-chat",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$"
+    },
+    {
+      "name": "migrationTag",
+      "type": "identifier",
+      "default": "hibernating-room-v1",
+      "pattern": "^[a-z][a-z0-9-]{0,47}$"
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/rooms",
+      "pattern": "^/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+$"
+    },
+    {
+      "name": "maxConnections",
+      "type": "integer",
+      "default": 100,
+      "min": 2,
+      "max": 100
+    },
+    {
+      "name": "messageBytes",
+      "type": "integer",
+      "default": 4096,
+      "min": 256,
+      "max": 65536
+    },
+    {
+      "name": "textChars",
+      "type": "integer",
+      "default": 1000,
+      "min": 1,
+      "max": 1000
+    },
+    {
+      "name": "historySize",
+      "type": "integer",
+      "default": 100,
+      "min": 1,
+      "max": 100
+    },
+    {
+      "name": "leaseSeconds",
+      "type": "integer",
+      "default": 300,
+      "min": 1,
+      "max": 300
+    },
+    {
+      "name": "rateBurst",
+      "type": "integer",
+      "default": 10,
+      "min": 1,
+      "max": 100
+    },
+    {
+      "name": "ratePerSecond",
+      "type": "integer",
+      "default": 2,
+      "min": 1,
+      "max": 100
+    }
+  ],
+  "files": [
+    {
+      "path": "src/room.ts",
+      "target": "{{paths.lib}}/{{kit.fileSlug}}.ts",
+      "role": "service",
+      "type": "registry:lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/upgrade.ts",
+      "target": "{{paths.routes}}/{{kit.fileSlug}}.ts",
+      "role": "route",
+      "type": "registry:lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "public/room-client.js",
+      "target": "{{kit.assetsDirectory}}/{{kit.assetSlug}}/room-client.js",
+      "role": "ui",
+      "type": "registry:file",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "public/index.html",
+      "target": "{{kit.assetsDirectory}}/{{kit.assetSlug}}/index.html",
+      "role": "ui",
+      "type": "registry:file",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/room.test.mjs",
+      "target": "{{paths.tests}}/{{kit.fileSlug}}.test.mjs",
+      "role": "test",
+      "type": "registry:file",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/client.test.mjs",
+      "target": "{{paths.tests}}/{{kit.fileSlug}}-client.test.mjs",
+      "role": "test",
+      "type": "registry:file",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/fixture.ts",
+      "target": "{{paths.tests}}/{{kit.fileSlug}}.fixture.ts",
+      "role": "fixture",
+      "type": "registry:file",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "type": "registry:file",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "SKILL.md",
+      "target": ".kit/blocks/hibernating-websocket/SKILL.md",
+      "role": "doc",
+      "type": "registry:file"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.13.9"
+  ],
+  "devDependencies": [
+    "miniflare@5.20261012.1-beta",
+    "esbuild@0.28.2",
+    "jsonc-parser@3.3.1"
+  ],
+  "registryDependencies": [],
+  "envVars": {},
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "durable_object",
+      "name": "{{kit.bindingName}}",
+      "required": true,
+      "note": "SQLite Durable Object class; export the rendered class from the Worker entrypoint."
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/:room",
+      "auth": "session",
+      "description": "Same-origin WebSocket handshake; host callback validates session and room membership."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "handleRoomUpgrade",
+      "from": "src/upgrade.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "{{kit.className}}",
+      "from": "src/room.ts",
+      "kind": "durable-object"
+    },
+    {
+      "symbol": "createRoomRoutes",
+      "from": "src/upgrade.ts",
+      "kind": "hono-router"
+    }
+  ],
+  "ui": [
+    {
+      "name": "Room browser client",
+      "path": "public/index.html",
+      "kind": "html",
+      "description": "Cookie-based client with bounded reconnect, no automatic message replay and textContent rendering."
+    }
+  ],
+  "tests": [
+    {
+      "file": "test/room.test.mjs",
+      "runner": "node-test-miniflare",
+      "covers": [
+        "real-websocket",
+        "tenant-isolation",
+        "authorization",
+        "attachment-reconstruction",
+        "bounded-history",
+        "session-expiry",
+        "config-merge"
+      ]
+    },
+    {
+      "file": "test/client.test.mjs",
+      "runner": "node-test",
+      "covers": [
+        "reconnect",
+        "heartbeat",
+        "teardown",
+        "no-message-replay"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "node --test {{paths.tests}}/{{kit.fileSlug}}.test.mjs {{paths.tests}}/{{kit.fileSlug}}-client.test.mjs",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Installable hibernating room feature: configurable SQLite DO class/binding, same-origin authenticated upgrade handler, bounded history and browser reconnect client. Real workerd tests run independently of the host Vitest config.",
+    "when_to_use": [
+      "A Worker needs tenant-scoped room broadcasts with bounded recent history."
+    ],
+    "when_not_to_use": [
+      "Immediate session revocation, durable delivery acknowledgments, or unbounded history are required."
+    ],
+    "adapt": [
+      {
+        "id": "export-and-mount",
+        "required": true,
+        "title": "Export the Durable Object and mount the handler",
+        "where": "Worker entrypoint and routes",
+        "do": "Export the rendered class from the Worker entrypoint. Mount handleRoomUpgrade at the rendered route prefix, passing the DO binding and an authorization callback that checks session and room membership.",
+        "check": "A real same-origin authorized upgrade succeeds; unauthenticated or forbidden-room handshakes fail."
+      },
+      {
+        "id": "serve-client",
+        "required": true,
+        "title": "Serve the installed browser files",
+        "where": "Host static asset configuration",
+        "do": "Serve the rendered assets directory under the existing host asset setup; preserve existing asset binding and routing. The installed HTML imports its sibling client module.",
+        "check": "The page connects through the same origin after host sign-in."
+      },
+      {
+        "id": "migration-tag",
+        "required": true,
+        "title": "Choose an unused DO migration tag",
+        "where": "wrangler.jsonc",
+        "do": "Choose migrationTag before installing. Preserve existing migrations and export the new class; do not reuse a deployed tag for a different class.",
+        "check": "Wrangler config contains the intended binding and a new_sqlite_classes migration for the exported class."
+      }
+    ],
+    "author_notes": "No auth provider or host entrypoint overwrite. Tests use local Miniflare, including a test-only control Worker; never expose that fixture as a production entrypoint. Reconstruction tests do not prove platform eviction timing. Leases cap revocation lag; auto-ping does not reauthorize."
+  },
+  "provenance": {
+    "source": {
+      "repo": "https://github.com/coop-collective/kitbash",
+      "commit": "06d82a19f1cec574da5c603cb8378285b9399f6c",
+      "paths": [
+        "templates/hibernating-websocket/src",
+        "templates/hibernating-websocket/public",
+        "templates/hibernating-websocket/test",
+        "docs/research/hibernating-websocket.md"
+      ]
+    },
+    "origin": "original",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}
