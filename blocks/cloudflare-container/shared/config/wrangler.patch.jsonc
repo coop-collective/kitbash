@@ -1,0 +1,10 @@
+{
+  "name": "{{kit.serviceName}}-container",
+  "main": "{{paths.lib}}/{{kit.serviceName}}/worker.ts",
+  "compatibility_date": "2026-10-19",
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+  "services": [{ "binding": "AUTH", "service": "{{kit.authService}}" }],
+  "durable_objects": { "bindings": [{ "name": "HASH_CONTAINER", "class_name": "HashContainer" }] },
+  "migrations": [{ "tag": "hash-container-v1", "new_sqlite_classes": ["HashContainer"] }],
+  "containers": [{ "class_name": "HashContainer", "image": "./containers/{{kit.serviceName}}/Dockerfile", "image_build_context": "./containers/{{kit.serviceName}}", "instance_type": "basic", "max_instances": {{kit.maxInstances}} }]
+}
