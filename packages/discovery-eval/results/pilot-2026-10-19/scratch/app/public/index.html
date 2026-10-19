@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kitchen Sink</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;padding:1rem;line-height:1.5;color:#222}
+label{display:block;margin:.6rem 0 .2rem;font-weight:600}
+input,textarea{width:100%;box-sizing:border-box;padding:.5rem;font:inherit;border:1px solid #888;border-radius:4px}
+button{padding:.5rem 1rem;margin:.6rem .4rem .6rem 0;font:inherit}
+section{border-top:1px solid #ccc;margin-top:1rem;padding-top:.5rem}
+[hidden]{display:none!important}
+</style></head><body>
+<h1>Kitchen Sink</h1>
+<p id="msg" role="status"></p>
+<section id="login-box">
+<h2>Sign in</h2>
+<form id="login-form">
+<label for="login-email">Email</label><input id="login-email" data-testid="login-email" type="email" autocomplete="username" required>
+<label for="login-password">Password</label><input id="login-password" data-testid="login-password" type="password" autocomplete="current-password" required>
+<button type="submit" data-testid="login-submit">Log in</button>
+</form></section>
+<div id="app" hidden>
+<p>Signed in as <strong id="who"></strong> <button type="button" data-testid="logout" id="logout">Log out</button></p>
+<section><h2>Profile</h2>
+<form id="profile-form">
+<label for="profile-handle">Handle</label><input id="profile-handle" data-testid="profile-handle" maxlength="30">
+<label for="profile-display-name">Display name</label><input id="profile-display-name" data-testid="profile-display-name" maxlength="80">
+<label for="profile-bio">Bio</label><textarea id="profile-bio" data-testid="profile-bio" maxlength="500" rows="3"></textarea>
+<button type="submit" data-testid="profile-save">Save</button>
+<span id="profile-status" data-testid="profile-status" role="status"></span>
+</form></section>
+<section><h2>Private file</h2>
+<label for="upload-file">File (max 1 MiB)</label><input id="upload-file" data-testid="upload-file" type="file">
+<button type="button" data-testid="upload-submit" id="upload-submit">Upload</button>
+<a id="upload-download" data-testid="upload-download" href="#" download hidden>Download last upload</a>
+<p id="upload-status" role="status"></p></section>
+<section><h2>Report</h2>
+<button type="button" data-testid="report-refresh" id="report-refresh">Refresh report</button>
+<span id="report-status" data-testid="report-status" role="status"></span></section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let revision=0;
+const J={'Content-Type':'application/json'};
+function show(user){
+  $('login-box').hidden=!!user;$('app').hidden=!user;
+  if(user)$('who').textContent=user.email;
+  else{$('login-password').value='';$('profile-status').textContent='';$('report-status').textContent='';$('upload-download').hidden=true;$('upload-download').removeAttribute('href');$('upload-status').textContent='';}
+}
+async function loadProfile(){
+  const r=await fetch('/api/profile');if(!r.ok)return;
+  const d=await r.json();revision=d.revision;
+  $('profile-handle').value=d.profile.handle;$('profile-display-name').value=d.profile.display_name;$('profile-bio').value=d.profile.bio;
+}
+async function init(){
+  const r=await fetch('/api/session');
+  if(r.ok){show((await r.json()).user);await loadProfile();}else show(null);
+}
+$('login-form').onsubmit=async e=>{
+  e.preventDefault();$('msg').textContent='';
+  const r=await fetch('/api/login',{method:'POST',headers:J,body:JSON.stringify({email:$('login-email').value,password:$('login-password').value})});
+  if(!r.ok){$('msg').textContent='Login failed';return;}
+  show((await r.json()).user);await loadProfile();
+};
+$('logout').onclick=async()=>{await fetch('/api/logout',{method:'POST'});revision=0;show(null);};
+$('profile-form').onsubmit=async e=>{
+  e.preventDefault();
+  const r=await fetch('/api/profile',{method:'PUT',headers:J,body:JSON.stringify({handle:$('profile-handle').value,display_name:$('profile-display-name').value,bio:$('profile-bio').value,avatar_id:null,is_public:false,revision})});
+  const d=await r.json();
+  if(r.ok){revision=d.revision;$('profile-status').textContent='Saved (revision '+d.revision+')';}
+  else if(r.status===409){revision=d.revision;$('profile-status').textContent='Conflict: profile changed elsewhere; reloaded';await loadProfile();}
+  else $('profile-status').textContent='Error: '+(d.error||r.status);
+};
+$('upload-submit').onclick=async()=>{
+  const f=$('upload-file').files[0];if(!f){$('upload-status').textContent='Choose a file';return;}
+  const r=await fetch('/api/uploads',{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:f});
+  if(!r.ok){$('upload-status').textContent=r.status===413?'File too large':'Upload failed';return;}
+  const {id}=await r.json();const a=$('upload-download');
+  a.href='/api/uploads/'+id;a.download=f.name;a.hidden=false;$('upload-status').textContent='Uploaded';
+};
+$('report-refresh').onclick=async()=>{
+  const r=await fetch('/api/report');
+  if(!r.ok){$('report-status').textContent='Report failed';return;}
+  const d=await r.json();$('report-status').textContent=d.displayName+' (revision '+d.revision+', '+d.cacheTier+')';
+};
+init();
+</script></body></html>
