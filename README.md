@@ -52,6 +52,7 @@ acceptance check for installs, upgrades and royalties.
 |---|---|
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Positioning, landscape, block format decisions, agent flow and MCP contract, tiers/forks/royalties, security, architecture, roadmap, open questions |
 | [`docs/BLOCK-SPEC.md`](docs/BLOCK-SPEC.md) | The manifest schema, install semantics, lock file, signing, scanner rules, and a worked `email-code-auth` block for Hono + D1 |
+| [`docs/WORKSPACE-REVIEW-2026-10.md`](docs/WORKSPACE-REVIEW-2026-10.md) | October workspace review: independent pattern PRs, evidence, validation and adoption boundaries |
 | [`docs/HARVEST.md`](docs/HARVEST.md) | 37 candidate blocks found in the owner's repos, with golden sources, rebuild counts, quality notes and effort |
 | [`docs/PLAN.md`](docs/PLAN.md) | Work packages (MVP, v1, v2) sized for one agent session each, with ownership, dependencies, acceptance and tests |
 
@@ -84,4 +85,4 @@ Open question: Nullshot already calls its registry items "blocks"; Kitbash's uni
   The Codex repeat installed and verified the same blocks but edited 6 files (sandbox workarounds and extras), so its
   ≤ 3 edits criterion is open. kit-api's own bearer tokens now come from `email-code-auth`, installed from the registry.
 - 2026-10-19: block `cf-analytics` (hono-d1): first-party analytics SDK for Canvalytics (signed `track`/`fact`/`log`/`identify`, relay, 1 KB snippet).
-- Nothing is deployed or published; local git repository only. Next: v1 (WP-10…WP-19).
+- No registry deployment or publication yet. The [October workspace review](docs/WORKSPACE-REVIEW-2026-10.md) tracks independent pattern contributions as PRs. Next product phase: v1 (WP-10…WP-19).

@@ -1,0 +1,426 @@
+[
+  {
+    "repo": "Twenty Fourty War",
+    "commit": "fe65a69915b0a61f46687357de129f1bd9051c62",
+    "tracked_files": 26,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "agent-mmo-platform",
+    "commit": "d93730aaf68e364fbb46d9a52b7fe41edc230dda",
+    "tracked_files": 27199,
+    "typescript_manifests": 10,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "agentclub",
+    "commit": "HEAD",
+    "tracked_files": 0,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "aiornot",
+    "commit": "5215674cc7678c9342e106f7c398a1f83a5a34a5",
+    "tracked_files": 368,
+    "typescript_manifests": 2,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "align",
+    "commit": "795b648ff733705ca9031a121e21d4331e64f5cc",
+    "tracked_files": 367,
+    "typescript_manifests": 4,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "ascendants-game",
+    "commit": "ff945a7a6227ac4927d15fa3616512e6e86d948e",
+    "tracked_files": 331,
+    "typescript_manifests": 5,
+    "rust_manifests": 6,
+    "go_manifests": 0
+  },
+  {
+    "repo": "ascendants.io",
+    "commit": "b39e127b0e9d14dcd621608180c865c6d8c1e069",
+    "tracked_files": 145,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "beanstalk",
+    "commit": "63dae2ccf2cf76d09384f525042c21f163f383fc",
+    "tracked_files": 792,
+    "typescript_manifests": 9,
+    "rust_manifests": 2,
+    "go_manifests": 0
+  },
+  {
+    "repo": "beanstalk-collaboration-demo",
+    "commit": "c033286ddf8dbefb543f6c0dc759a73fbb55c95c",
+    "tracked_files": 10,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "calendly-clone",
+    "commit": "b81b18a2345f86a7a4b5c4be7206f1b16044d53d",
+    "tracked_files": 113,
+    "typescript_manifests": 2,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "canvalytics",
+    "commit": "754b98e77c0d547aac1121542173bf346f7b1f15",
+    "tracked_files": 199,
+    "typescript_manifests": 7,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "coops-test",
+    "commit": "934645b55492058f6243776d780fc2de786c3f1c",
+    "tracked_files": 11,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "desk-loop",
+    "commit": "ea7c7dc41a95614f14eb20894115dfd9ec75ae2d",
+    "tracked_files": 63,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "doc",
+    "commit": "557c5e09f7087be2f8bd3ad146f4e538c5096b11",
+    "tracked_files": 17,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "engine-box",
+    "commit": "HEAD",
+    "tracked_files": 0,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "enginebox",
+    "commit": "19f834a344d91bb1e6aa1cc46841ad42eea830ee",
+    "tracked_files": 91,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "feature-registry",
+    "commit": "2d689201d552c015eea574f594d04caf60e71270",
+    "tracked_files": 366,
+    "typescript_manifests": 8,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "flipt",
+    "commit": "48c15183d8c62acb89c007c671abcb718aa737ef",
+    "tracked_files": 1399,
+    "typescript_manifests": 31,
+    "rust_manifests": 6,
+    "go_manifests": 0
+  },
+  {
+    "repo": "flipt-contracts",
+    "commit": "36b5768443d644b96c4b30cbac06ec17993da283",
+    "tracked_files": 41,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "gitstalk-plugin",
+    "commit": "dfcfead90ff627adce99f706b9ac1b70e48d7cbe",
+    "tracked_files": 28,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "ideator",
+    "commit": "3faf4c64cc6e2fe279b2a48d5e8b01ca40443a73",
+    "tracked_files": 1019,
+    "typescript_manifests": 8,
+    "rust_manifests": 1,
+    "go_manifests": 0
+  },
+  {
+    "repo": "inference-market",
+    "commit": "9231c25a2b7cbf9a04c428fe44324efaec3344f4",
+    "tracked_files": 1003,
+    "typescript_manifests": 7,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "infx",
+    "commit": "48af23ba9e03c15698b5e807d66531485bd7a7d3",
+    "tracked_files": 1960,
+    "typescript_manifests": 21,
+    "rust_manifests": 35,
+    "go_manifests": 0
+  },
+  {
+    "repo": "irv",
+    "commit": "1ea1dc8887f3322c49d7a4cf30307027159370df",
+    "tracked_files": 622,
+    "typescript_manifests": 7,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "jevroute",
+    "commit": "HEAD",
+    "tracked_files": 0,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "mailcheap",
+    "commit": "6fd333e2b9a66d65785958de40061afa72fa6059",
+    "tracked_files": 341,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "music-fandom",
+    "commit": "5a9b8d2c2d596f26fb5c017b91dee4d583b87a5b",
+    "tracked_files": 240,
+    "typescript_manifests": 5,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "nextjs-template",
+    "commit": "671108c4b5a2acfc047b97c4b3e568a05c4144f4",
+    "tracked_files": 36,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "nullshot-brain",
+    "commit": "0fb426cd7284d3dfac8865d7498f4a385f3cf6be",
+    "tracked_files": 152,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "omniscient",
+    "commit": "05a386524731f0283af157b35fe2e3e812b78496",
+    "tracked_files": 2310,
+    "typescript_manifests": 24,
+    "rust_manifests": 64,
+    "go_manifests": 0
+  },
+  {
+    "repo": "placer",
+    "commit": "2b276349a8fddecb9e20ac64e851a040572854e4",
+    "tracked_files": 601,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "platform",
+    "commit": "8f8ed9c2a44507490912f8631806664c724be767",
+    "tracked_files": 12458,
+    "typescript_manifests": 79,
+    "rust_manifests": 1,
+    "go_manifests": 3
+  },
+  {
+    "repo": "plugin",
+    "commit": "ff64206b66abcfd6a0a3400035844b44ba820044",
+    "tracked_files": 56,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "protocol",
+    "commit": "81e2aadcfb2933de6a5c59e68053c5813b369026",
+    "tracked_files": 1,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "qa-manager",
+    "commit": "9add1a20aad11fff264e4330ddd6a19a9c3f1455",
+    "tracked_files": 80,
+    "typescript_manifests": 3,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "queen-of-hearts",
+    "commit": "f99a9d995ca9dccdd18d7569e9efc44542a9100e",
+    "tracked_files": 596,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "rabbithole",
+    "commit": "50af451428ead7ac418af7ebe32c16dfe6544668",
+    "tracked_files": 1,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "rainbow",
+    "commit": "b633363bdce194851c187c907995b3d353ff312e",
+    "tracked_files": 36,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "real-xavalabs",
+    "commit": "6795b1533f50e72a586871389a21ea4def87504b",
+    "tracked_files": 17,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "social-connect-plugin",
+    "commit": "73c962f2583a12d4c943c1cf15a628b153e935e3",
+    "tracked_files": 22,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "social-connector",
+    "commit": "6a6ae3f793f2979214673cc1866b33833cdcc35e",
+    "tracked_files": 171,
+    "typescript_manifests": 2,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "spek",
+    "commit": "3193cef4b83f7a298e2c0a3174c5e03084ab5110",
+    "tracked_files": 253,
+    "typescript_manifests": 2,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "sticks",
+    "commit": "f9a64263162283048ee09cd4b29e81678a24d50c",
+    "tracked_files": 328,
+    "typescript_manifests": 2,
+    "rust_manifests": 3,
+    "go_manifests": 0
+  },
+  {
+    "repo": "test",
+    "commit": "7b3f80c8721824c892a3ce5e1559116cd670cd0a",
+    "tracked_files": 12,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "thesis-terminal",
+    "commit": "236e26bd57c0482b43a67073975b087a9df4fd35",
+    "tracked_files": 298,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "thoughtless-agent",
+    "commit": "6e3bb89029d082fe654b09b4168f0d1370059c45",
+    "tracked_files": 7983,
+    "typescript_manifests": 0,
+    "rust_manifests": 32,
+    "go_manifests": 0
+  },
+  {
+    "repo": "token-distribution-app",
+    "commit": "655ebbb7955beaa0ea1d99cd58f8faefbca20f08",
+    "tracked_files": 23,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "towerbrawl",
+    "commit": "99296581c65020b53028c8804256a33a425982ea",
+    "tracked_files": 26,
+    "typescript_manifests": 0,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "transchat",
+    "commit": "76469273ce247b9fc548c3d6c7662c3346dcf066",
+    "tracked_files": 168,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "typescript-agent-toolkit",
+    "commit": "41a97dd8d0641c36875b528348ac9399767ca29b",
+    "tracked_files": 618,
+    "typescript_manifests": 23,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "unity-jam",
+    "commit": "551064df6f92a7da458cf3a0da10b96bf502d868",
+    "tracked_files": 16765,
+    "typescript_manifests": 7,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "xavalabs.com",
+    "commit": "3e23fd7963ac46f7e3436af9b7517f7bef8e4b1a",
+    "tracked_files": 148,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  },
+  {
+    "repo": "xinf-plugin",
+    "commit": "9d0cfcbe4cbfa586b953b5df5d1051df18592ba7",
+    "tracked_files": 55,
+    "typescript_manifests": 1,
+    "rust_manifests": 0,
+    "go_manifests": 0
+  }
+]

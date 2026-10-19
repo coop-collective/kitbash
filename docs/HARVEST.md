@@ -1,5 +1,7 @@
 # Harvest inventory
 
+The follow-up [2026-10-19 workspace review](WORKSPACE-REVIEW-2026-10.md) links the new tested blocks, starter templates, tooling recipes and focused fixes. This founding inventory remains historical; the follow-up distinguishes proposed PRs from merged registry contents.
+
 Written 2026-10-18 from three read-only scans of `~/Workspace` (49 folders triaged; 30 real apps or libraries;
 worktree copies, `*-codex-security-scan*`, `platform-*` and `infx-*` variants excluded). Nothing in those repos was
 modified. Paths are absolute; "golden" marks the implementation to start from when several exist.
