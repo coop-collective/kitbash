@@ -3,14 +3,17 @@
   "name": "tiered-result-cache",
   "type": "registry:block",
   "title": "Typed result caching through edge, KV and an authoritative loader",
-  "description": "Request-scoped typed JSON result cache with a named Cache API tier, optional KV, authoritative loaders including Durable Object RPC, absolute freshness and stale bounds, versioned tenant keys, promotion and strict bypass.",
+  "description": "Request-scoped typed JSON result cache: named Cache API, optional KV, and loaders for R2, D1, Durable Objects, Analytics Engine or other sources. Absolute freshness and stale bounds, versioned tenant keys, promotion and strict bypass.",
   "author": "Coop <coop@xavalabs.com>",
   "version": "1.0.0",
   "license": "MIT",
   "categories": [
     "cache",
     "durable-objects",
-    "kv"
+    "kv",
+    "r2",
+    "d1",
+    "analytics-engine"
   ],
   "meta": {
     "maturity": "beta",
@@ -147,9 +150,9 @@
   "docs": "docs/README.md",
   "skill": "SKILL.md",
   "agent": {
-    "summary": "Shared typed result cache for Workers: named edge Cache API, optional KV, then an authoritative loader such as DO RPC. Tenant/version keys, absolute expiry, bounded JSON, request-local dedupe and opt-in stale refresh. Authorization stays outside.",
+    "summary": "Shared typed result cache for Workers: named Cache API, optional KV, then an application loader for R2, D1, Durable Objects, Analytics Engine or other JSON sources. Tenant/version keys, absolute expiry, bounded JSON, request-local dedupe and opt-in stale refresh. Authorization stays outside.",
     "when_to_use": [
-      "Expensive read-only DO, D1 or R2 projections tolerate an explicit freshness window.",
+      "Read-only R2, D1, Durable Object, Analytics Engine or API projections tolerate an explicit freshness window.",
       "Many callers reuse the same tenant-scoped result."
     ],
     "when_not_to_use": [
@@ -170,7 +173,7 @@
         "required": true,
         "title": "Authorize, scope, and version the result",
         "where": "Worker handler or service",
-        "do": "After authorization, create one cache per request. Supply trusted scope/tenant/version keys, a runtime parser and the authoritative loader. Use bypass for strict read-after-write.",
+        "do": "After authorization, create one cache per request. Supply trusted scope/tenant/version keys, a runtime parser and a bounded JSON loader for the chosen source. Scope source queries to the tenant; include all query inputs in keys. Bypass forces a loader call subject to source consistency.",
         "check": "Different tenants/versions never share results; bypass executes the store loader."
       }
     ],
