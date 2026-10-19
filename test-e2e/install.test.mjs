@@ -16,6 +16,7 @@ import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { templateCacheIdentity, templateSourceFilter } from "./template-cache.mjs";
+import { installStandalone } from "./pnpm-install.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "..");
@@ -66,7 +67,8 @@ function installedTemplate() {
     const staging = await tmp("kitbash-e2e-template-stage-");
     await cp(TEMPLATE, staging, { recursive: true, filter: source => templateSourceFilter(TEMPLATE, source) });
     const version = await sh("pnpm", ["--version"], { cwd: staging, timeout: 60_000 });
-    if (version.code !== 0 || !version.out.trim()) return { skip: `could not determine standalone pnpm version: ${(version.err || version.out).trim()}` };
+    assert.equal(version.code, 0, `could not determine standalone pnpm version: ${fmt(version)}`);
+    assert.ok(version.out.trim(), "standalone pnpm returned no version");
     const fingerprint = await templateCacheIdentity(staging, { pnpmVersion: version.out.trim() });
     const dir = path.join(os.tmpdir(), `kitbash-e2e-template-${fingerprint.slice(0, 20)}`);
     const marker = path.join(dir, ".e2e-ready");
@@ -74,18 +76,9 @@ function installedTemplate() {
       await rm(staging, { recursive: true, force: true });
       return { dir };
     }
-    // The template quirks: pnpm may exit non-zero (ignored build scripts) while still linking node_modules, so the
-    // install exit code is not trusted; `pnpm test` below is.
-    const flags = ["install", "--ignore-workspace", "--config.confirmModulesPurge=false"];
-    let r = await sh("pnpm", [...flags, "--offline"], { cwd: staging });
-    if (!(await exists(path.join(staging, "node_modules", ".bin", "vitest"))) && process.env.KIT_E2E_ONLINE !== "0") {
-      r = await sh("pnpm", flags, { cwd: staging });
-    }
-    if (!(await exists(path.join(staging, "node_modules", ".bin", "vitest")))) {
-      return { skip: `templates/hono-d1 dependencies could not be installed (offline, then online): ${(r.err || r.out).trim().split("\n").slice(-3).join(" | ")}` };
-    }
+    await installStandalone(sh, { cwd: staging, allowOnline: process.env.KIT_E2E_ONLINE !== "0" });
     const t = await sh("pnpm", ["test"], { cwd: staging });
-    if (t.code !== 0) return { skip: `the template's own \`pnpm test\` fails (exit ${t.code}); fix the template first:\n${(t.out + t.err).slice(-1500)}` };
+    assert.equal(t.code, 0, `the template's own pnpm test failed: ${fmt(t)}`);
     await writeFile(path.join(staging, ".e2e-ready"), "ok\n");
     await rm(dir, { recursive: true, force: true });
     await rename(staging, dir);
@@ -171,13 +164,10 @@ async function installAddedDependencies(dir, base) {
   if (now === was) return null;
   const pkg = JSON.parse(now);
   const added = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).filter((n) => !/"/.test(n));
-  // CI=1 makes pnpm default to a frozen lockfile; a block that adds a dependency changes package.json on purpose
-  const flags = ["install", "--ignore-workspace", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"];
   const missing = async () => (await Promise.all(added.map(async (n) => ((await exists(path.join(dir, "node_modules", n, "package.json"))) ? null : n)))).filter(Boolean);
-  let r = await sh("pnpm", [...flags, "--offline"], { cwd: dir });
-  if ((await missing()).length && process.env.KIT_E2E_ONLINE !== "0") r = await sh("pnpm", flags, { cwd: dir });
+  await installStandalone(sh, { cwd: dir, allowOnline: process.env.KIT_E2E_ONLINE !== "0" });
   const left = await missing();
-  assert.deepEqual(left, [], `pnpm install did not provide ${left.join(", ")}: ${fmt(r)}`);
+  assert.deepEqual(left, [], `pnpm install did not provide ${left.join(", ")}`);
   return added;
 }
 
@@ -187,9 +177,9 @@ const plan = await loadPlan();
 describe("kitbash e2e: blocks installed into templates/hono-d1 and verified", () => {
   if (plan.length === 0) it("has cases", { skip: "no blocks found (blocks/* is empty and cases.json lists none)" }, () => {});
   for (const c of plan) {
-    it(c.title, { timeout: 900_000, skip: problem ?? false }, async (t) => {
+    it(c.title, { timeout: 900_000 }, async () => {
+      assert.equal(problem, null, problem ?? undefined);
       const base = await installedTemplate();
-      if (base.skip) return t.skip(base.skip);
       const dir = await freshProject(base.dir);
       const home = await tmp("kitbash-e2e-home-");
       const steps = c.steps.map((s) => ({ ...s }));

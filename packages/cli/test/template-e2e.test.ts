@@ -10,24 +10,25 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { execRunner } from "../src/verify.ts";
-import { exists, FIXTURE_BLOCK, FIXTURE_LOCAL_ID, kit, readJson, templateCopy } from "./helpers.ts";
+import { FIXTURE_BLOCK, FIXTURE_LOCAL_ID, kit, readJson, templateCopy } from "./helpers.ts";
 
 const run = promisify(execFile);
 
 async function preparedTemplate(): Promise<{ dir: string } | { skip: string }> {
   const dir = await templateCopy();
   try {
-    await run("pnpm", ["install", "--offline", "--ignore-workspace", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
-  } catch {
-    // pnpm exits non-zero for ignored build scripts while still linking node_modules; checked below
-  }
-  if (!(await exists(path.join(dir, "node_modules", ".bin", "vitest")))) return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in templates/hono-d1 once)" };
-  try {
-    // the template's own typecheck generates worker-configuration.d.ts first (`pnpm typecheck`); do the same here
-    await run(path.join(dir, "node_modules", ".bin", "wrangler"), ["types", "--strict-vars=false"], { cwd: dir, timeout: 120_000, env: { ...process.env, WRANGLER_SEND_METRICS: "false" } });
+    // This temp copy has its own allowBuilds config and may not have a lockfile yet.
+    await run("pnpm", ["install", "--offline", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
   } catch (e) {
-    return { skip: `wrangler types failed: ${(e as Error).message.split("\n")[0]}` };
+    const error = e as Error & { stdout?: string; stderr?: string };
+    if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(`${error.message}\n${error.stdout}\n${error.stderr}`)) {
+      return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
+    }
+    throw e;
   }
+  await run("pnpm", ["install", "--offline", "--frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
+  // The template's own typecheck generates worker-configuration.d.ts first; do the same here.
+  await run(path.join(dir, "node_modules", ".bin", "wrangler"), ["types", "--strict-vars=false"], { cwd: dir, timeout: 120_000, env: { ...process.env, WRANGLER_SEND_METRICS: "false" } });
   return { dir };
 }
 

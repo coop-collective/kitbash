@@ -25,7 +25,7 @@ export function templateSourceFilter(root, source) {
 export async function templateCacheIdentity(root, { pnpmVersion, nodeVersion = process.version, platform = process.platform, arch = process.arch }) {
   if (!pnpmVersion?.trim()) throw new Error("A pnpm version is required for the template cache identity");
   const hash = createHash("sha256");
-  hash.update(JSON.stringify(["kitbash-template-cache-v2", pnpmVersion.trim(), nodeVersion, platform, arch]));
+  hash.update(JSON.stringify(["kitbash-template-cache-v3", pnpmVersion.trim(), nodeVersion, platform, arch]));
   async function visit(directory, prefix = "") {
     const entries = await readdir(directory, { withFileTypes: true });
     entries.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
