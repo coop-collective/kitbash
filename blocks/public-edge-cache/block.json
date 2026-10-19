@@ -1,0 +1,161 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "public-edge-cache",
+  "type": "registry:block",
+  "title": "Explicit public GET caching behind a Worker gateway",
+  "description": "A conservative Cache API fallback with exact route and query policies, credential bypass, response eligibility checks, bounded TTL and streamed background writes.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "cache",
+    "cloudflare"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "original",
+    "est_hours_saved": 3
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "cacheNamespace",
+      "type": "identifier",
+      "default": "public",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "description": "Namespace in synthetic cache paths."
+    },
+    {
+      "name": "maxTtlSeconds",
+      "type": "integer",
+      "default": 60,
+      "min": 1,
+      "max": 86400,
+      "description": "Hard upper bound on stored response lifetime."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/public-edge-cache.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/public-edge-cache.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/public-edge-cache.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/public-edge-cache.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/public-edge-cache/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "envVars": {},
+  "env": [],
+  "secrets": [],
+  "bindings": [],
+  "migrations": [],
+  "tables": [],
+  "routes": [],
+  "exports": [
+    {
+      "symbol": "publicCacheKey",
+      "from": "src/public-edge-cache.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "withPublicEdgeCache",
+      "from": "src/public-edge-cache.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/public-edge-cache.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "real-cache-api",
+        "public-only",
+        "key-safety",
+        "ttl",
+        "failure-fallback"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/public-edge-cache.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Explicit Cache API fallback for public GET responses behind a Worker gateway. Conservative identity and response guards, exact query policies, versioned keys and real workerd tests. Prefer Workers Cache for compatible new applications.",
+    "when_to_use": [
+      "An existing gateway must execute before every cache lookup and needs explicit local cache control."
+    ],
+    "when_not_to_use": [
+      "Personalized responses or globally consistent invalidation.",
+      "New designs that can use current Workers Cache cached inner entrypoints."
+    ],
+    "adapt": [
+      {
+        "id": "wire-policy",
+        "required": true,
+        "title": "Declare public representations after the gateway",
+        "where": "Worker fetch handler",
+        "do": "Call withPublicEdgeCache after access checks; pass exact public paths, query keys, version and producer.",
+        "check": "Credentialed requests bypass; repeated anonymous GETs reuse the representation."
+      }
+    ],
+    "author_notes": "No tiered caching, global purge, SWR or distributed collapse. Header-independent public representation is the application contract."
+  },
+  "provenance": {
+    "source": {
+      "repo": "local:~/Workspace/sticks; local:~/Workspace/inference-market",
+      "commit": "f9a64263162283048ee09cd4b29e81678a24d50c",
+      "paths": [
+        "sticks/src/edge-cache.ts",
+        "inference-market/packages/web/src/edge_cache.ts"
+      ]
+    },
+    "origin": "original",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}
