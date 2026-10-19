@@ -1,0 +1,54 @@
+{
+  "base": "2d68920",
+  "branches": {
+    "bun-typescript": "6f9d5b5fbecaac66932400ee5318fc93db061e92",
+    "rust-service": "c7491489462327cecadfc4b918b00b03e433c085",
+    "go-service": "6502a2ac45c6936efe443ab9785d41b9b960396f",
+    "typescript-native-checks": "74eade3007fa5d5a74044b858d624a63423fe7dd",
+    "vinext-guardrails": "15445d10a747395f538ae15bc4d4e3fd77a5b869",
+    "session-cookie": "5f6683d9de4b612d944aac15b74cf1f29a3b567b",
+    "member-profiles": "8728b108d9d208cb40aa6eb9b59220b943f9ef8a",
+    "r2-private-uploads": "bb161c35d9c247486279c43cf2758e3307ef72ac",
+    "workerd-migration-replay": "c49b4aa7706068f406a1e5a90188b283b5ca7cb6",
+    "typescript-lint": "e933ac5bc947a0d42215a6eea6b7be7b72ee6c6e",
+    "workerd-coverage": "3531feae7db891279ab0d1f9e50618b0b64081ab",
+    "playwright-worker-e2e": "c1029ed7500bfbe640e0e42c8575baaad9a2b83e",
+    "cloudflare-ci": "b6e853bba06e55244628135c6224506562fa9c8e",
+    "public-edge-cache": "72d6ddf7189cf4110cfffd049d99901187450cbe",
+    "hibernating-websocket": "586bf8ced5d5add2e453af5aa248b087d9392604",
+    "container-gateway": "18985a0e9806893d64da5746a29b8d6191bfa790",
+    "oauth-signin-origin": "9ff5445d052f43659b51fa3c6c1bbf0eb6405a46"
+  },
+  "combined_checks": {
+    "core": 171,
+    "api": 86,
+    "cli": 71,
+    "plugin": 19,
+    "contract_examples": 15,
+    "typecheck": "passed",
+    "validate": "passed",
+    "patch_application": "17 branches, no conflicts",
+    "install_e2e": {
+      "tests": 38,
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test test-e2e/install.test.mjs"
+    },
+    "commands": [
+      "pnpm test",
+      "pnpm typecheck",
+      "pnpm validate",
+      "cd docs/examples && npm ci --ignore-scripts && node --test validate.test.mjs",
+      "node --test test-e2e/install.test.mjs"
+    ]
+  },
+  "validation_scope": "Local tests and packaging; no deployed services, production writes, hosted CI run or merge.",
+  "independent_review": [
+    "session-cookie",
+    "member-profiles",
+    "r2-private-uploads",
+    "oauth-signin-origin",
+    "typescript-native-checks"
+  ]
+}
