@@ -1,0 +1,6 @@
+# Makes this template its own pnpm root (so it installs standalone, also inside a temp copy) and allows the two
+# dependencies that need install scripts (pnpm 10+ blocks them by default).
+packages: []
+allowBuilds:
+  esbuild: true
+  workerd: true

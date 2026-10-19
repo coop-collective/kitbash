@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kit-container-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-19",
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+  "services": [{ "binding": "AUTH", "service": "container-auth" }],
+  "durable_objects": { "bindings": [{ "name": "HASH_CONTAINER", "class_name": "HashContainer" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["HashContainer"] }],
+  "containers": [{ "class_name": "HashContainer", "image": "./Dockerfile", "instance_type": "basic", "max_instances": 5 }]
+}
