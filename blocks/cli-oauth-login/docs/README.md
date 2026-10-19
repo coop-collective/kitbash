@@ -35,3 +35,14 @@ afterwards. Placeholders at runtime: `{{name}}` (escaped), `{{{name}}}` (raw, on
 ## Origin
 
 Harvested from Ideator (`packages/api/src/oauth.ts`, `cli-logins.ts`), where it signs CLIs in to the HQ MCP server.
+
+## Browser sign-in requests
+
+The `/authorize/signin/{email,code,token}` form POSTs require an Origin header exactly matching the request URL's
+origin. Foreign, absent or `null` origins return 403 before parsing credentials, sending/consuming a code or creating
+a browser session. This protects the login step separately from the provider's consent CSRF protection.
+
+The HTML responses use `Referrer-Policy: same-origin`: ordinary same-origin form posts retain their Origin, while
+cross-origin destinations receive no Referer. Replacing it with `no-referrer` can make native form posts send an
+opaque Origin and fail this check. Tests that script the browser flow must send the same-origin Origin explicitly.
+This check does not apply to CLI backchannel registration, PKCE token exchange, refresh or bearer API calls.

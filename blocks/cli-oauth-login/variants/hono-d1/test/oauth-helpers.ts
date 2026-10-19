@@ -92,7 +92,7 @@ export async function toConsent(token: string, opts: { redirect?: string; client
   const authorizeUrl = `/authorize?${q}`;
   const jar = new Jar();
   const signInHtml = await (await raw(authorizeUrl)).text();
-  const signed = await raw("/authorize/signin/token", { method: "POST", body: form({ token, return: authorizeUrl }) });
+  const signed = await raw("/authorize/signin/token", { method: "POST", headers: { origin: AS }, body: form({ token, return: authorizeUrl }) });
   expect(signed.status).toBe(303);
   expect(signed.headers.get("location")).toBe(authorizeUrl);
   jar.take(signed);

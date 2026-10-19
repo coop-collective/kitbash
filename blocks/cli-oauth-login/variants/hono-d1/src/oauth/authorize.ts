@@ -65,6 +65,14 @@ async function startSession(env: OAuthEnv, memberId: string): Promise<string> {
   return `${SESSION_COOKIE}=${token}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_S}`;
 }
 
+// Browser login forms create an authenticated cookie before OAuth consent. Consent CSRF protection
+// does not cover this earlier login boundary; fail closed for missing and opaque origins as well.
+function signInOriginError(req: Request): Response | null {
+  return req.headers.get("origin") === new URL(req.url).origin
+    ? null
+    : errorPage("Sign-in must be submitted from this site's own page. Reload the sign-in page and try again.", 403);
+}
+
 // ------------------------------------------------------------------ handlers
 
 /** Only our own authorize URL is a place to come back to after signing in. */
@@ -123,6 +131,8 @@ export async function authorizeGet(env: OAuthEnv, req: Request): Promise<Respons
 }
 
 export async function signInEmail(env: OAuthEnv, req: Request): Promise<Response> {
+  const originError = signInOriginError(req);
+  if (originError) return originError;
   const f = await form(req);
   const ret = safeReturn(f.get("return"));
   const email = String(f.get("email") ?? "").trim();
@@ -137,6 +147,8 @@ export async function signInEmail(env: OAuthEnv, req: Request): Promise<Response
 }
 
 export async function signInCode(env: OAuthEnv, req: Request): Promise<Response> {
+  const originError = signInOriginError(req);
+  if (originError) return originError;
   const f = await form(req);
   const ret = safeReturn(f.get("return"));
   const email = String(f.get("email") ?? "").trim();
@@ -146,6 +158,8 @@ export async function signInCode(env: OAuthEnv, req: Request): Promise<Response>
 }
 
 export async function signInToken(env: OAuthEnv, req: Request): Promise<Response> {
+  const originError = signInOriginError(req);
+  if (originError) return originError;
   const f = await form(req);
   const ret = safeReturn(f.get("return"));
   const member = await memberByToken(env, String(f.get("token") ?? "").trim());
