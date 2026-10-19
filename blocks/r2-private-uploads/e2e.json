@@ -1,0 +1,13 @@
+{
+  "cases": [
+    {
+      "name": "alternate-params",
+      "params": {
+        "bucketName": "alternate-attachment-bucket",
+        "objectPrefix": "attachments",
+        "routePrefix": "/api/files",
+        "maxBytes": 128
+      }
+    }
+  ]
+}

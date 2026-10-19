@@ -1,0 +1,258 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "r2-private-uploads",
+  "type": "registry:block",
+  "title": "Bounded private R2 attachments with tenant-scoped keys",
+  "description": "Adds authenticated raw attachment uploads, streamed downloads, HEAD and deletion using an R2 binding. Actual body bytes are bounded; keys derive from the verified tenant and a server-generated UUID, and downloads are private attachments with no client-supplied metadata.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "storage"
+  ],
+  "meta": {
+    "maturity": "experimental",
+    "origin": "harvested",
+    "est_hours_saved": 4
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=22.18",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/uploads",
+      "description": "Mount point for this block."
+    },
+    {
+      "name": "bucketName",
+      "type": "identifier",
+      "default": "my-app-private-uploads",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,62}$",
+      "description": "Dedicated private R2 bucket name."
+    },
+    {
+      "name": "objectPrefix",
+      "type": "identifier",
+      "default": "private-uploads",
+      "pattern": "^[a-z][a-z0-9-]{0,40}$",
+      "description": "Object namespace used only by this feature."
+    },
+    {
+      "name": "maxBytes",
+      "type": "integer",
+      "default": 4194304,
+      "min": 1,
+      "max": 8388608,
+      "description": "Per-request buffered attachment cap (1 byte to 8 MiB). Counted from actual bytes, not just Content-Length."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/uploads.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/r2-private-uploads/uploads.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/routes.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/r2-private-uploads/routes.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/r2-private-uploads.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/r2-private-uploads.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/r2-private-uploads/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "r2",
+      "name": "UPLOADS",
+      "required": true,
+      "create": "wrangler r2 bucket create {{kit.bucketName}}"
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}",
+      "auth": "session",
+      "description": "Upload one raw attachment."
+    },
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}/:id",
+      "auth": "session",
+      "description": "Stream an attachment owned by the authenticated tenant."
+    },
+    {
+      "method": "HEAD",
+      "path": "{{kit.routePrefix}}/:id",
+      "auth": "session",
+      "description": "Read attachment metadata without its body."
+    },
+    {
+      "method": "DELETE",
+      "path": "{{kit.routePrefix}}/:id",
+      "auth": "session",
+      "description": "Delete an attachment in the authenticated tenant namespace."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "uploadAttachment",
+      "from": "src/uploads.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "downloadAttachment",
+      "from": "src/uploads.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "deleteAttachment",
+      "from": "src/uploads.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "objectKey",
+      "from": "src/uploads.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "readBoundedBody",
+      "from": "src/uploads.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "uploadRoutes",
+      "from": "src/routes.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/r2-private-uploads.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "authorization",
+        "validation",
+        "storage",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/r2-private-uploads.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds authenticated raw attachment uploads, streamed downloads, HEAD and deletion using an R2 binding. Actual body bytes are bounded; keys derive from the verified tenant and a server-generated UUID, and downloads are private attachments with no client-supplied metadata.",
+    "when_to_use": [
+      "Bounded private R2 attachments with tenant-scoped keys"
+    ],
+    "when_not_to_use": [
+      "Small private attachments only: no public CDN, inline image rendering, multipart/resumable upload, listing, file scanning or total storage quota. Uploads buffer at most maxBytes; downloads stream. The host supplies verified tenant membership, rate limits, lifecycle policy and deletion cleanup."
+    ],
+    "adapt": [
+      {
+        "id": "bucket",
+        "required": true,
+        "title": "Bind a private R2 bucket",
+        "do": "Create bucketName and set the UPLOADS binding; leave public access and r2.dev disabled. A public bucket or custom domain would bypass application authorization.",
+        "check": "Objects are readable only through the authenticated application route."
+      },
+      {
+        "id": "auth",
+        "required": true,
+        "title": "Mount routes with a verified tenant resolver",
+        "where": "{{paths.app}}/index.ts",
+        "do": "Mount uploadRoutes(resolveTenant) at {{kit.routePrefix}}. The resolver verifies the session/token and any organization membership, then returns a trusted tenant id or null. Never return a request-supplied tenant id without membership verification.",
+        "check": "Other tenants receive 404 for a known upload id and cannot delete its bytes."
+      },
+      {
+        "id": "limits",
+        "required": true,
+        "title": "Set product limits and lifecycle",
+        "do": "Choose maxBytes, rate-limit uploads, enforce any total tenant quota, and configure private bucket retention/account deletion cleanup. Send raw request bytes rather than multipart/form-data.",
+        "check": "Oversized chunked uploads are 413 without creating an object; product quotas and cleanup are enforced by the host."
+      }
+    ],
+    "author_notes": "Small private attachments only: no public CDN, inline image rendering, multipart/resumable upload, listing, file scanning or total storage quota. Uploads buffer at most maxBytes; downloads stream. The host supplies verified tenant membership, rate limits, lifecycle policy and deletion cleanup."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/mailcheap",
+      "commit": "6fd333e2b9a66d65785958de40061afa72fa6059",
+      "paths": [
+        "lib/request-body.js",
+        "app/api/uploads/route.js",
+        "lib/blob.js",
+        "tests/uploads-optional.test.mjs"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}
