@@ -14,7 +14,14 @@ export class Room extends DurableObject<Env> {
     const userId = request.headers.get('x-room-user'), tenantId = request.headers.get('x-room-tenant');
     const expiresAt = Number(request.headers.get('x-room-expires'));
     if (!userId || !tenantId || expiresAt <= Date.now() || !Number.isFinite(expiresAt)) return new Response('Unauthorized', { status: 401 });
-    if (this.ctx.getWebSockets().length >= 100) return new Response('Room full', { status: 503 });
+    let active = 0;
+    for (const peer of this.ctx.getWebSockets()) {
+      const attached = peer.deserializeAttachment() as Connection | null;
+      if (!attached || attached.expiresAt <= Date.now()) {
+        try { peer.close(1008, 'Session expired'); } catch { /* already closed */ }
+      } else if (peer.readyState === WebSocket.OPEN) active++;
+    }
+    if (active >= 100) return new Response('Room full', { status: 503 });
     const pair = new WebSocketPair();
     this.ctx.acceptWebSocket(pair[1]);
     pair[1].serializeAttachment({ userId, tenantId, expiresAt, tokens: 10, updatedAt: Date.now() } satisfies Connection);

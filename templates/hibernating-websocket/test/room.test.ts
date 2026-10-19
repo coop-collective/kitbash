@@ -56,6 +56,16 @@ describe('hibernating room', () => {
     });
     expect(await closed).toBe(1008);
   });
+  it('reclaims capacity from expired idle sockets before admitting a new connection', async () => {
+    const name = roomName();
+    for (let index = 0; index < 100; index++) { const client = await connect(name); await client.next(); }
+    expect((await SELF.fetch(request(name))).status).toBe(503);
+    await runInDurableObject(env.ROOMS.getByName(JSON.stringify(['team', name])), (_instance, state) => {
+      for (const socket of state.getWebSockets()) socket.serializeAttachment({ ...socket.deserializeAttachment(), expiresAt: 1 });
+    });
+    const replacement = await connect(name);
+    expect(await replacement.next()).toEqual({ type: 'snapshot', messages: [] });
+  });
   it('limits repeated messages and retains only the latest 100 committed rows', async () => {
     const name = roomName(), alice = await connect(name); await alice.next();
     await runInDurableObject(env.ROOMS.getByName(JSON.stringify(['team', name])), (instance, state) => {
