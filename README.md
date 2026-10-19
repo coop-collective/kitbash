@@ -39,7 +39,7 @@ acceptance check for installs, upgrades and royalties.
 - **Tiers**: private blocks per org (Free 5, Pro unlimited, Team per seat); public blocks free or paid (one-time per
   org, 15% fee); forks with immutable lineage; royalties to authors **and upstream forkers** (75% / 15% / 7% / 3%),
   metered on *verified active project-months*, not downloads, with a user-centric pool from 30% of subscriptions.
-- **Security**: no scripts in blocks; publisher + registry signatures over content hashes; static scan for secrets,
+- **Security**: no install hooks; explicitly invoked tasks in validated private container subprojects; publisher + registry signatures over content hashes; static scan for secrets,
   dangerous code, dependency advisories and prompt injection in docs; sandboxed test runs; review tiers with rug-pull
   detection and a 72-hour `latest` cooldown; "instructions are data" rules enforced by the tools; dry-run diffs.
 - **Stack**: Cloudflare Workers (Hono) + D1 (FTS5) + R2 (content-addressed blobs) + Queues + Cron, Vectorize and
@@ -48,17 +48,17 @@ acceptance check for installs, upgrades and royalties.
 
 ## Development
 
-Use pnpm 12.14.0 with Node 22.18 or later and Go 1.26.4. The root workspace maps the registry packages, templates, recipes, contract examples and installer tests. pnpm installs the pinned Bun runtime and Cargo dependencies/toolchain; Go modules remain managed by Go.
+Use pnpm 12.14.0 with Node 22.18 or later and Go 1.26.4. The root workspace maps the registry packages, native runtime block payloads, recipes, contract examples and installer fixtures. pnpm installs the pinned Bun runtime and Cargo dependencies/toolchain; Go modules remain managed by Go.
 
 ```sh
 pnpm bootstrap                 # install workspace + Cargo dependencies, then Go modules
 pnpm workspace:map             # names and paths for every workspace package
 pnpm check                     # lint, typecheck, unit/runtime tests, schema/plugin validation
 pnpm build                     # local bundles and native binaries; Worker builds are dry runs
-pnpm test:e2e                  # browser flow + clean-template block installation
+pnpm test:e2e                  # browser flow + clean-host block installation
 ```
 
-Browser tests need Chromium installed once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install`. See [workspace commands and native dependency resolution](docs/WORKSPACE.md) for filters, Docker checks and copying a template into its own project.
+Browser tests need Chromium installed once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install`. See [workspace commands and native dependency resolution](docs/WORKSPACE.md) for filters, Docker checks and installing the runtime blocks. Bun, Go and Rust are variants of the [Cloudflare container block](blocks/cloudflare-container/docs/README.md); real-time rooms use the [WebSocket block](blocks/hibernating-websocket/docs/README.md).
 
 ## Documents
 
@@ -73,7 +73,7 @@ Browser tests need Chromium installed once with `pnpm --filter kitbash-recipe-pl
 ## Roadmap in one line each
 
 - **MVP** (~1 week of agent sessions): private registry for the owner on `wrangler dev`, core + CLI + plugin with the
-  MCP tools, two reference templates, five harvested blocks (`email-code-auth`, `cf-email-sender`, `cli-oauth-login`,
+  MCP tools, reference test fixtures, five harvested blocks (`email-code-auth`, `cf-email-sender`, `cli-oauth-login`,
   `orgs-roles-invites`, `api-keys`), Ideator contract. Exit: Claude Code and Codex each install three blocks into a
   fresh template in one session with ≤ 3 manual edits and all block tests green.
 - **v1**: accounts (from our own blocks), public/private, licenses, scanner, sandbox, review tiers, Stripe

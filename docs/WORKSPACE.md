@@ -1,66 +1,62 @@
 # Root workspace
 
-Kitbash pins **pnpm 12.14.0** in the root `package.json`. Use Node 22.18 or later, Go 1.26.4, and a C compiler for Go's race detector. `pnpm bootstrap` installs the JavaScript dependencies, the Bun 1.4.3 runtime, Rust 1.96.0 with fmt/clippy, Cargo dependencies, and then invokes `go mod download`. The Go starter currently uses only the standard library.
+Kitbash pins **pnpm 12.14.0**. Use Node 22.18 or later, Go 1.26.4 and a C compiler for Go's race detector. `pnpm bootstrap` installs JavaScript dependencies, the Bun 1.4.3 runtime, Rust 1.96.0 with fmt/clippy, Cargo dependencies, and then invokes `go mod download` for the container payload.
 
 ## Package map
 
-Run `pnpm workspace:map` for actual package names and paths. Directory names retain their purpose; all runnable projects are root workspace members.
+Reusable application setups are blocks. There is no public `templates/` tree. Run `pnpm workspace:map` for executable package names and paths.
 
 | Path | Purpose | Dependency ownership |
 | --- | --- | --- |
-| `packages/*` | Registry core, API, CLI and plugin | Root `pnpm-lock.yaml`, explicit `workspace:*` links |
-| `templates/*` | Copyable Bun, Worker, WebSocket, container, Rust and Go applications | Root JS lock; Rust's `Cargo.lock`; Go's `go.mod` and future `go.sum` |
-| `recipes/*` | Lint, coverage, browser, deployment and compiler examples | Root JS lock, independent version constraints |
-| `docs/examples` | Executable contract examples | Root JS lock; included in `pnpm test` |
-| `test-e2e` | Block installation into independent temporary applications | Explicit `pnpm test:e2e` |
-| `blocks/*` | Parameterized source templates, not executable packages | Installed and verified by the e2e harness |
+| `packages/*` | Registry core, API, CLI and plugin | Root JS lock; explicit workspace links |
+| `blocks/*` | Installable features with manifests, parameters, provenance and traveling tests | Installed into a host with the kit CLI/MCP |
+| `blocks/cloudflare-container/variants/{bun,go,rust}/container` | Native payloads of one container block; runnable pnpm workspace members | Root JS lock, native Cargo.lock and go.mod |
+| `recipes/*` | Lint, coverage, browser, deployment and compiler references | Root JS lock; independent tested toolchains |
+| `test-e2e/fixtures/hono-d1` | Internal minimal host for installer, CLI and plugin tests | Root JS lock; copied into isolated temporary projects |
+| `test-e2e` | Block validation, real installation and Docker checks | Explicit longer-running checks |
+| `docs/examples` | Executable registry contract examples | Root JS lock |
 
-Cloudflare workers-pool/Vitest 4 and newer plugin examples keep their tested dependency combinations. Sharing the lockfile does not force a common compiler, test runner or runtime version.
+The [Cloudflare container block](../blocks/cloudflare-container/docs/README.md) installs a dedicated Wrangler configuration and Worker gateway plus a chosen Bun, Go or Rust service, Dockerfile and tests. Its native sources are directly runnable; Worker files with Kitbash parameters are rendered by installation. [Hibernating WebSockets](../blocks/hibernating-websocket/docs/README.md) installs a Durable Object, authorized upgrade handler and browser client into a host Worker.
 
 ## Commands
 
 | Command at repository root | Runs |
 | --- | --- |
-| `pnpm bootstrap` | Workspace/native dependency install followed by Go module download |
-| `pnpm install --frozen-lockfile` | Reproducible JS and Cargo install; does not resolve Go modules |
-| `pnpm workspace:map` | Workspace package names and locations |
-| `pnpm check` | Lint, typecheck, tests and validation, stopping on a failure |
-| `pnpm test` | Node, Bun, workerd, Rust and Go race tests, plus contract/recipe/harness unit tests |
-| `pnpm test:core` | Only the registry's four packages |
+| `pnpm bootstrap` | Workspace/native install followed by Go module download |
+| `pnpm install --frozen-lockfile` | Reproducible JS and Cargo install; Go retains its own resolver |
+| `pnpm workspace:map` | Executable workspace package names and locations |
+| `pnpm check` | Lint, typecheck, tests and validation, stopping on failure |
+| `pnpm test` | Registry/recipe/fixture tests plus Bun, Cargo and Go race tests |
+| `pnpm test:core` | Registry's four original packages |
 | `pnpm typecheck` | TS checks, generated Worker binding types, Cargo check and Go build checks |
-| `pnpm lint` | The ESLint recipe, Rust fmt/clippy and Go vet |
-| `pnpm validate` | Generated schemas and plugin structure |
-| `pnpm build` | Native binaries, CLI/plugin/Bun bundles and Worker dry-run bundles (the container image build requires Docker) |
-| `pnpm test:e2e` | Local browser→Worker→D1 journey and clean-template block installation |
+| `pnpm lint` | ESLint recipe, Rust fmt/clippy and Go vet |
+| `pnpm validate` | Registry schemas, plugin structure and every block's scanner |
+| `pnpm build` | Native binaries, CLI/plugin/Bun bundles and Worker dry-run bundles |
+| `pnpm test:e2e` | Browser journey and strict clean-host block installations, including runtime variants |
 | `pnpm test:coverage-guard` | Prove an unimported source file fails the coverage gate |
-| `pnpm test:docker` | Container rights, read-only root, bounded tmpfs and cleanup; requires Docker |
+| `pnpm test:docker` | Install each container variant, then build/run its traveling Docker smoke tests |
 
-Install Chromium once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install` (Linux CI: `pnpm --filter kitbash-recipe-playwright-worker-e2e exec playwright install --with-deps chromium`). Browser, block-install and Docker suites are explicit because they have additional host requirements or run substantially longer. The workerd coverage recipe's coverage floors run during ordinary `pnpm test`.
-
-Recursive commands limit concurrent projects to two; e2e projects run one at a time. Use pnpm's filters to select work:
+Docker tests require a running Docker engine. They check non-root execution, a local read-only root filesystem, bounded tmpfs and cleanup; these Docker flags are not claims about Cloudflare production configuration. Install Chromium once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install` (Linux CI adds `--with-deps`). Browser, install and Docker suites are explicit because of their host requirements and duration. Recursive ordinary tasks use two concurrent projects; e2e projects run one at a time.
 
 ```sh
-pnpm --filter kit-template-rust-service test
-pnpm --filter kit-template-go-service build
-pnpm --filter kit-template-bun-typescript dev
+pnpm --filter @kitbash/container-rust test
+pnpm --filter @kitbash/container-go build
+pnpm --filter @kitbash/container-bun dev
 pnpm --filter './recipes/*' -r --if-present run typecheck
-KIT_E2E_ONLY=session-cookie pnpm --filter @kitbash/test-e2e test:e2e
+KIT_E2E_ONLY=cloudflare-container pnpm --filter @kitbash/test-e2e test:e2e
+KIT_E2E_ONLY=hibernating-websocket pnpm --filter @kitbash/test-e2e test:e2e
 ```
 
 ## Native resolution
 
-pnpm's [Cargo support](https://github.com/pnpm/pnpm/blob/v12.14.0/pnpm/docs/cargo.md) is experimental and opt-in (`cargo.enabled: true`). It reads the starter's existing `Cargo.lock`, verifies crate checksums, vendors sources into ignored `.pnpm/crates`, and generates an optional `.cargo/config.toml` include. It also installs the pinned toolchain into `.pnpm/rust`. Compilation remains Cargo's job; the crate graph stays in `Cargo.lock`, not the JavaScript lockfile. Without the generated files, direct Cargo can use its usual registry sources.
+pnpm's [Cargo support](https://github.com/pnpm/pnpm/blob/v12.14.0/pnpm/docs/cargo.md) is experimental and opt-in (`cargo.enabled: true`). It reads the runtime payload's Cargo.lock, verifies crate checksums, vendors sources into ignored `.pnpm/crates`, generates a Cargo configuration include and installs the pinned toolchain. Compilation remains Cargo's job; the crate graph stays in Cargo.lock. Direct Cargo can use its usual registry sources without generated includes. Generated `.cargo`, `.pnpm`, `target`, dependencies and build output are excluded from block bundles.
 
-pnpm 12.14.0 does **not** implement a Go module resolver. The Go package's scripts call the host Go toolchain; `go.mod`/`go.sum`, `go mod download`, `-mod=readonly` and the Go module cache remain authoritative. There is no synthetic npm representation of Go or Rust library dependencies. The package wrappers expose build/test/dev tasks for root orchestration.
+pnpm 12.14.0 does **not** implement a Go module resolver. The Go payload's scripts call the host Go toolchain; go.mod/go.sum, `go mod download`, `-mod=readonly` and the Go module cache remain authoritative. The Bun payload uses pinned `devEngines.runtime`, so a global Bun install is unnecessary. Native package scripts expose tasks to root pnpm without duplicating source under a separate starter tree.
 
-The Bun template uses [`devEngines.runtime`](https://github.com/pnpm/pnpm/blob/v12.14.0/pnpm/docs/package_json.md#devenginesruntime). pnpm installs its exact runtime and supplies it to package scripts, so a global Bun install is unnecessary.
+## Installing blocks and using references
 
-## Copying a template or recipe
+Install a runtime block through the normal kit dry-run/apply/verify flow, selecting its variant and parameters. Read its adaptation checklist for host authorization, exports and resource provisioning. The container block owns a private subproject under `containers/<serviceName>` and a dedicated Worker configuration; its explicit native scripts run only when invoked. Root package scripts, install hooks and package-manager configuration are not replaced by a block.
 
-Run root installs in this repository; the root JS lock is the single reviewed dependency graph. Copy only source/configuration, leaving out `node_modules`, `.pnpm`, `target`, `.wrangler`, build output, generated types and secrets. In the new directory, run `pnpm install`, commit the generated `pnpm-lock.yaml`, then use frozen installs in its CI. Native `Cargo.lock` remains part of the Rust template. Direct Cargo and Go commands also work independently of pnpm.
+Recipes remain reference material. Copy their source/configuration deliberately, install dependencies and commit the resulting lockfile before frozen CI installs. Local recipe/fixture `pnpm-workspace.yaml` files approve esbuild/workerd builds in standalone copies; root installs use root settings and may warn that local settings are ignored.
 
-`recipes/tiered-result-cache-do` is a repository integration fixture, not a standalone copyable recipe: its preparation step needs the `@kitbash/core` workspace package and `blocks/tiered-result-cache` source. Run its tests from this workspace. To adopt the pattern in an application, install the [result-cache block](../blocks/tiered-result-cache/docs/README.md) and adapt the fixture's authorization and Durable Object revision checks.
-
-Worker templates and recipes retain local `pnpm-workspace.yaml` files to approve esbuild/workerd's install scripts after copying. Root installs intentionally use the root settings and pnpm prints a warning about those local settings being ignored. The Rust template instead supplies `pnpm-workspace.standalone.yaml`; rename it after copying. A nested workspace file would hide its Cargo manifest from root native discovery in pnpm 12.14.0.
-
-Cloudflare workflow recipes remain inert under `recipes/cloudflare-ci/workflows/`. Their standalone adoption instructions require committing the new project's lockfile before enabling frozen-install CI. No recursive root command performs a remote deployment or database migration.
+`recipes/tiered-result-cache-do` is an integration fixture that renders the exact result-cache block; it requires this repository. To adopt the feature, install the [result-cache block](../blocks/tiered-result-cache/docs/README.md) and adapt the fixture's authorization/revision checks. Cloudflare workflow examples remain inert under their recipe directory. No root command performs a remote deployment or production database migration.

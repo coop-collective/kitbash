@@ -10,7 +10,7 @@ The metadata pass used tracked file lists, excluded worktree copies, security/au
 
 ## Contribution map
 
-Each row is one focused PR. Templates and recipes have their own README and verification commands; they are now mapped into the root pnpm workspace; see [workspace commands](WORKSPACE.md).
+Each row is one focused PR. Runtime setups now ship as blocks; native payloads and tooling recipes are mapped into the root pnpm workspace; see [workspace commands](WORKSPACE.md).
 
 | Area | Contribution | Form | Reusable behavior | Verification |
 |---|---|---|---|---|
@@ -20,11 +20,11 @@ Each row is one focused PR. Templates and recipes have their own README and veri
 | Private R2 uploads | `r2-private-uploads` [#14](https://github.com/coop-collective/kitbash/pull/14) | Block | Actual-byte limits, tenant-derived keys, authenticated downloads/deletes | Clean-template R2/workerd tests and typecheck |
 | Public caching | `public-edge-cache` [#13](https://github.com/coop-collective/kitbash/pull/13) | Block | Conservative eligibility, versioned keys, bounded TTL, safe bypasses | Real Cache API tests and two clean installs |
 | Typed result caching (follow-up) | [tiered-result-cache](../blocks/tiered-result-cache/docs/README.md) [#20](https://github.com/coop-collective/kitbash/pull/20) | Block + DO integration fixture | Cache API → optional KV → authoritative loader, tenant/revision keys, bounded freshness, strict bypass | Two clean installs, four real DO RPC tests, typecheck and dry-run bundle |
-| Hibernating fullstack WebSockets | `hibernating-websocket` [#15](https://github.com/coop-collective/kitbash/pull/15) | Template | Worker auth seam, tenant DO rooms, SQL snapshots, attachments and browser reconnect | Real workerd upgrade/broadcast tests and controlled client tests |
-| Container exposure and scratch writes | `container-gateway` [#16](https://github.com/coop-collective/kitbash/pull/16) | Template | Narrow authenticated gateway, non-root runtime, bounded temporary files, tmpfs detection | Gateway/service tests, dry-run build and local Docker profile |
-| Bun TypeScript bootstrap | `bun-typescript` [#4](https://github.com/coop-collective/kitbash/pull/4) | Template | Pinned Bun/TS7, pure HTTP handler, validation and shutdown | 4 tests, typecheck, frozen install and bundle build |
-| Rust bootstrap | `rust-service` [#5](https://github.com/coop-collective/kitbash/pull/5) | Template | Pinned workspace, inherited lints, HTTP router and bounded shutdown | fmt, clippy, 3 tests, release build and HTTP/SIGTERM smoke |
-| Go bootstrap | `go-service` [#6](https://github.com/coop-collective/kitbash/pull/6) | Template | Standard-library service, strict bounded JSON, timeouts and shutdown | vet, race tests, build; handler coverage 100%, startup 0% |
+| Hibernating fullstack WebSockets | `hibernating-websocket` [#23](https://github.com/coop-collective/kitbash/pull/23) | Block | Worker auth seam, tenant DO rooms, SQL snapshots, attachments and browser reconnect | Two clean installs, each with 11 real workerd/DO/WebSocket checks and 2 client tests |
+| Container exposure and scratch writes | `cloudflare-container` [#26](https://github.com/coop-collective/kitbash/pull/26) | Block with three variants | Narrow authenticated gateway, non-root runtime, bounded temporary files, tmpfs detection | Four clean installs; all three dedicated Wrangler builds and real Docker image checks |
+| Bun TypeScript bootstrap | `cloudflare-container --variant bun` [#26](https://github.com/coop-collective/kitbash/pull/26) | Container block: bun variant | Pinned Bun/TS7, bounded HTTP hashing, private scratch and shutdown | 2 native tests, typecheck, frozen install and bundle build |
+| Rust bootstrap | `cloudflare-container --variant rust` [#26](https://github.com/coop-collective/kitbash/pull/26) | Container block: rust variant | Pinned workspace, inherited lints, HTTP hashing and bounded shutdown | fmt, clippy, 3 native tests, release build and HTTP/SIGTERM smoke |
+| Go bootstrap | `cloudflare-container --variant go` [#26](https://github.com/coop-collective/kitbash/pull/26) | Container block: go variant | Standard-library service, bounded HTTP hashing, timeouts and shutdown | vet, 3 native race tests, build and HTTP/SIGTERM smoke |
 | SQL integration/migration history | `workerd-migration-replay` [#2](https://github.com/coop-collective/kitbash/pull/2) | Existing block fix | Detect table/column/value/duplicate loss and replay foreign-key checks | 4 clean-install cases and 7 preservation regressions |
 | Browser e2e | `playwright-worker-e2e` [#10](https://github.com/coop-collective/kitbash/pull/10) | Recipe | Managed local Worker server and real migrated D1 browser flow | 2 Chromium tests, typecheck and launcher validation |
 | Coverage | `workerd-coverage` [#9](https://github.com/coop-collective/kitbash/pull/9) | Recipe | Istanbul in workerd, per-file floors, unimported-source failure guard | 3 integration tests, 100% fixture coverage, negative guard |
@@ -33,11 +33,13 @@ Each row is one focused PR. Templates and recipes have their own README and veri
 | TypeScript 7 checks | `typescript-native-checks` [#7](https://github.com/coop-collective/kitbash/pull/7) | Recipe | Real bounded subprocess concurrency and reverse consumer selection | 6 tests, real compiler failures and real-Git selection checks |
 | vinext guardrails | `vinext-guardrails` [#8](https://github.com/coop-collective/kitbash/pull/8) | Recipe | Configuration/data checks, measured client bundle budgets and runtime acceptance matrix | 6 tests; static validation only |
 
+JWT browser sessions are also available as [jwt-session-cookie](../blocks/jwt-session-cookie/docs/README.md) ([PR #24](https://github.com/coop-collective/kitbash/pull/24)): HKDF-derived HS256, hardened cookies and uncached D1 version/revocation checks. The runtime correction replaces the standalone forms in the original PRs #4, #5, #6, #15 and #16 with [cloudflare-container](../blocks/cloudflare-container/docs/README.md) and [hibernating-websocket](../blocks/hibernating-websocket/docs/README.md).
+
 ## Why these boundaries
 
 Blocks preserve the registry contract: declared files/parameters, migrations and bindings, provenance, agent adaptation notes, and tests that travel to a clean Hono/D1 project. Existing auth and test blocks are improved where the feature already exists. Session cookies complement email-code sign-in and CLI OAuth; they do not replace those features.
 
-Whole-project language and runtime scaffolds are templates. Lint, browser runners, coverage tooling and workflow bootstrap are recipes because their commands or target paths exceed the existing block verifier/installer allowlists. The extraction does not weaken those allowlists to make a workflow look installable. GitHub workflow examples are inert until an adopting project deliberately copies them into its workflow directory.
+Language and runtime setups are installable blocks. The Cloudflare container block has Bun, Go and Rust variants; the WebSocket block supplies its DO, handler and client. Hono/D1 is an internal installation fixture under `test-e2e/fixtures`, and the public templates tree has been removed. Lint, browser runners, coverage tooling and workflow bootstrap are recipes because their commands or target paths exceed the existing block verifier/installer allowlists. The extraction does not weaken those allowlists to make a workflow look installable. GitHub workflow examples are inert until an adopting project deliberately copies them into its workflow directory.
 
 Authentication, authorization and tenancy remain explicit integration seams. The profile/upload blocks require a verified host identity; WebSockets and containers require an authorization service. Their tests prove the supplied boundary and behavior, not an unimplemented production identity provider.
 
@@ -47,7 +49,7 @@ Authentication, authorization and tenancy remain explicit integration seams. The
 - The previous migration replay skipped removed tables and columns; it could accept data loss. The fix checks schema presence and row multiplicity, plus unusual table names that SQL LIKE wildcards could accidentally exclude.
 - Platform’s purported parallel typecheck runner invokes synchronous subprocesses. The reusable recipe uses asynchronous spawn, bounds concurrency and keeps complete CI checks as the default.
 - Coverage must include source files that no test imports. The coverage recipe deliberately introduces such a file and expects the threshold gate to fail.
-- A temporary directory name does not establish RAM backing. The container template detects Linux tmpfs, bounds concurrency and bytes, cleans up private job directories, and separates locally tested Docker flags from Cloudflare configuration.
+- A temporary directory name does not establish RAM backing. The container block detects Linux tmpfs, bounds concurrency and bytes, cleans up private job directories, and separates locally tested Docker flags from Cloudflare configuration.
 - vinext compatibility, cache adapters and Vite environment selection vary by pinned version. The recipe enforces narrow mechanical checks and records the browser/runtime cases that static checks cannot establish.
 - Native TypeScript CLI checks and JavaScript compiler-API consumers have different compatibility needs. The lint recipe keeps its tested parser compiler, while the native-check recipe pins TS7 explicitly.
 
@@ -55,7 +57,7 @@ Authentication, authorization and tenancy remain explicit integration seams. The
 
 The browser and container examples require host-owned authorization wiring before interactive production use. Cookie headers are checked in workerd; browser enforcement still belongs in the adopting app’s journey tests. WebSocket attachment reconstruction is tested explicitly; that does not force a real platform eviction. Local Docker validates permissions and scratch behavior, not Cloudflare scheduling or egress enforcement.
 
-Compatibility dates match each tested toolchain. The existing workers-pool 0.22 line cannot be assumed to support today’s runtime date; the coverage and migration recipes retain their verified version boundary. Newer WebSocket tests use the current plugin separately. Upgrading an integration should update its pinned tooling and runtime tests together.
+Compatibility dates match each tested toolchain. The existing workers-pool 0.22 line cannot be assumed to support today’s runtime date; the coverage and migration recipes retain their verified version boundary. WebSocket block tests use Node with programmatic Miniflare 5 and its v4-options converter. Upgrading an integration should update its pinned tooling and runtime tests together.
 
 No live deployment, production database migration or registry publication was performed. The initial review left the PRs open; the subsequent authorized integration merged all 18. CI workflows were syntax-checked and packaging was dry-run; hosted execution remains an adoption step. The vinext checker does not claim a production site build or measured speedup.
 

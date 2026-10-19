@@ -1,5 +1,0 @@
-# Standalone copy settings. The repository root also discovers this package.
-packages: []
-allowBuilds:
-  esbuild: true
-  workerd: true

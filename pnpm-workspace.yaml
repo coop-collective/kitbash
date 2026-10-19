@@ -1,7 +1,7 @@
-# One install and task map for the registry, copyable starters, and recipes.
+# One install and task map for the registry, runtime block payloads, fixtures, and recipes.
 packages:
   - packages/*
-  - templates/*
+  - blocks/*/variants/*/container
   - test-e2e/fixtures/*
   - recipes/*
   - docs/examples

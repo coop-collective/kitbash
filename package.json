@@ -7,13 +7,13 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "bootstrap": "pnpm install && pnpm --filter kit-template-go-service run deps",
+    "bootstrap": "pnpm install && pnpm --filter @kitbash/container-go run deps",
     "workspace:map": "pnpm -r list --depth -1",
     "build": "pnpm -r --workspace-concurrency=2 --if-present run build",
     "test": "pnpm -r --workspace-concurrency=2 --if-present run test",
     "test:core": "pnpm --filter \"./packages/*\" -r --if-present run test",
     "test:e2e": "pnpm -r --workspace-concurrency=1 --if-present run test:e2e",
-    "test:docker": "pnpm --filter kit-template-container-gateway run test:docker",
+    "test:docker": "node --test test-e2e/cloudflare-container-smoke.test.mjs",
     "test:coverage-guard": "pnpm --filter kitbash-recipe-workerd-coverage run test:guard",
     "typecheck": "pnpm -r --workspace-concurrency=2 --if-present run typecheck",
     "lint": "pnpm -r --workspace-concurrency=2 --if-present run lint",
