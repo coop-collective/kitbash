@@ -1,5 +1,7 @@
 # Authenticated container operations and temporary writes
 
+Current deliverable: [cloudflare-container](../../blocks/cloudflare-container/docs/README.md), with Bun, Go and Rust variants. The installer now supports private native subprojects and a dedicated Wrangler configuration, replacing the original standalone template. Historical evidence and initial checks follow.
+
 Reviewed 2026-10-19. A standalone template keeps runtime/Docker/main-entrypoint ownership explicit; these files cannot be safely merged into an arbitrary existing app by the current block installer.
 
 | Source | Commit | Finding |

@@ -1,4 +1,0 @@
-# Preserve native Cargo installation when this template is copied out.
-packages: []
-cargo:
-  enabled: true

@@ -449,7 +449,7 @@ packages/plugin    marketplace + plugin for Claude Code/Codex/Grok (Ideator's la
 packages/web       (v1) the site: browse, block page with lineage tree, org settings, billing; vinext or Hono+static
 blocks/            the owner's harvested blocks, each a block directory (also the registry's own dogfood: kit-api installs
                    email-code-auth, cli-oauth-login, orgs-roles-invites from here)
-templates/         reference targets: hono-d1, nextjs-d1 (used by tests and the sandbox)
+test-e2e/fixtures/ internal reference hosts for installed-block tests
 docs/
 ```
 

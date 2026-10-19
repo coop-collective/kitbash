@@ -1,5 +1,7 @@
 # Bun TypeScript bootstrap
 
+Current deliverable: the **bun variant** of [cloudflare-container](../../blocks/cloudflare-container/docs/README.md). The standalone starter described in this original review was replaced by an installable Wrangler/Cloudflare Containers block; its payload is mapped into root pnpm. Historical evidence and initial checks follow.
+
 Reviewed 2026-10-19. Deliverable: `templates/bun-typescript` (standalone starter; not an installable block).
 
 ## Workspace evidence

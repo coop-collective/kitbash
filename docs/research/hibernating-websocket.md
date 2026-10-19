@@ -1,5 +1,7 @@
 # Hibernating fullstack rooms
 
+Current deliverable: the installable [hibernating WebSocket block](../../blocks/hibernating-websocket/docs/README.md). Its [conversion report](hibernating-websocket-block.md) records current installer and Miniflare checks. The starter paths, Vitest setup and validation below are historical research evidence; the public template was removed after conversion.
+
 Reviewed 2026-10-19. New minimal implementation informed by these local sources:
 
 | Source | Commit | Retained / excluded |

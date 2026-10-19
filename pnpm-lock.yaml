@@ -191,6 +191,22 @@ importers:
 
   .: {}
 
+  blocks/cloudflare-container/variants/bun/container:
+    devDependencies:
+      '@types/bun':
+        specifier: 1.4.3
+        version: 1.4.3
+      bun:
+        specifier: runtime:1.4.3
+        version: runtime:1.4.3
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  blocks/cloudflare-container/variants/go/container: {}
+
+  blocks/cloudflare-container/variants/rust/container: {}
+
   docs/examples:
     devDependencies:
       ajv:
@@ -417,57 +433,11 @@ importers:
         specifier: 4.137.0
         version: 4.137.0(@types/node@24.10.1)
 
-  templates/bun-typescript:
+  test-e2e:
     devDependencies:
-      '@types/bun':
-        specifier: 1.4.3
-        version: 1.4.3
-      bun:
-        specifier: runtime:1.4.3
-        version: runtime:1.4.3
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
-
-  templates/container-gateway:
-    dependencies:
-      '@cloudflare/containers':
-        specifier: 0.3.7
-        version: 0.3.7
-    devDependencies:
-      '@types/node':
-        specifier: ^24.0.0
-        version: 24.10.1
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-      wrangler:
-        specifier: ^4.151.1
-        version: 4.151.1(@types/node@24.10.1)
-
-  templates/go-service: {}
-
-  templates/hibernating-websocket:
-    devDependencies:
-      '@cloudflare/vitest-plugin':
-        specifier: ^1.4.4
-        version: 1.4.4(@types/node@24.10.1)(vitest@4.1.12)
-      '@types/node':
-        specifier: ^24.0.0
-        version: 24.10.1
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-      vitest:
-        specifier: ^4.1.11
-        version: 4.1.12(@types/node@24.10.1)(vite@8.3.4(@types/node@24.10.1)(esbuild@0.28.2)(yaml@2.9.1))
-      wrangler:
-        specifier: ^4.137.0
-        version: 4.151.1(@types/node@24.10.1)
-
-  templates/rust-service: {}
-
-  test-e2e: {}
+      '@kitbash/core':
+        specifier: workspace:*
+        version: link:../packages/core
 
   test-e2e/fixtures/hono-d1:
     dependencies:
@@ -679,9 +649,6 @@ packages:
 
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
-
-  '@cloudflare/containers@0.3.7':
-    resolution: {integrity: sha512-DM9dm3FnIBSyiSJ1FLavKwl/lk3oAmTaynCzZQ9pZR0ncRPquSxkxd8Nu2MFILxmDDsPkxKsSNEh9mHHMty4Fw==}
 
   '@cloudflare/kv-asset-handler@0.5.0':
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
@@ -3832,8 +3799,6 @@ snapshots:
 
   '@cfworker/json-schema@4.1.1': {}
 
-  '@cloudflare/containers@0.3.7': {}
-
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
   '@cloudflare/unenv-preset@2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260815.1)':
@@ -5034,7 +4999,7 @@ snapshots:
 
   bun-types@1.4.3:
     dependencies:
-      '@types/node': 26.6.5
+      '@types/node': 24.10.1
       undici-types: 8.9.0
 
   bun@runtime:1.4.3: {}

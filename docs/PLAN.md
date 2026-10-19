@@ -10,7 +10,7 @@ Hono + D1 raw SQL + `NNNN_name.sql`, vitest in workerd for the Worker, `node --t
 secrets committed, local `wrangler dev` only until the owner deploys.
 
 ```
-packages/core   packages/api   packages/cli   packages/plugin   templates/   blocks/   test-e2e/   docs/
+packages/core   packages/api   packages/cli   packages/plugin   blocks/   recipes/   test-e2e/fixtures/   docs/
 ```
 
 ---
@@ -152,15 +152,15 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
   validate` and `test` green.
 - **Tests:** `node --test`: validate, tool list/schemas, one `tools/call` round trip with a stubbed CLI.
 
-### WP-05 Reference templates and the e2e harness
+### WP-05 Internal test hosts and the e2e harness
 
 - **Model:** sonnet · **Group:** G1 (template), G3 (harness) · **Depends on:** WP-01 for the harness only
-- **Owns:** `templates/**`, `test-e2e/**`
+- **Owns:** `test-e2e/**`
 - **Deliverables**
   - `test-e2e/fixtures/hono-d1`: Hono Worker, `wrangler.jsonc` with a D1 `DB` placeholder, `migrations/0001_init.sql` (a
     `meta` table), one `/health` route, vitest-in-workerd config with `apply-migrations` (block #11), `.dev.vars.example`,
     `.kit/project.json`, README. Builds, tests pass.
-  - `templates/nextjs-d1` (stretch): OpenNext or vinext minimal with a route handler and D1 binding, same test harness.
+  - `test-e2e/fixtures/nextjs-d1` (unimplemented stretch): vinext minimal with a route handler and D1 binding, same test harness.
   - `test-e2e/install.test.mjs`: copies a template to a temp dir, uses `@kitbash/core` + the CLI to install a given block dir
     (local path, no server), runs the block's `verify.commands`, asserts pass; parameterized over `blocks/*`.
 - **Acceptance:** both templates' own tests pass; the harness installs the WP-01 fixture block and passes.
@@ -240,7 +240,7 @@ Rough calendar: four rounds; with 3–4 sessions in parallel per round, about on
 | WP-10 | Accounts and orgs in `kit-api` **from blocks**: `email-code-auth`, `cli-oauth-login`, `orgs-roles-invites`, `cf-email-sender`; publisher keys registration; `kit login` via OAuth "My CLI on this computer" | opus | H1 | MVP | `packages/api/**`, `packages/cli/src/login*` | A new person signs up by email code, `kit login` opens the browser and lands a `cli_logins` grant; scopes = orgs |
 | WP-11 | Visibility and licensing: public scopes, per-version license (MIT/Apache/Kitbash-Commercial/Proprietary), `forkable`, `origin`; shadcn-compatible `/r/@scope/<name>.json` with header auth; yank/takedown | opus | H1 | MVP | `packages/api/src/public*`, `packages/api/src/shadcn.ts`, `docs/LICENSES.md` | `npx shadcn add @kitbash/<ui-block>` works against `wrangler dev`; a private block is invisible to another org in search, get, `/r/` and lineage |
 | WP-12 | Scanner queue: publish → `SCAN` queue → full static scan (DESIGN §5.2: OSV, typosquat, injection heuristics, consistency) → co-sign → tier `scanned`; findings UI/API; tier drop on sensitive-field changes; 72-hour `latest` cooldown for public | opus | H1 | MVP | `packages/api/src/scan/**`, `packages/core/src/scan.ts` (server extensions) | Seeded malicious fixtures (secret, `..`, `child_process`, "ignore previous instructions", zero-width chars, a non-existent npm name) are all caught; a clean block is co-signed within one queue run |
-| WP-13 | Sandbox runs: render with defaults into `templates/<stack>` inside Cloudflare Sandbox/Containers, egress limited to npm, run `verify.commands`, store log + badge; random re-runs for top earners (hook for v2) | opus | H2 | WP-12, WP-05 | `packages/sandbox/**`, `packages/api/src/sandbox.ts` | The 5 MVP blocks pass in the sandbox; a block with a failing test shows `sandbox: failed` and can't reach `verified` |
+| WP-13 | Sandbox runs: render with defaults into internal `test-e2e/fixtures/<stack>` hosts inside Cloudflare Sandbox/Containers, egress limited to npm, run `verify.commands`, store log + badge; random re-runs for top earners (hook for v2) | opus | H2 | WP-12, WP-05 | `packages/sandbox/**`, `packages/api/src/sandbox.ts` | The 5 MVP blocks pass in the sandbox; a block with a failing test shows `sandbox: failed` and can't reach `verified` |
 | WP-14 | Stripe: subscriptions (Free/Pro/Team), entitlements (private block quota, members), paid blocks (one-time per org, 14-day refund), webhooks; built from the `stripe-billing` block once harvested (WP-18) or directly with social-connector's core | opus | H2 | WP-10 | `packages/api/src/billing/**`, `blocks/stripe-billing/**` | Test-mode checkout → Pro; a 6th private block on Free → 402 with upgrade link; buying a paid block unlocks `bundle` for that org only |
 | WP-15 | Web UI: browse/search, block page (summary, interface, files tree, versions, trust badges, provenance, lineage placeholder), org settings (members, invites, keys, tokens), billing, proposals inbox; `packages/web` on vinext or Hono + Vite | sonnet | H2 | WP-10, WP-11 | `packages/web/**` | A visitor finds a public block and copies the `kit install` line; an owner invites a member and revokes a CLI login |
 | WP-16 | Remote `/mcp` with OAuth for cloud agents; Vectorize semantic search (hybrid with FTS5; borrow Nullshot's indexer pattern); card precompute | sonnet | H2 | WP-10 | `packages/api/src/mcp.ts`, `packages/api/src/search/**` | Claude.ai (cloud) connects over OAuth and searches; "sign in with email code and send a bearer token" ranks `email-code-auth` first |
