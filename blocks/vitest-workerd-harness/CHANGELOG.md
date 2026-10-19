@@ -1,3 +1,7 @@
+# 1.0.2
+
+Replay now rejects removed tables/columns and duplicate row loss, validates its cutoff, checks rerun idempotency, and includes preservation regression tests.
+
 ## 1.0.1
 
 - `e2e.json` is no longer declared in `files[]` (it was copied into projects as a doc/fixture); core allows it undeclared and the e2e harness reads it from the block directory.

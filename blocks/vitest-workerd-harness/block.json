@@ -5,7 +5,7 @@
   "title": "Vitest in workerd with migrations applied, plus a production-history replay test",
   "description": "vitest.config.ts with cloudflareTest and readD1Migrations exposing TEST_MIGRATIONS, a setupFile that applies ./migrations to the test D1 before every test file, a harness self-check, and an optional replay test that applies newer migrations on top of the production state with rows in it.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "categories": [
     "testing",
@@ -94,6 +94,22 @@
       "when": "prodSim"
     },
     {
+      "path": "test/history-snapshot.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/history-snapshot.ts",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
+      "path": "test/history-snapshot.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/history-snapshot.test.ts",
+      "role": "test",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
       "path": "SKILL.md",
       "type": "registry:file",
       "target": ".kit/blocks/vitest-workerd-harness/SKILL.md",
@@ -142,6 +158,16 @@
       "covers": [
         "production-replay"
       ]
+    },
+    {
+      "file": "test/history-snapshot.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "dropped-tables",
+        "dropped-columns",
+        "duplicate-rows",
+        "blob-values"
+      ]
     }
   ],
   "verify": {
@@ -180,7 +206,7 @@
         "check": "test/migration-upgrade.test.ts passes and fails when a migration drops a seeded column value."
       }
     ],
-    "author_notes": "A migration that is already live must never be edited; the replay test is what catches a new one that breaks existing rows."
+    "author_notes": "Replay rejects lost tables, columns, row values and duplicate rows. Intentional destructive changes require explicit domain assertions, not a generic preservation exemption."
   },
   "provenance": {
     "source": {
