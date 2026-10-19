@@ -58,6 +58,14 @@ describe('public edge cache', () => {
     await waitOnExecutionContext(ctx);
     expect(cache.put).not.toHaveBeenCalled();
   });
+  it('applies the same TTL cap to the initial response and stored representation', async () => {
+    const cache = memoryCache(), ctx = createExecutionContext();
+    const first = await withPublicEdgeCache(req(), ctx, { ...policy, ttlSeconds: 2 }, async () => new Response('catalog', { headers: { 'cache-control': 'public, max-age=3600' } }), cache);
+    expect(first.headers.get('cache-control')).toBe('public, max-age=2');
+    expect(first.headers.has('x-kit-cache-expires')).toBe(false);
+    await waitOnExecutionContext(ctx);
+    expect(cache.saved.get(publicCacheKey(req(), policy)!.url)!.headers.get('cache-control')).toBe('public, max-age=2');
+  });
   it('rejects expired hits even if the cache still returns one', async () => {
     const cache = memoryCache(), ctx = createExecutionContext();
     cache.saved.set(publicCacheKey(req(), policy)!.url, new Response('old', { headers: { 'x-kit-cache-expires': '1' } }));

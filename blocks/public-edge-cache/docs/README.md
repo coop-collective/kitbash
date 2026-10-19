@@ -15,3 +15,5 @@ Run the gate before calling the helper. Only list handlers whose body and header
 Response storage requires status 200, explicit `public` with numeric max-age or s-maxage, no Set-Cookie, no Vary, no private/no-store/no-cache. The minimum of every supplied age and the policy cap wins. Unknown and duplicate query keys bypass; values are never truncated. Cache keys preserve origin and canonicalize query order.
 
 No global invalidation, tiered caching, stampede lock or stale-while-revalidate. Change the representation version for new content; old keys age out. Read/write failure falls back to origin. Streams are cloned, not eagerly buffered; applications must still bound large responses. The actual Workers cache integration is covered by the traveling tests.
+
+The TTL cap also applies to the initial eligible response sent to the client, so a long origin max-age cannot outlive the configured policy in downstream caches.

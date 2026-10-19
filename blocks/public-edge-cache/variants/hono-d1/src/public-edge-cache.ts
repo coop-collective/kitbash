@@ -70,6 +70,8 @@ export async function withPublicEdgeCache(
     headers.set(EXPIRES, String(Date.now() + seconds * 1000));
     // Keep the stream; buffering a whole response here would multiply memory use.
     ctx.waitUntil(cache.put(key, new Response(copy.body, { status: 200, headers })).catch(() => undefined));
+    headers.delete(EXPIRES);
+    return new Response(response.body, { status: response.status, headers });
   }
   return response;
 }
