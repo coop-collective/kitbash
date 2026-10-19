@@ -8,3 +8,6 @@ coverage/
 .DS_Store
 # plan files and diffs are per-session working state
 **/.kit/plans/
+
+# pnpm-managed native sources and toolchains (Cargo.lock remains committed).
+.pnpm/

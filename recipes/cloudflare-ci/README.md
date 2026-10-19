@@ -4,11 +4,11 @@ This template separates credential-free PR checks from a manual, environment-sco
 
 ```sh
 cd recipes/cloudflare-ci
-npm ci
-npm test
-npm run typecheck
-npm run build -- --env staging
-npm run build -- --env production
+pnpm install
+pnpm test
+pnpm typecheck
+pnpm build --env staging
+pnpm build --env production
 node scripts/deploy.mjs staging
 ```
 
@@ -16,7 +16,7 @@ The last command prints the exact migration/deployment plan. `--execute` perform
 
 Adoption checklist:
 
-1. Bring the scripts/workflows into the app root and adapt the check scripts to the package manager. The demonstration uses an npm lockfile; existing pnpm projects should retain theirs and use `pnpm/action-setup` and `pnpm install --frozen-lockfile`.
+1. Bring the scripts/workflows and package manifest into the app root. Run `pnpm install` and commit the generated `pnpm-lock.yaml` before enabling CI. The example uses pnpm 12.14.0; both workflows install that exact version and use frozen installs. In this repository, dependency versions come from the root lockfile.
 2. Configure both Wrangler environments with separately provisioned bindings; replace both placeholder database IDs. Bindings are not inherited automatically. Configure any Worker secrets separately.
 3. Create GitHub environments `staging` and `production`; add environment-scoped `CLOUDFLARE_API_TOKEN` secrets and `CLOUDFLARE_ACCOUNT_ID` variables. Set production reviewers/branch restrictions in GitHub settings; YAML alone does not create those protections.
 4. Add application lint, workerd integration/migration-history tests and browser checks to the check job. Require it in branch protection. Audit/pin action revisions according to repository policy.
@@ -25,3 +25,5 @@ Adoption checklist:
 The fixture's tests prove command ordering and failure handling; dry runs only validate packaging. This recipe does not assert a live deployment or hosted workflow run. For Cloudflare Vite or vinext, select the environment at build time (`CLOUDFLARE_ENV`) and deploy its generated config instead of copying this raw-Worker deploy command.
 
 Compatibility date 2026-09-28 matches the maximum supported by the pinned Wrangler runtime. Upgrade and test the toolchain before advancing the date.
+
+This recipe is a root pnpm workspace member. For a standalone copy, run `pnpm install` once and commit its generated lockfile; use `pnpm install --frozen-lockfile` in that project’s CI.

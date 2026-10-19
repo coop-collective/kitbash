@@ -4,8 +4,7 @@ Status: draft written 2026-10-18 before WP-01's `contract.ts` exists. The final 
 `packages/core/schema/contract.v1.json`, generated from zod by WP-01. Until then the reference is
 `docs/examples/contract.v1.draft.json` (JSON Schema draft-07, one `<tool>_input` and `<tool>_output` per tool in
 `$defs`, plus `Error`, `Card`, `Summary`, `Plan`, `AppliedPlan`, `LockEntry`, and two Ideator-side shapes). Every
-example in `docs/examples/` validates against it (`cd docs/examples && npm install --ignore-workspace && node --test
-validate.test.mjs`). WP-07 finalizes after WP-01: diff the draft against the generated schema, port any drift here.
+example in `docs/examples/` validates against it (`pnpm install && pnpm --filter kitbash-contract-examples test`). WP-07 finalizes after WP-01: diff the draft against the generated schema, port any drift here.
 
 Sources: `DESIGN.md` §3.2 and §6.6, `BLOCK-SPEC.md` §6.5/§7, and, read-only, Ideator's `docs/DESIGN-autopilot.md` §15
 and `docs/PLAN-autopilot.md` WP 4.1 on branch `autopilot`. Ideator's repo was not touched.

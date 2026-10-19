@@ -1,6 +1,6 @@
 # Workspace pattern review — 2026-10-19
 
-This follow-up turns recurring implementation patterns from `~/Workspace` into independent, reviewable Kitbash contributions. The source repositories and the main checkout were not edited. The PRs are based on `2d68920`; they are proposed changes, not deployed services or published registry releases.
+This follow-up turns recurring implementation patterns from `~/Workspace` into independent, reviewable Kitbash contributions. The source repositories and the main checkout were not edited. The PRs are based on `2d68920`; all 18 PRs (including this catalog) were merged on 2026-10-19. They are not deployed services or published registry releases.
 
 ## Scope and evidence
 
@@ -10,7 +10,7 @@ The metadata pass used tracked file lists, excluded worktree copies, security/au
 
 ## Contribution map
 
-Each row is one focused PR. Templates and recipes have their own README and verification commands; they remain outside the root pnpm workspace.
+Each row is one focused PR. Templates and recipes have their own README and verification commands; they are now mapped into the root pnpm workspace; see [workspace commands](WORKSPACE.md).
 
 | Area | Contribution | Form | Reusable behavior | Verification |
 |---|---|---|---|---|
@@ -56,10 +56,10 @@ The browser and container examples require host-owned authorization wiring befor
 
 Compatibility dates match each tested toolchain. The existing workers-pool 0.22 line cannot be assumed to support today’s runtime date; the coverage and migration recipes retain their verified version boundary. Newer WebSocket tests use the current plugin separately. Upgrading an integration should update its pinned tooling and runtime tests together.
 
-No live deployment, production database migration, merge or registry publication was performed. CI workflows were syntax-checked and packaging was dry-run; hosted execution remains an adoption step. The vinext checker does not claim a production site build or measured speedup.
+No live deployment, production database migration or registry publication was performed. The initial review left the PRs open; the subsequent authorized integration merged all 18. CI workflows were syntax-checked and packaging was dry-run; hosted execution remains an adoption step. The vinext checker does not claim a production site build or measured speedup.
 
 ## Combined verification
 
 All **17 implementation branches** applied together without conflicts in an isolated checkout. **347 core/API/CLI/plugin tests**, **15 contract-example checks**, typechecking and registry/plugin validation passed. The full installer suite passed **38/38 cases, zero failures and zero skips**, including defaults, alternate parameters, conflict handling and three multi-block chains. Standalone recipe/template checks are recorded in the table and individual PRs.
 
-[The verification record](research/workspace-verification-2026-10-19.json) pins each tested branch commit and the commands. Auth/session/profile/upload/OAuth and TypeScript-selection code also received independent read-only review. The main checkout and all 17 implementation worktrees were clean at handoff. All PRs remain open for review; none was merged or deployed.
+[The verification record](research/workspace-verification-2026-10-19.json) pins each tested branch commit and the commands. Auth/session/profile/upload/OAuth and TypeScript-selection code also received independent read-only review. The main checkout and all 17 implementation worktrees were clean at handoff. All 18 PRs were subsequently merged at the owner’s request; none was deployed.

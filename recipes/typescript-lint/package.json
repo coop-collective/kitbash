@@ -16,5 +16,6 @@
     "typescript-eslint": "8.71.2",
     "typescript": "5.9.3",
     "globals": "16.5.0"
-  }
+  },
+  "packageManager": "pnpm@12.14.0"
 }

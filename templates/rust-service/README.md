@@ -1,8 +1,14 @@
 # Rust service starter
 
-Copy this standalone Cargo workspace into a new project. Requires the pinned Rust 1.96.0 toolchain; rustup installs it from `rust-toolchain.toml`.
+Copy this standalone Cargo workspace into a new project. `pnpm install` resolves its Cargo dependencies and installs the Rust 1.96.0 toolchain from `rust-toolchain.toml`. Direct Cargo commands remain supported through rustup. For pnpm installation in a standalone copy, first rename `pnpm-workspace.standalone.yaml` to `pnpm-workspace.yaml`. Keep the sample name inside Kitbash: a nested workspace boundary prevents pnpm 12 from discovering its Cargo graph from the repository root.
 
 ```sh
+# From the repository root:
+pnpm --filter kit-template-rust-service lint
+pnpm --filter kit-template-rust-service test
+pnpm --filter kit-template-rust-service build
+
+# Direct Cargo commands from this directory:
 cargo fmt --all --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace

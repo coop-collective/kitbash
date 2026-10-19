@@ -17,5 +17,6 @@
     "vitest": "^4.1.11",
     "wrangler": "^4.137.0",
     "@cloudflare/vitest-plugin": "^1.4.4"
-  }
+  },
+  "packageManager": "pnpm@12.14.0"
 }

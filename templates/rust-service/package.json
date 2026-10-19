@@ -1,0 +1,12 @@
+{
+  "name": "kit-template-rust-service",
+  "private": true,
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "dev": "cargo run --locked -p service",
+    "build": "cargo build --locked --workspace --release",
+    "test": "cargo test --locked --workspace",
+    "typecheck": "cargo check --locked --workspace --all-targets",
+    "lint": "cargo fmt --all -- --check && cargo clippy --locked --workspace --all-targets -- -D warnings"
+  }
+}

@@ -92,13 +92,17 @@ if [ "$SERVE" = 1 ]; then
 fi
 
 # ---------------------------------------------------------------- 3. a fresh project
-# pnpm's exit code is not trusted (ignored build scripts make it exit non-zero while node_modules is complete): every
-# dependency in package.json must be linked afterwards. Offline first, then online.
+# Each copy has local allowBuilds config. Every install must succeed, including an
+# immutable reinstall of the generated/updated lockfile. Only a missing offline package allows online fallback.
 pnpm_install() { # $1: dir
   local missing='const p=require(process.argv[1]+"/package.json");const fs=require("node:fs");process.exit(Object.keys({...p.dependencies,...p.devDependencies}).every((n)=>fs.existsSync(`${process.argv[1]}/node_modules/${n}/package.json`))?0:1)'
-  (cd "$1" && CI=1 pnpm install --ignore-workspace --no-frozen-lockfile --offline >"$WORK/pnpm.log" 2>&1) || true
-  node -e "$missing" "$1" && return 0
-  (cd "$1" && CI=1 pnpm install --ignore-workspace --no-frozen-lockfile >>"$WORK/pnpm.log" 2>&1) || true
+  if ! (cd "$1" && CI=1 pnpm install --no-frozen-lockfile --offline >"$WORK/pnpm.log" 2>&1); then
+    if ! grep -Eq 'ERR_PNPM_NO_OFFLINE_(META|TARBALL)([^A-Z_]|$)' "$WORK/pnpm.log"; then
+      tail -20 "$WORK/pnpm.log"; echo "pnpm install failed in $1" >&2; return 1
+    fi
+    (cd "$1" && CI=1 pnpm install --no-frozen-lockfile >>"$WORK/pnpm.log" 2>&1) || { tail -20 "$WORK/pnpm.log"; echo "pnpm install failed in $1" >&2; return 1; }
+  fi
+  (cd "$1" && CI=1 pnpm install --offline --frozen-lockfile >>"$WORK/pnpm.log" 2>&1) || { tail -20 "$WORK/pnpm.log"; echo "frozen pnpm install failed in $1" >&2; return 1; }
   node -e "$missing" "$1" || { tail -20 "$WORK/pnpm.log"; echo "pnpm install left dependencies missing in $1" >&2; return 1; }
 }
 
