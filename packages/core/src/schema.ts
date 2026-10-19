@@ -18,6 +18,8 @@ const slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "lowercase letters, d
 const semver = z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/, "semver");
 const envName = z.string().regex(/^[A-Z_][A-Z0-9_]{0,63}$/, "UPPER_SNAKE env name");
 const bindingName = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "binding name");
+const paramToken = z.string().regex(/^\{\{kit\.[A-Za-z_][A-Za-z0-9_]{0,63}\}\}$/, "single kit param token");
+const exportSymbol = z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]{0,127}$/, "export symbol");
 const relPath = z.string().min(1).max(512);
 const text = (max: number) => z.string().max(max);
 
@@ -94,7 +96,7 @@ export const SecretDeclSchema = z.strictObject({
 });
 export const BindingSchema = z.strictObject({
   type: z.enum(BINDING_TYPES),
-  name: bindingName,
+  name: z.union([bindingName, paramToken]),
   required: z.boolean().optional(),
   create: text(300).optional(),
   note: text(500).optional(),
@@ -114,7 +116,7 @@ export const RouteSchema = z.strictObject({
 });
 export type RouteDecl = z.infer<typeof RouteSchema>;
 export const ExportSchema = z.strictObject({
-  symbol: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]{0,127}$/),
+  symbol: z.union([exportSymbol, paramToken]),
   from: relPath,
   kind: z.string().max(64).optional(),
 });
@@ -407,6 +409,9 @@ export function validateManifest(json: unknown): ManifestValidation {
 
   // verify commands: rendered with defaults, then allowlisted
   const defaults = defaultParamValues(m);
+  try { renderInterface(m, defaults); } catch (e) {
+    findings.push(finding("render_error", "block", "block.json", (e as Error).message));
+  }
   (m.verify?.commands ?? []).forEach((cmd, i) => {
     const where = `block.json#/verify/commands/${i}`;
     let rendered: string;
@@ -438,4 +443,18 @@ export function validateManifest(json: unknown): ManifestValidation {
   }
 
   return { ok: !findings.some((f) => f.severity === "block"), manifest: m, findings };
+}
+
+/** Resolve declared identifiers before conflict detection and lock recording. */
+export function renderInterface(m: Manifest, params: ParamValues): Manifest {
+  const identifier = (source: string, schema: typeof bindingName, kind: string): string => {
+    const value = renderTemplate(source, { params, paths: { ...DEFAULT_PATHS } });
+    if (!schema.safeParse(value).success) throw new Error(`rendered ${kind} ${JSON.stringify(value)} is not a valid identifier`);
+    return value;
+  };
+  return {
+    ...m,
+    ...(m.bindings ? { bindings: m.bindings.map(b => ({ ...b, name: identifier(b.name, bindingName, "binding") })) } : {}),
+    ...(m.exports ? { exports: m.exports.map(e => ({ ...e, symbol: identifier(e.symbol, exportSymbol, "export") })) } : {}),
+  };
 }

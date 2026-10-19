@@ -8,6 +8,7 @@
  * The server (WP-12) adds OSV/typosquat checks and the sandbox.
  */
 import { finding, KitError, type Finding } from "./errors.ts";
+import { containerPackageProblem } from "./container-package.ts";
 import type { BlockBundle } from "./fs.ts";
 import { byteLength, countLines, isText, sha256Hex, tryDecodeUtf8 } from "./hash.ts";
 import { findInjection } from "./injection.ts";
@@ -19,6 +20,7 @@ import {
   defaultParamValues,
   filesForVariant,
   renderedTables,
+  renderInterface,
   validateManifest,
   type FileEntry,
   type Manifest,
@@ -194,6 +196,8 @@ export async function scanBlock(bundle: BlockBundle, opts: ScanOptions = {}): Pr
 
   // ---- per declared file: env files, code hints, rendering with defaults ----
   const defaults = defaultParamValues(m);
+  let resolvedInterface = m;
+  try { resolvedInterface = renderInterface(m, defaults); } catch { /* validateManifest reported this. */ }
   const secretNames = new Set((m.secrets ?? []).map((s) => s.name));
   const renderedByVariant = new Map<string, Map<string, string>>(); // variant -> bundlePath -> rendered text
   for (const variant of m.variants) {
@@ -219,6 +223,11 @@ export async function scanBlock(bundle: BlockBundle, opts: ScanOptions = {}): Pr
         }
       }
       rendered.set(bp, out);
+      try {
+        const renderedTarget = target ? renderTemplate(target, { params: defaults, paths: { ...DEFAULT_PATHS } }) : "";
+        const problem = containerPackageProblem(renderedTarget, out);
+        if (problem) findings.push(finding("container_package", "block", bp, problem));
+      } catch { /* Rendering failures are reported above. */ }
       if (f.role === "config-patch" && f.merge === "append-missing-lines") {
         out.split("\n").forEach((line, i) => {
           const mm = /^\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/.exec(line);
@@ -271,11 +280,11 @@ export async function scanBlock(bundle: BlockBundle, opts: ScanOptions = {}): Pr
       if (probe && !code.includes(probe)) findings.push(finding("route_not_found", "warn", "block.json#/routes", `${r.method} ${r.path} not found in the code (variant ${variant.id})`));
     }
     // env, secrets, bindings referenced
-    for (const n of [...(m.env ?? []).map((e) => e.name), ...secretNames, ...(m.bindings ?? []).map((b) => b.name)]) {
+    for (const n of [...(m.env ?? []).map((e) => e.name), ...secretNames, ...(resolvedInterface.bindings ?? []).map((b) => b.name)]) {
       if (code && !new RegExp(`\\b${n}\\b`).test(code)) findings.push(finding("env_not_referenced", "warn", "block.json", `${n} is declared but not referenced in the code (variant ${variant.id})`));
     }
     // exports
-    for (const e of m.exports ?? []) {
+    for (const e of resolvedInterface.exports ?? []) {
       const f = vf.find((x) => x.path === e.from);
       const t = f ? rendered.get(bundlePath(m, f)) : undefined;
       if (t === undefined) findings.push(finding("export_not_found", "warn", "block.json#/exports", `${e.from} is not a file of variant ${variant.id}`));

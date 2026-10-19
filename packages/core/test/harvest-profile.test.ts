@@ -118,6 +118,18 @@ describe("secrets", () => {
 });
 
 describe("config merges", () => {
+  it("unions container definitions by class without replacing host image settings", () => {
+    const base = '{ "containers": [{ "class_name": "App", "image": "./custom.Dockerfile" }] }';
+    const patch = '{ "containers": [{ "class_name": "App", "image": "./Dockerfile", "max_instances": 2 }, { "class_name": "Other", "image": "./other.Dockerfile" }] }';
+    const result = mergeJsonc(base, patch, "jsonc-deep", { file: "wrangler.jsonc" });
+    expect(JSON.parse(result.text).containers).toEqual([
+      { class_name: "App", image: "./custom.Dockerfile", max_instances: 2 },
+      { class_name: "Other", image: "./other.Dockerfile" },
+    ]);
+    expect(result.warnings).toHaveLength(1);
+    expect(mergeJsonc(result.text, patch, "jsonc-deep").changed).toBe(false);
+  });
+
   it("jsonc-deep keeps comments, unions bindings by name, keeps the project's values", () => {
     const base = '{\n  // keep me\n  "d1_databases": [\n    { "binding": "DB", "database_id": "real" }\n  ],\n  "compatibility_flags": ["nodejs_compat"]\n}\n';
     const r = mergeJsonc(base, '{ "d1_databases": [{ "binding": "DB", "database_id": "REPLACE_ME", "migrations_dir": "migrations" }, { "binding": "LOGS", "database_id": "x" }], "compatibility_flags": ["nodejs_compat", "x"] }', "jsonc-deep", { file: "wrangler.jsonc" });

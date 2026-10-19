@@ -24,6 +24,24 @@ async function plan(over: Partial<PlanInput> & { tree?: Record<string, string> }
 }
 
 describe("acceptance: plan the fixture against hono-d1-min", () => {
+  it("renders binding and export identifiers for conflicts and lock metadata", async () => {
+    const bundle = cloneBundle(await loadFixtureBlock());
+    bundle.manifest.params.push({ name: "bindingName", type: "string", default: "ROOMS" });
+    bundle.manifest.params.push({ name: "className", type: "string", default: "ChatRoom" });
+    bundle.manifest.bindings.push({ type: "durable_object", name: "{{kit.bindingName}}" });
+    bundle.manifest.exports.push({ symbol: "{{kit.className}}", from: "src/room.ts" });
+    bundle.manifest.files.push({ path: "src/room.ts", target: "src/lib/room.ts", type: "registry:lib", role: "service" });
+    bundle.files["src/room.ts"] = "export class {{kit.className}} {}\n";
+    const configured = await plan({ bundle, params: { bindingName: "THREADS", className: "ThreadRoom" } });
+    expect(configured.plan.kit.interface.bindings).toContain("durable_object:THREADS");
+    const collision = await plan({ bundle, params: { bindingName: "DB", className: "ThreadRoom" }, tree: { "src/lib/room.ts": "export class ThreadRoom { existing = true; }" } });
+    expect(collision.plan.conflicts).toContainEqual(expect.objectContaining({ kind: "binding", name: "DB" }));
+    expect(collision.plan.conflicts).toContainEqual(expect.objectContaining({ kind: "export", name: "ThreadRoom" }));
+    for (const params of [{ bindingName: "bad-binding" }, { className: "bad.symbol" }]) {
+      await expect(plan({ bundle, params })).rejects.toMatchObject({ code: "invalid_params" });
+    }
+  });
+
   it("renumbers to 0005_auth.sql, patches wrangler.jsonc in two hunks, appends .dev.vars.example, no conflicts", async () => {
     const { plan: p } = await plan();
     expect(p.conflicts).toEqual([]);

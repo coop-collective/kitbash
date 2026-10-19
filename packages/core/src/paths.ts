@@ -4,6 +4,8 @@
  * no control characters and no NUL.
  */
 
+import { isContainerPackage } from "./container-package.ts";
+
 export type PathProblem =
   | "empty"
   | "absolute"
@@ -101,7 +103,7 @@ export function forbiddenTarget(target: string, blockName: string): string | nul
     return "agent configuration";
   }
   const base = lower.slice(lower.lastIndexOf("/") + 1);
-  if (base === "package.json" || base === "package-lock.json" || base === "pnpm-lock.yaml" || base === "yarn.lock") {
+  if ((base === "package.json" && !isContainerPackage(target)) || base === "package-lock.json" || base === "pnpm-lock.yaml" || base === "yarn.lock") {
     return "package manifest (dependencies are added by the planner from `dependencies[]`, never by a block file)";
   }
   if (lower === ".npmrc" || lower === ".yarnrc" || lower === ".yarnrc.yml" || lower === ".pnpmfile.cjs") {
