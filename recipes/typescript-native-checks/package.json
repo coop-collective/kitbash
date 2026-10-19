@@ -1,0 +1,10 @@
+{
+  "name": "kit-recipe-typescript-native-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": { "typescript": "7.0.2" }
+}
