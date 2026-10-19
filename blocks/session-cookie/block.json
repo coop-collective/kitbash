@@ -1,0 +1,281 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "session-cookie",
+  "type": "registry:block",
+  "title": "Revocable browser sessions with host cookies and strict mutation origins",
+  "description": "Adds HMAC-authenticated browser cookies backed by D1 sessions, immediate logout and revoke-all, expiry cleanup, and Hono middleware that rejects unsafe requests without a same-origin Origin header.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "accounts"
+  ],
+  "meta": {
+    "maturity": "experimental",
+    "origin": "harvested",
+    "est_hours_saved": 4
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=22.18",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "SQL table prefix to avoid conflicts."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/auth/session",
+      "description": "Mount point for this block."
+    },
+    {
+      "name": "cookieName",
+      "type": "identifier",
+      "default": "session",
+      "pattern": "^[a-z][a-z0-9_]{0,31}$",
+      "description": "Cookie suffix; HTTPS uses __Host- and loopback HTTP uses dev_."
+    },
+    {
+      "name": "ttlSeconds",
+      "type": "integer",
+      "default": 604800,
+      "min": 60,
+      "max": 2592000,
+      "description": "Absolute session lifetime in seconds."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_browser_sessions.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_browser_sessions.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/session.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/session-cookie/session.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/routes.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/session-cookie/routes.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/session-cookie.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/session-cookie.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/dev.vars.example",
+      "type": "registry:file",
+      "target": ".dev.vars.example",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "append-missing-lines"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/session-cookie/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "env": [],
+  "secrets": [
+    {
+      "name": "SESSION_SECRET",
+      "description": "At least 32 random characters used for HMAC session signatures. Rotation signs out all browsers.",
+      "required": true
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_browser_sessions.sql",
+      "name": "session_cookie",
+      "creates": [
+        "{{kit.tablePrefix}}browser_sessions"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}browser_sessions"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}",
+      "auth": "session",
+      "description": "Current session owner."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/logout",
+      "auth": "session",
+      "description": "Revoke current session and clear its cookie."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/logout-all",
+      "auth": "session",
+      "description": "Revoke every session belonging to the current owner."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "createSession",
+      "from": "src/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "readSession",
+      "from": "src/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "revokeOwnerSessions",
+      "from": "src/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "cleanupSessions",
+      "from": "src/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "requireSession",
+      "from": "src/routes.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "sessionRoutes",
+      "from": "src/routes.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/session-cookie.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "authorization",
+        "validation",
+        "storage",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/session-cookie.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds HMAC-authenticated browser cookies backed by D1 sessions, immediate logout and revoke-all, expiry cleanup, and Hono middleware that rejects unsafe requests without a same-origin Origin header.",
+    "when_to_use": [
+      "Revocable browser sessions with host cookies and strict mutation origins"
+    ],
+    "when_not_to_use": [
+      "No login provider, account schema, idle timeout or cross-site cookies. Sessions read D1 on every request. Cookie mutations require a same-origin Origin header; non-browser clients should use bearer auth. Owner suspension/deletion must revoke sessions in the host application."
+    ],
+    "adapt": [
+      {
+        "id": "secret",
+        "required": true,
+        "title": "Configure the secret",
+        "do": "Set SESSION_SECRET to at least 32 random characters using local secret configuration and the deployment secret store.",
+        "check": "Session creation succeeds with the configured secret."
+      },
+      {
+        "id": "issue-after-login",
+        "required": true,
+        "title": "Issue only after verified sign-in",
+        "where": "{{paths.app}}/index.ts",
+        "do": "After validating the login proof and its own CSRF/OAuth state, call createSession(env, trustedMemberId, request) and append its setCookie to the response. Never accept an owner id directly from the request body.",
+        "check": "A successful sign-in creates a fresh session cookie; invalid sign-in creates none."
+      },
+      {
+        "id": "mount",
+        "required": true,
+        "title": "Mount routes and protect cookie-authenticated APIs",
+        "where": "{{paths.app}}/index.ts",
+        "do": "Mount sessionRoutes() at {{kit.routePrefix}}; apply requireSession to other cookie-authenticated routes. Both expect DB and SESSION_SECRET bindings.",
+        "check": "Unauthenticated requests return 401; writes without the exact same-origin Origin return 403."
+      },
+      {
+        "id": "lifecycle",
+        "required": true,
+        "title": "Revoke on account removal and schedule cleanup",
+        "do": "Call revokeOwnerSessions on account disable/delete and cleanupSessions from an awaited scheduled handler. Authenticate disabled members in host middleware when appropriate.",
+        "check": "A disabled account cannot keep using a previously issued session."
+      }
+    ],
+    "author_notes": "No login provider, account schema, idle timeout or cross-site cookies. Sessions read D1 on every request. Cookie mutations require a same-origin Origin header; non-browser clients should use bearer auth. Owner suspension/deletion must revoke sessions in the host application."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/inference-market",
+      "commit": "9231c25a2b7cbf9a04c428fe44324efaec3344f4",
+      "paths": [
+        "packages/web/src/auth/session.ts",
+        "packages/web/src/auth/crypto.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}
