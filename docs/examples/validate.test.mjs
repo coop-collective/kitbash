@@ -1,5 +1,5 @@
 // Validates every example in this folder against contract.v1.draft.json.
-// Setup once: (cd docs/examples && npm install --ignore-workspace); run: node --test docs/examples/
+// Setup once: pnpm install; run: pnpm --filter kitbash-contract-examples test
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

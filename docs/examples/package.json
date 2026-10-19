@@ -1,1 +1,12 @@
-{"private":true,"type":"module","name":"kitbash-contract-examples","devDependencies":{"ajv":"8.17.1"}}
+{
+  "private": true,
+  "type": "module",
+  "name": "kitbash-contract-examples",
+  "devDependencies": {
+    "ajv": "8.17.1"
+  },
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "test": "node --test validate.test.mjs"
+  }
+}

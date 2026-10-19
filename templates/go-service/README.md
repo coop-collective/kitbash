@@ -2,6 +2,8 @@
 
 Copy this independent module to a new project and replace `example.com/service` in `go.mod` and imports. It uses Go 1.26.4 and the standard library only.
 
+pnpm orchestrates this module through its local `package.json`; Go resolves dependencies from `go.mod`/`go.sum`. pnpm 12.14.0 has no native Go resolver. Install Go 1.26.4 (and a C compiler for race tests) on the host. From the repository root use `pnpm --filter kit-template-go-service test` or `build`; `pnpm bootstrap` also runs `go mod download`.
+
 ```sh
 go vet ./...
 go test -race -coverprofile=coverage.out ./...

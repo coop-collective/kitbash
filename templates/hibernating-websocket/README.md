@@ -20,3 +20,5 @@ Limits: 100 connections per room, 4096-byte input frames, 1000 text characters, 
 The client uses capped exponential retry with jitter and resets only after ten stable seconds. Policy closure 1008 stops retries; the user signs in again or manually reconnects. DOM messages use textContent.
 
 Tests use `@cloudflare/vitest-plugin` (the current successor to `vitest-pool-workers`) and the actual workerd DO/SQLite/WebSocket APIs. Constructor reconstruction checks persisted attachments and SQL, but does not prove platform eviction timing or billing behavior. Browser lifecycle/backoff tests use a controlled socket and clock, not Playwright. Production transport, auth integration and load testing remain deployment-specific.
+
+This template is also a root pnpm workspace member. Its local workspace settings apply to standalone copies. After copying, run `pnpm install` and commit the generated lockfile before using frozen installs in CI.

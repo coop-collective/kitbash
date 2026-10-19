@@ -1,9 +1,9 @@
 # TypeScript 7 checks with bounded parallelism
 
 ```sh
-npm ci
-npm test
-npm run typecheck
+pnpm install
+pnpm test
+pnpm typecheck
 node scripts/typecheck.mjs --since origin/main --concurrency 2
 ```
 
@@ -14,3 +14,5 @@ The native compiler is already parallel internally. Start with two concurrent pa
 TypeScript 7 ships as `typescript` with `tsc`; a package named `@typescript/native-preview` is not required. Tools importing the compiler's JavaScript API may still require the [documented TypeScript 6 alias arrangement](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/). Do not silently replace those tools' dependency. Generate Wrangler binding types before Workers checks, use explicit `types`, and validate deprecated flags rather than suppressing diagnostics. Excluding a file does not exclude it when imported.
 
 The map is a declared dependency graph, not a complete import analyzer. Missing edges can under-select optional changed-only checks; keep full CI checks. Tests use the real pinned compiler to prove failures propagate, and deterministic barriers to prove concurrency without timing guesses. No speedup is claimed without a repository-specific cold/warm measurement.
+
+This recipe is a root pnpm workspace member. For a standalone copy, run `pnpm install` once and commit its generated lockfile; use `pnpm install --frozen-lockfile` in that project’s CI.

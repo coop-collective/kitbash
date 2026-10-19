@@ -1,0 +1,8 @@
+{
+  "name": "@kitbash/test-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "node --test install.test.mjs"
+  }
+}

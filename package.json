@@ -2,11 +2,22 @@
   "name": "kitbash",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.13.0",
-  "engines": { "node": ">=22.18" },
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
-    "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck",
-    "validate": "pnpm -r --if-present validate"
+    "bootstrap": "pnpm install && pnpm --filter kit-template-go-service run deps",
+    "workspace:map": "pnpm -r list --depth -1",
+    "build": "pnpm -r --workspace-concurrency=2 --if-present run build",
+    "test": "pnpm -r --workspace-concurrency=2 --if-present run test",
+    "test:core": "pnpm --filter \"./packages/*\" -r --if-present run test",
+    "test:e2e": "pnpm -r --workspace-concurrency=1 --if-present run test:e2e",
+    "test:docker": "pnpm --filter kit-template-container-gateway run test:docker",
+    "test:coverage-guard": "pnpm --filter kitbash-recipe-workerd-coverage run test:guard",
+    "typecheck": "pnpm -r --workspace-concurrency=2 --if-present run typecheck",
+    "lint": "pnpm -r --workspace-concurrency=2 --if-present run lint",
+    "validate": "pnpm -r --workspace-concurrency=2 --if-present run validate",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm validate"
   }
 }

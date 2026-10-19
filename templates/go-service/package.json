@@ -1,0 +1,14 @@
+{
+  "name": "kit-template-go-service",
+  "private": true,
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "deps": "go mod download",
+    "dev": "go run ./cmd/service",
+    "build": "go build -mod=readonly -trimpath -o dist/service ./cmd/service",
+    "test": "go test -mod=readonly -race -count=1 ./...",
+    "typecheck": "go build -mod=readonly ./...",
+    "lint": "go vet -mod=readonly ./...",
+    "coverage": "go test -mod=readonly -coverprofile=coverage.out ./..."
+  }
+}

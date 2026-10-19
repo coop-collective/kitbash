@@ -1,9 +1,16 @@
-# Root workspace. templates/* are deliberately NOT members: each template is its own pnpm root
-# (installed with `pnpm install --ignore-workspace`), see templates/hono-d1/pnpm-workspace.yaml.
+# One install and task map for the registry, copyable starters, and recipes.
 packages:
   - packages/*
+  - templates/*
+  - recipes/*
+  - docs/examples
   - test-e2e
-# esbuild/workerd fetch their platform binaries in postinstall (wrangler, vitest-pool-workers: packages/api).
+
+# pnpm 12 resolves/vendors Cargo dependencies; Cargo.lock stays authoritative.
+cargo:
+  enabled: true
+
+# Workerd/esbuild need their platform binaries for local Worker checks.
 allowBuilds:
   esbuild: true
   workerd: true

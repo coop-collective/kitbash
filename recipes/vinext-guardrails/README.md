@@ -3,8 +3,8 @@
 A portable check for an already migrated **Cloudflare App Router** project using `wrangler.jsonc`. It reads package/config/artifact data without importing application code. It does not scaffold or migrate a site.
 
 ```sh
-npm ci
-npm test
+pnpm install
+pnpm test
 # Build your app first, then choose a measured baseline budget:
 node scripts/check-vinext.mjs /path/to/app 500000
 ```
@@ -26,3 +26,5 @@ For the current Workers integration, the RSC environment is wired through the Cl
 Consult [vinext's compatibility status](https://github.com/cloudflare/vinext#project-status), [caching guide](https://github.com/cloudflare/vinext/blob/main/docs/caching.mdx), and [Vite environment handling](https://developers.cloudflare.com/workers/vite-plugin/reference/cloudflare-environments/) for the installed release. Avoid assuming full Cache Components/PPR parity. Prefer measured lazy loading and narrower client boundaries; preserve authorization/middleware before optimizing response caching.
 
 This guard intentionally supports a narrow configuration profile, not every vinext target. Static success does not prove auth, caching correctness, generated deployment bindings, browser hydration, or improved performance. The example versions in tests are parser fixtures, not a newly validated framework compatibility matrix.
+
+This recipe is a root pnpm workspace member. For a standalone copy, run `pnpm install` once and commit its generated lockfile; use `pnpm install --frozen-lockfile` in that project’s CI.
