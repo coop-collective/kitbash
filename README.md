@@ -1,5 +1,7 @@
 # Kitbash (working name: feature-registry)
 
+**New direction: explicit maintenance skills for coding agents.** The first [maintenance skills](skills/README.md) cover TypeScript, Rust and page-specific rendering/caching. They run only when explicitly assigned, normally after merge, and require evidence before refactoring. The existing feature registry below remains available as implementation examples and tested tooling; no recurring maintenance agent is enabled yet.
+
 **A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
 rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,
 config patches, tests and a one-page agent guide. An agent searches in ~100 tokens, judges in ~1,000, installs without
