@@ -9,8 +9,8 @@ const rowKey = (row: Row, columns: string[]) => JSON.stringify(columns.map((colu
 }));
 
 export async function snapshot(db: D1Database): Promise<HistorySnapshot> {
-  const tables = (await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name != 'd1_migrations' ORDER BY name").all<{ name: string }>()).results;
-  const result: HistorySnapshot = {};
+  const tables = (await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT GLOB '_cf_*' AND name != 'd1_migrations' ORDER BY name").all<{ name: string }>()).results;
+  const result: HistorySnapshot = Object.create(null);
   for (const { name } of tables) {
     const columns = (await db.prepare(`PRAGMA table_info(${quote(name)})`).all<{ name: string }>()).results.map((column) => column.name);
     result[name] = { columns, rows: (await db.prepare(`SELECT * FROM ${quote(name)}`).all<Row>()).results };
