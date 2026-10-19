@@ -4,16 +4,18 @@ This is a data-result standard for Worker services, separate from `public-edge-c
 
 ```ts
 // Authentication and current access checks have already completed.
+const store = env.CATALOGS.getByName(JSON.stringify([member.organizationId, catalogId]));
+const revision = await store.revision(); // authoritative generation, not a KV-cached pointer
 const cache = createResultCache({
   origin: new URL(request.url).origin,
   context: ctx,
   kv: env.RESULT_CACHE, // optional
 });
 const result = await cache.get({
-  key: { scope: 'catalog-summary', tenant: member.organizationId, version: knownRevision, parts: [catalogId] },
+  key: { scope: 'catalog-summary', tenant: member.organizationId, version: String(revision), parts: [catalogId] },
   freshSeconds: 30,
   parse: parseCatalogSummary, // unknown -> validated CatalogSummary
-  load: () => env.CATALOGS.getByName(JSON.stringify([member.organizationId, catalogId])).summary(),
+  load: () => store.summary(revision), // DO atomically checks that the expected revision still matches
 });
 return Response.json(result.value, { headers: { 'cache-control': 'private, no-store' } });
 ```
@@ -37,6 +39,8 @@ KV is optional. The installer adds a `RESULT_CACHE` placeholder declaration; for
 Fresh-only is the default. Both cache tiers store absolute creation/fresh/stale deadlines. Promotions never restart TTL. Shorter read policies can further restrict an existing envelope; longer policies cannot extend it. KV has a minimum expiration TTL, so short-lived entries can remain physically present after their logical deadline; the envelope still rejects them. Null is a cacheable JSON value if the parser accepts it, so absence caching has the same freshness tradeoff.
 
 Invalidate by moving to a new authoritative version/revision key. Old in-flight loads can only fill their old version. Obtain the revision from an authoritative mutation or read when immediate freshness matters; a KV-cached revision pointer is not an immediate invalidation mechanism. `bypass: true` provides a strict uncached read for read-after-write and recovery. It does not purge other callers' bounded-stale entries. There is no global delete or generation-pointer helper because KV and per-colo cache deletion cannot provide that guarantee.
+
+The loader must return the snapshot identified by its version key. If the store changes between reading its revision and loading its data, reject that load and retry with a new authoritative revision. The [DO fixture](../../../recipes/tiered-result-cache-do/README.md) implements that check with one bounded retry; it never stores a new snapshot under an old revision.
 
 Create the factory per request. Only overlapping loaders within that request are deduplicated. The factory never shares request I/O promises across Workers requests, isolates or regions. Distinct requests can write the same KV key concurrently; KV rate limits may reject writes and those cache failures are reported. For hot mutable keys use a DO-owned read model, shorter edge-only caching, or immutable revision keys rather than assuming distributed stampede protection.
 
