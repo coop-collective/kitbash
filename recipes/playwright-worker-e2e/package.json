@@ -1,0 +1,16 @@
+{
+  "name": "kitbash-recipe-playwright-worker-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "typecheck": "wrangler types && tsc --noEmit",
+    "test:launcher": "node --test test/launcher.test.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "wrangler": "4.137.0",
+    "typescript": "5.9.3",
+    "@types/node": "24.10.1"
+  }
+}

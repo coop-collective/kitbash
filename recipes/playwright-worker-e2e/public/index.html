@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Local notes</title>
+<body><h1>Local notes</h1><form><label>Note <input name="note" required maxlength="200"></label><button>Add note</button></form><ul aria-label="Notes"></ul>
+<script type="module">
+const form = document.querySelector('form');
+const list = document.querySelector('ul');
+async function refresh() {
+  const response = await fetch('/api/notes');
+  if (!response.ok) throw new Error('Loading notes failed');
+  list.replaceChildren(...(await response.json()).map(({body}) => { const li = document.createElement('li'); li.textContent = body; return li; }));
+}
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const response = await fetch('/api/notes', {method: 'POST', body: new FormData(form).get('note')});
+  if (!response.ok) throw new Error('Saving note failed');
+  form.reset();
+  await refresh();
+});
+await refresh();
+</script></body></html>
