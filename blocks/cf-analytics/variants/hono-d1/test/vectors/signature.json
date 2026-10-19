@@ -1,0 +1,179 @@
+{
+  "description": "HMAC-SHA256(secret, `${ts}.${batch_id}.${hex sha256(body)}`) as `v1=<hex>`. The HMAC key is the UTF-8 bytes of the secret part of `ck_<id>.<secret>`; the body hash is over the raw UTF-8 bytes as sent. Fake keys; never use them anywhere real.",
+  "cases": [
+    {
+      "name": "signup fact",
+      "key": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A.test_secret_not_real_0123456789abcdef",
+      "key_id": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A",
+      "secret": "test_secret_not_real_0123456789abcdef",
+      "ts": 1760000000,
+      "batch_id": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2B",
+      "body": "{\"records\":[{\"id\":\"01J9ZK3Q4R5S6T7V8W9X0Y1Z3C\",\"kind\":\"fact\",\"name\":\"signup\",\"ts\":1760000000000,\"user_id\":\"acc_8f3a1b\",\"props\":{\"method\":\"card\"},\"v\":1}]}",
+      "body_sha256": "87c2097b39b3cb304bb99ec50c2d5a9321be89ed45f72bc28c6a60e0076c1291",
+      "canonical": "1760000000.01J9ZK3Q4R5S6T7V8W9X0Y1Z2B.87c2097b39b3cb304bb99ec50c2d5a9321be89ed45f72bc28c6a60e0076c1291",
+      "signature": "v1=f1b3ae23668c061dfb19366091e7c432139fbdfb0d8ade574c92214f3a9c1e09"
+    },
+    {
+      "name": "non-ASCII log body",
+      "key": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A.test_secret_not_real_0123456789abcdef",
+      "key_id": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z2A",
+      "secret": "test_secret_not_real_0123456789abcdef",
+      "ts": 1760000123,
+      "batch_id": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2C",
+      "body": "{\"records\":[{\"id\":\"01J9ZK3Q4R5S6T7V8W9X0Y1Z3D\",\"kind\":\"log\",\"name\":\"upstream_error\",\"ts\":1760000000500,\"level\":\"error\",\"body\":\"timeout après 30 s — ✓ 日本\",\"v\":1}]}",
+      "body_sha256": "b6992daf9a50aebbd770924885d0b2214110e3bd1b13c5744f0422d14c5efc74",
+      "canonical": "1760000123.01J9ZK3Q4R5S6T7V8W9X0Y1Z2C.b6992daf9a50aebbd770924885d0b2214110e3bd1b13c5744f0422d14c5efc74",
+      "signature": "v1=d72ef4002a130ddb7b6fb1898a047707ab0ab598143dfe5fae8743af6dad3929"
+    },
+    {
+      "name": "second key, minimal body",
+      "key": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z9Z.another_fake_secret_ABCDEFGHIJKLMNOP",
+      "key_id": "ck_01J9ZK3Q4R5S6T7V8W9X0Y1Z9Z",
+      "secret": "another_fake_secret_ABCDEFGHIJKLMNOP",
+      "ts": 1700000000,
+      "batch_id": "01HF7YAT00000000000000000A",
+      "body": "{\"records\":[]}",
+      "body_sha256": "1b8b4c0b6f6ad1d32565952720bc004eeb1f188f62045e4d5525ae2af8c78432",
+      "canonical": "1700000000.01HF7YAT00000000000000000A.1b8b4c0b6f6ad1d32565952720bc004eeb1f188f62045e4d5525ae2af8c78432",
+      "signature": "v1=707304549f940de0873f6e0992b555c8ad1759ee7435a113e0726a9b3d082407"
+    }
+  ],
+  "verify": [
+    {
+      "name": "valid",
+      "now": 1760000000000,
+      "mutate": {},
+      "expect": "ok"
+    },
+    {
+      "name": "valid at +300 s",
+      "now": 1760000300000,
+      "mutate": {},
+      "expect": "ok"
+    },
+    {
+      "name": "stale at +301 s (replayed timestamp)",
+      "now": 1760000301000,
+      "mutate": {},
+      "expect": "stale_timestamp"
+    },
+    {
+      "name": "future at -301 s",
+      "now": 1759999699000,
+      "mutate": {},
+      "expect": "stale_timestamp"
+    },
+    {
+      "name": "tampered body",
+      "now": 1760000000000,
+      "mutate": {
+        "body": "{\"records\":[{\"id\":\"01J9ZK3Q4R5S6T7V8W9X0Y1Z3C\",\"kind\":\"fact\",\"name\":\"signup\",\"ts\":1760000000000,\"user_id\":\"acc_8f3a1b\",\"props\":{\"method\":\"cash\"},\"v\":1}]}"
+      },
+      "expect": "bad_signature"
+    },
+    {
+      "name": "timestamp swapped, signature kept",
+      "now": 1760000000000,
+      "mutate": {
+        "ts": "1760000001"
+      },
+      "expect": "bad_signature"
+    },
+    {
+      "name": "batch id swapped (replay under a new batch id)",
+      "now": 1760000000000,
+      "mutate": {
+        "batch_id": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2D"
+      },
+      "expect": "bad_signature"
+    },
+    {
+      "name": "wrong secret",
+      "now": 1760000000000,
+      "mutate": {
+        "secret": "test_secret_not_real_0123456789abcdeX"
+      },
+      "expect": "bad_signature"
+    },
+    {
+      "name": "uppercase hex",
+      "now": 1760000000000,
+      "mutate": {
+        "signature": "v1=F1B3AE23668C061DFB19366091E7C432139FBDFB0D8ADE574C92214F3A9C1E09"
+      },
+      "expect": "malformed_signature"
+    },
+    {
+      "name": "missing version prefix",
+      "now": 1760000000000,
+      "mutate": {
+        "signature": "f1b3ae23668c061dfb19366091e7c432139fbdfb0d8ade574c92214f3a9c1e09"
+      },
+      "expect": "malformed_signature"
+    },
+    {
+      "name": "v2 prefix",
+      "now": 1760000000000,
+      "mutate": {
+        "signature": "v2=f1b3ae23668c061dfb19366091e7c432139fbdfb0d8ade574c92214f3a9c1e09"
+      },
+      "expect": "malformed_signature"
+    },
+    {
+      "name": "empty signature",
+      "now": 1760000000000,
+      "mutate": {
+        "signature": ""
+      },
+      "expect": "missing_signature"
+    },
+    {
+      "name": "ms timestamp (13 digits)",
+      "now": 1760000000000,
+      "mutate": {
+        "ts": "1760000000000"
+      },
+      "expect": "malformed_timestamp"
+    },
+    {
+      "name": "fractional timestamp",
+      "now": 1760000000000,
+      "mutate": {
+        "ts": "1760000000.5"
+      },
+      "expect": "malformed_timestamp"
+    },
+    {
+      "name": "negative timestamp",
+      "now": 1760000000000,
+      "mutate": {
+        "ts": "-1760000000"
+      },
+      "expect": "malformed_timestamp"
+    },
+    {
+      "name": "leading-zero timestamp",
+      "now": 1760000000000,
+      "mutate": {
+        "ts": "01760000000"
+      },
+      "expect": "malformed_timestamp"
+    },
+    {
+      "name": "batch id with a dot (canonical-string ambiguity)",
+      "now": 1760000000000,
+      "mutate": {
+        "batch_id": "01J9ZK3Q4R5S6T7V8W9X0Y1Z2."
+      },
+      "expect": "malformed_batch_id"
+    },
+    {
+      "name": "lower-case batch id",
+      "now": 1760000000000,
+      "mutate": {
+        "batch_id": "01j9zk3q4r5s6t7v8w9x0y1z2b"
+      },
+      "expect": "malformed_batch_id"
+    }
+  ]
+}

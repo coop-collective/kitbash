@@ -1,0 +1,7 @@
+{
+  // The server key is a SECRET named {{kit.keySecretName}}: wrangler secret put {{kit.keySecretName}} (never a var).
+  "vars": {
+    "CANVALYTICS_URL": "{{kit.ingestUrl}}",
+    "CANVALYTICS_PROJECT": "{{kit.projectId}}"
+  }
+}
