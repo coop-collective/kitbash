@@ -47,7 +47,7 @@ export default {
 /** Shared retry boundary, also exercised against real RPCs with an intentionally racing mutation. */
 export async function readCatalogSummary(
   cache: ReturnType<typeof createResultCache>,
-  store: Pick<DurableObjectStub<Catalog>, 'revision' | 'summary'>,
+  store: { revision(): Promise<number>; summary(expectedRevision: number): Promise<Summary> },
   identity: { tenant: string; catalogId: string },
   bypass = false,
 ) {

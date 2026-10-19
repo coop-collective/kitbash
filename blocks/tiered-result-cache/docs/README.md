@@ -20,6 +20,8 @@ return Response.json(result.value, { headers: { 'cache-control': 'private, no-st
 
 Every call is authorized before entering the cache. Tenant is derived from the verified session; include user/role/projection visibility in the key if representations differ within a tenant. Do not cache auth, permission checks, revocation state, balances, secrets or other immediately consistent decisions. The helper never selects HTTP caching headers for your response.
 
+KV is optional. The installer adds a `RESULT_CACHE` placeholder declaration; for edge-only use, remove that unused KV declaration from Wrangler configuration and omit `kv` from the factory options. No KV namespace needs to be provisioned. To use an existing namespace, pass its binding as `kv` and remove the unused placeholder declaration.
+
 | Situation | Behavior |
 | --- | --- |
 | Fresh edge hit | Return validated result |
