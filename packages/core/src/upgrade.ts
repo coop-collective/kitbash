@@ -4,6 +4,7 @@
  * ours = the project's current file. New migrations are renumbered after the project's current highest.
  */
 import { mergeJsonc, appendMissingLines, WRANGLER_FORBIDDEN_KEYS } from "./config-merge.ts";
+import { assertContainerPackage } from "./container-package.ts";
 import type { AdaptRefT, LockEntryT } from "./contract.ts";
 import { KitError } from "./errors.ts";
 import type { BlockBundle, FileTree, KitFs } from "./fs.ts";
@@ -205,6 +206,7 @@ export async function applyUpgrade(fs: KitFs, plan: UpgradePlan, opts: { now?: s
     if (n === null || n !== f.path || forbiddenTarget(n, plan.block_id.split("/")[1]!)) throw new KitError("forbidden", `upgrade writes ${f.path}`);
     const bytes = base64Decode(f.content_b64);
     if ((await sha256Hex(bytes)) !== f.after_sha256) throw new KitError("plan_stale", `content for ${n} does not match its hash`);
+    assertContainerPackage(n, bytes);
     const cur = await fs.readFile(n);
     if ((cur === null ? null : await sha256Hex(cur)) !== f.before_sha256) throw new KitError("plan_stale", `${n} changed since the upgrade was planned`);
     writes.push({ path: n, bytes });

@@ -564,9 +564,20 @@ directory of the file being written (`import … from "{{paths.lib|rel}}/auth/co
 
 **Targets the planner refuses**, whatever the manifest says: anything outside the project root (after rendering),
 `.git/`, `node_modules/`, `.kit/` except `.kit/blocks/<this block>/`, `.github/workflows/`, agent config
-(`.claude/`, `.codex/`, `.agents/`, `.cursor/`), `package.json` and lock files (dependencies come only from
+(`.claude/`, `.codex/`, `.agents/`, `.cursor/`), host `package.json` and lock files (host dependencies come only from
 `dependencies[]`), `.npmrc`/`.yarnrc*`, and env files other than `*.example`. `on_conflict: rename` writes
 `<name>.<block>.<ext>` beside the original.
+
+Container blocks may declare a private native subproject at `containers/<lowercase-slug>/package.json`.
+Its fields are limited to name/version/private/type, pinned pnpm packageManager, engines, a pinned Bun/Node
+devEngines.runtime, registry semver dependencies/devDependencies, and explicit task scripts:
+`deps`, `dev`, `start`, `build`, `test`, `typecheck`, `lint`, `coverage`, `check`.
+Install lifecycle hooks, pre/post hooks, workspace/package-manager configuration and local/Git dependency
+specifications are rejected. The scanner, planner, apply and upgrade paths validate the payload; saved plans cannot
+bypass those checks. This does not automatically install or execute the native project's tasks.
+
+`bindings[].name` and `exports[].symbol` may be a literal identifier or a single `{{kit.paramName}}` token.
+Defaults and supplied values must render to valid identifiers; conflict checks and lock metadata use the resolved names.
 
 **Config merges** only add. A key the project already has keeps the project's value (a warning names it); a type
 change or a `null` (removal) is a `config` conflict. `jsonc-deep` unions arrays of objects by `binding`, then `name`,

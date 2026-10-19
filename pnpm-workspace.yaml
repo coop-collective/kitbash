@@ -2,6 +2,7 @@
 packages:
   - packages/*
   - templates/*
+  - test-e2e/fixtures/*
   - recipes/*
   - docs/examples
   - test-e2e

@@ -447,8 +447,16 @@
             ]
           },
           "name": {
-            "type": "string",
-            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\{\\{kit\\.[A-Za-z_][A-Za-z0-9_]{0,63}\\}\\}$"
+              }
+            ]
           },
           "required": {
             "type": "boolean"
@@ -562,8 +570,16 @@
         "type": "object",
         "properties": {
           "symbol": {
-            "type": "string",
-            "pattern": "^[A-Za-z_$][A-Za-z0-9_$]{0,127}$"
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z_$][A-Za-z0-9_$]{0,127}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\{\\{kit\\.[A-Za-z_][A-Za-z0-9_]{0,63}\\}\\}$"
+              }
+            ]
           },
           "from": {
             "type": "string",

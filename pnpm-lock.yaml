@@ -465,7 +465,11 @@ importers:
         specifier: ^4.137.0
         version: 4.151.1(@types/node@24.10.1)
 
-  templates/hono-d1:
+  templates/rust-service: {}
+
+  test-e2e: {}
+
+  test-e2e/fixtures/hono-d1:
     dependencies:
       hono:
         specifier: ^4.13.9
@@ -486,10 +490,6 @@ importers:
       wrangler:
         specifier: ^4.137.0
         version: 4.151.1(@types/node@24.10.1)
-
-  templates/rust-service: {}
-
-  test-e2e: {}
 
 packages:
 

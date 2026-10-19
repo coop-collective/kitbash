@@ -1,4 +1,4 @@
-// The real thing: core's fixture block installed through the MCP tools into a temp copy of templates/hono-d1, then
+// The real thing: core's fixture block installed through the MCP tools into a temp copy of test-e2e/fixtures/hono-d1, then
 // registry_verify runs the block's own tests (vitest in workerd, tsc) through the allowlist. Dependencies come from the
 // local pnpm store (`pnpm install --offline`, no network); when the store lacks them the test is skipped with the reason.
 import assert from "node:assert/strict";
@@ -14,7 +14,7 @@ async function preparedTemplate() {
     await execFileP("pnpm", ["install", "--offline", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
   } catch (e) {
     if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(`${e.message}\n${e.stdout}\n${e.stderr}`)) {
-      return { skip: "templates/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
+      return { skip: "test-e2e/fixtures/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
     }
     throw e;
   }

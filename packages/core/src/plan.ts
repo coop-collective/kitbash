@@ -7,6 +7,7 @@
  * byte-identical plan, including `plan_id` (a hash of the plan).
  */
 import semver from "semver";
+import { assertContainerPackage } from "./container-package.ts";
 import * as jsonc from "jsonc-parser";
 import { mergeJsonc, appendMissingLines, detectFormatting, WRANGLER_FORBIDDEN_KEYS } from "./config-merge.ts";
 import {
@@ -27,7 +28,7 @@ import { basename, dirname, forbiddenTarget, normalizeRelative } from "./paths.t
 import { parseJsonc, ProjectProfileSchema, type ProjectProfile } from "./profile.ts";
 import { pinnedRef, BLOCK_ID_RE } from "./ref.ts";
 import { evaluateCondition, referencedParams, renderTemplate, resolveParams, type ParamValues } from "./render.ts";
-import { bundlePath, defaultVariant, filesForVariant, validateManifest, type FileEntry, type Manifest, type Variant } from "./schema.ts";
+import { bundlePath, defaultVariant, filesForVariant, renderInterface, validateManifest, type FileEntry, type Manifest, type Variant } from "./schema.ts";
 import { checkVerifyCommand } from "./verify.ts";
 
 export type OnConflict = "stop" | "skip" | "overwrite" | "rename";
@@ -338,8 +339,12 @@ function prepare(input: Omit<PlanInput, "project"> & { project: FileTree }, opts
     if (seen.has(f.target)) throw new KitError("invalid_params", `two block files target ${f.target}`, { rule: "duplicate_target" });
     seen.add(f.target);
   }
+  let resolvedManifest: Manifest;
+  try { resolvedManifest = renderInterface(m, rp.values); } catch (e) {
+    throw new KitError("invalid_params", (e as Error).message, { rule: "param_invalid" });
+  }
   return {
-    m,
+    m: resolvedManifest,
     blockId,
     variant: choice.variant,
     variantWarnings,
@@ -416,6 +421,7 @@ export function renderBlockFiles(
     if (isTxt && f.entry.template !== false) {
       content = renderTemplate(tryDecodeUtf8(f.raw)!, { params: prep.params, paths: prep.paths, migrations: renamed, fileDir: dirname(target) });
     }
+    assertContainerPackage(target, content);
     out.push({ entry: f.entry, target, content, text: isTxt });
   }
   void profile;
@@ -822,6 +828,7 @@ export async function applyPlan(fs: KitFs, plan: InstallPlan, opts: ApplyOptions
     if (!["create", "patch", "append", "overwrite", "rename"].includes(f.action)) throw new KitError("invalid_params", `bad action ${f.action}`);
     const bytes = base64Decode(f.content_b64);
     if ((await sha256Hex(bytes)) !== f.after_sha256) throw new KitError("plan_stale", `plan content for ${n} does not match its hash`);
+    assertContainerPackage(n, bytes);
     const cur = await fs.readFile(n);
     const curSha = cur === null ? null : await sha256Hex(cur);
     if (curSha !== f.before_sha256) throw new KitError("plan_stale", `${n} changed since the plan was made; plan again`);
