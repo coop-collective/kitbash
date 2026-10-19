@@ -9,13 +9,13 @@
  * Cases come from blocks/* (defaults) plus test-e2e/cases.json (param sets, chains). See test-e2e/README.md.
  */
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
 import { cp, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { templateCacheIdentity, templateSourceFilter } from "./template-cache.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "..");
@@ -61,14 +61,19 @@ let cachePromise;
 /** One installed copy of the template, shared by every case; created once per machine and template version. */
 function installedTemplate() {
   cachePromise ??= (async () => {
-    const h = createHash("sha256");
-    for (const f of ["package.json", "pnpm-workspace.yaml"]) h.update(await readFile(path.join(TEMPLATE, f)));
-    const dir = path.join(os.tmpdir(), `kitbash-e2e-template-${h.digest("hex").slice(0, 12)}`);
+    // Copy the current source before looking up the cache. The version must be resolved in
+    // this standalone copy: a root packageManager pin may select a different pnpm version.
+    const staging = await tmp("kitbash-e2e-template-stage-");
+    await cp(TEMPLATE, staging, { recursive: true, filter: source => templateSourceFilter(TEMPLATE, source) });
+    const version = await sh("pnpm", ["--version"], { cwd: staging, timeout: 60_000 });
+    if (version.code !== 0 || !version.out.trim()) return { skip: `could not determine standalone pnpm version: ${(version.err || version.out).trim()}` };
+    const fingerprint = await templateCacheIdentity(staging, { pnpmVersion: version.out.trim() });
+    const dir = path.join(os.tmpdir(), `kitbash-e2e-template-${fingerprint.slice(0, 20)}`);
     const marker = path.join(dir, ".e2e-ready");
-    if (await exists(marker)) return { dir };
-    const staging = `${dir}.${process.pid}.tmp`;
-    await rm(staging, { recursive: true, force: true });
-    await cp(TEMPLATE, staging, { recursive: true, filter: (s) => !/(^|\/)(node_modules|\.wrangler|dist)(\/|$)/.test(path.relative(TEMPLATE, s)) });
+    if (await exists(marker)) {
+      await rm(staging, { recursive: true, force: true });
+      return { dir };
+    }
     // The template quirks: pnpm may exit non-zero (ignored build scripts) while still linking node_modules, so the
     // install exit code is not trusted; `pnpm test` below is.
     const flags = ["install", "--ignore-workspace", "--config.confirmModulesPurge=false"];
