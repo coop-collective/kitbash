@@ -1,0 +1,284 @@
+import { describe, expect, it } from 'vitest';
+import { SELF } from 'cloudflare:test';
+
+const BASE = 'http://localhost';
+const ALICE = 'user_alice';
+const BOB = 'user_bob';
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function login(email: string) {
+  const r = await SELF.fetch(BASE + '/api/login', {
+    method: 'POST',
+    headers: { Origin: BASE, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: 'local-demo-password' }),
+  });
+  expect(r.status).toBe(200);
+  return r.headers.get('Set-Cookie')!.split(';')[0];
+}
+
+const call = (cookie: string | null, path: string, init: RequestInit = {}) =>
+  SELF.fetch(BASE + path, { ...init, headers: { Origin: BASE, ...(cookie ? { Cookie: cookie } : {}), ...(init.headers as object) } });
+const json = (method: string, body: unknown): RequestInit => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+async function createTeam(cookie: string) {
+  const r = await call(cookie, '/api/teams', json('POST', { name: 'Reviewers' }));
+  return ((await r.json()) as { id: string }).id;
+}
+const setRole = (cookie: string, team: string, user: string, role: unknown) => call(cookie, `/api/teams/${team}/members/${user}`, json('PUT', { role }));
+const roleIn = async (cookie: string, team: string) =>
+  ((await (await call(cookie, '/api/teams')).json()) as { teams: { id: string; role: string }[] }).teams.find((t) => t.id === team)?.role;
+
+type Sock = { ws: WebSocket; next: () => Promise<any>; drain: (ms: number) => Promise<any[]>; closed: Promise<void>; send: (v: unknown) => void };
+
+async function openRoom(cookie: string, team: string, room = 'general'): Promise<Sock> {
+  const res = await SELF.fetch(`${BASE}/api/teams/${team}/rooms/${room}/ws`, { headers: { Upgrade: 'websocket', Origin: BASE, Cookie: cookie } });
+  expect(res.status).toBe(101);
+  const ws = res.webSocket!;
+  const queue: any[] = [];
+  const waiters: ((v: any) => void)[] = [];
+  let onClosed!: () => void;
+  const closed = new Promise<void>((r) => (onClosed = r));
+  ws.addEventListener('message', (e) => {
+    const v = JSON.parse(e.data as string);
+    const w = waiters.shift();
+    if (w) w(v);
+    else queue.push(v);
+  });
+  ws.addEventListener('close', () => onClosed());
+  ws.accept();
+  return {
+    ws,
+    closed,
+    send: (v) => { try { ws.send(typeof v === 'string' ? v : JSON.stringify(v)); } catch { /* closed */ } },
+    next: () => (queue.length ? Promise.resolve(queue.shift()) : new Promise((r) => waiters.push(r))),
+    drain: async (ms) => { await sleep(ms); return queue.splice(0); },
+  };
+}
+
+const history = async (cookie: string, team: string, room = 'general') => {
+  const s = await openRoom(cookie, team, room);
+  const snap = await s.next();
+  s.ws.close(1000);
+  return snap.messages as { seq: number; userId: string; text: string; clientId?: string }[];
+};
+
+describe('viewer role', () => {
+  it('is read-only over HTTP and still reads', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    expect((await setRole(a, team, BOB, 'admin')).status).toBe(400);
+    expect((await setRole(a, team, BOB, 'viewer')).status).toBe(204);
+    expect(await roleIn(b, team)).toBe('viewer');
+    expect((await setRole(a, team, ALICE, 'viewer')).status).toBe(409);
+    expect(await roleIn(a, team)).toBe('owner');
+
+    const bytes = new Uint8Array([9, 8, 7, 255]);
+    const up = (await (await call(a, `/api/teams/${team}/uploads`, { method: 'POST', body: bytes })).json()) as { id: string };
+    expect((await call(b, `/api/teams/${team}/uploads`, { method: 'POST', body: bytes })).status).toBe(403);
+    expect((await call(b, `/api/teams/${team}/uploads/${up.id}`, { method: 'DELETE' })).status).toBe(403);
+    expect((await setRole(b, team, BOB, 'member')).status).toBe(403);
+    expect((await call(b, `/api/teams/${team}/members/${BOB}`, { method: 'DELETE' })).status).toBe(403);
+    const dl = await call(b, `/api/teams/${team}/uploads/${up.id}`);
+    expect(dl.status).toBe(200);
+    expect(new Uint8Array(await dl.arrayBuffer())).toEqual(bytes);
+    expect((await call(a, `/api/teams/${team}/uploads/${up.id}`)).status).toBe(200);
+
+    expect((await setRole(a, team, BOB, 'member')).status).toBe(204);
+    expect((await call(b, `/api/teams/${team}/uploads`, { method: 'POST', body: bytes })).status).toBe(201);
+  });
+
+  it('receives live messages but cannot send; downgrade applies to an open socket', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    await setRole(a, team, BOB, 'member');
+    const sa = await openRoom(a, team);
+    const sb = await openRoom(b, team);
+    await sa.next();
+    await sb.next();
+
+    sb.send({ text: 'as member' });
+    expect(await sb.next()).toMatchObject({ type: 'message', userId: BOB, text: 'as member' });
+    await sa.next();
+
+    expect((await setRole(a, team, BOB, 'viewer')).status).toBe(204);
+    sb.send({ text: 'as viewer', clientId: 'v1' });
+    expect(await sb.next()).toMatchObject({ type: 'error', code: 'forbidden' });
+    sa.send({ text: 'from alice' });
+    expect(await sb.next()).toMatchObject({ type: 'message', userId: ALICE, text: 'from alice' });
+    expect((await history(a, team)).map((m) => m.text)).toEqual(['as member', 'from alice']);
+
+    // A viewer cannot use a prior successful id as authority either.
+    sb.send({ text: 'as member', clientId: 'v1' });
+    expect(await sb.next()).toMatchObject({ type: 'error', code: 'forbidden' });
+    sa.ws.close(1000);
+    sb.ws.close(1000);
+  });
+});
+
+describe('revocation on open sockets', () => {
+  it('stops commits and delivery after removal, and re-adding needs a new connection', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    await setRole(a, team, BOB, 'member');
+    const sa = await openRoom(a, team);
+    const sb = await openRoom(b, team);
+    await sa.next();
+    await sb.next();
+
+    expect((await call(a, `/api/teams/${team}/members/${BOB}`, { method: 'DELETE' })).status).toBe(204);
+    sa.send({ text: 'secret after removal' });
+    expect((await sa.next()).type).toBe('message');
+    expect((await sb.drain(200)).filter((e) => e.type === 'message')).toEqual([]);
+    sb.send({ text: 'bob after removal', clientId: 'x1' });
+    await sleep(200);
+    expect((await history(a, team)).map((m) => m.text)).toEqual(['secret after removal']);
+
+    await setRole(a, team, BOB, 'member');
+    sb.send({ text: 'old socket' });
+    await sleep(200);
+    expect((await history(a, team)).map((m) => m.text)).toEqual(['secret after removal']);
+    const fresh = await openRoom(b, team);
+    expect((await fresh.next()).messages).toHaveLength(1);
+    fresh.send({ text: 'new socket' });
+    expect(await fresh.next()).toMatchObject({ type: 'message', userId: BOB, text: 'new socket' });
+    sa.ws.close(1000);
+    fresh.ws.close(1000);
+  });
+
+  it('stops commits and delivery after logout and does not revive the revoked session', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    await setRole(a, team, BOB, 'member');
+    const sa = await openRoom(a, team);
+    const sb = await openRoom(b, team);
+    await sa.next();
+    await sb.next();
+
+    expect((await call(b, '/api/logout', { method: 'POST' })).status).toBe(204);
+    sa.send({ text: 'after bob logout' });
+    expect((await sa.next()).type).toBe('message');
+    expect((await sb.drain(200)).filter((e) => e.type === 'message')).toEqual([]);
+    sb.send({ text: 'ghost' });
+    await sleep(200);
+    expect((await history(a, team)).map((m) => m.text)).toEqual(['after bob logout']);
+
+    await setRole(a, team, BOB, 'viewer');
+    await setRole(a, team, BOB, 'member');
+    expect((await SELF.fetch(`${BASE}/api/teams/${team}/rooms/general/ws`, { headers: { Upgrade: 'websocket', Origin: BASE, Cookie: b } })).status).toBe(401);
+    const b2 = await login('bob@example.test');
+    const fresh = await openRoom(b2, team);
+    await fresh.next();
+    sa.ws.close(1000);
+    fresh.ws.close(1000);
+  });
+});
+
+describe('clientId retries', () => {
+  it('echoes ids, acks exact retries only to the retrier and reports conflicts', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    await setRole(a, team, BOB, 'member');
+    const sa = await openRoom(a, team);
+    const sb = await openRoom(b, team);
+    await sa.next();
+    await sb.next();
+
+    sa.send({ text: 'hello', clientId: 'id-1' });
+    const first = await sa.next();
+    expect(first).toMatchObject({ type: 'message', userId: ALICE, text: 'hello', clientId: 'id-1' });
+    expect(await sb.next()).toEqual(first);
+
+    sa.send({ text: 'hello', clientId: 'id-1' });
+    expect(await sa.next()).toEqual({ type: 'ack', seq: first.seq, clientId: 'id-1' });
+    sa.send({ text: 'different', clientId: 'id-1' });
+    expect(await sa.next()).toEqual({ type: 'error', code: 'conflict', clientId: 'id-1', error: expect.any(String) });
+    expect(await sb.drain(150)).toEqual([]);
+
+    // Another user, and another room, may reuse the id independently.
+    sb.send({ text: 'bob same id', clientId: 'id-1' });
+    expect(await sb.next()).toMatchObject({ type: 'message', userId: BOB, clientId: 'id-1' });
+    await sa.next();
+    const other = await openRoom(a, team, 'other');
+    await other.next();
+    other.send({ text: 'elsewhere', clientId: 'id-1' });
+    expect(await other.next()).toMatchObject({ type: 'message', text: 'elsewhere', clientId: 'id-1' });
+
+    for (const bad of ['', 'has space', 'x'.repeat(81), 5, null, 'é']) {
+      sa.send({ text: 'bad id', clientId: bad });
+      expect(await sa.next()).toMatchObject({ type: 'error', code: 'invalid' });
+    }
+    sa.send({ text: 'legacy' });
+    const legacy = await sa.next();
+    expect(legacy).toMatchObject({ type: 'message', text: 'legacy' });
+    expect(legacy).not.toHaveProperty('clientId');
+
+    const snap = await history(b, team);
+    expect(snap.map((m) => [m.text, m.clientId])).toEqual([['hello', 'id-1'], ['bob same id', 'id-1'], ['legacy', undefined]]);
+    for (const s of [sa, sb, other]) s.ws.close(1000);
+  });
+
+  it('collapses simultaneous retries on two sockets into one message', async () => {
+    const a = await login('alice@example.test');
+    const team = await createTeam(a);
+    const s1 = await openRoom(a, team);
+    const s2 = await openRoom(a, team);
+    await s1.next();
+    await s2.next();
+    s1.send({ text: 'once', clientId: 'race' });
+    s2.send({ text: 'once', clientId: 'race' });
+    const got1 = await s1.drain(300);
+    const got2 = await s2.drain(10);
+    const all = [...got1, ...got2];
+    const messages = all.filter((e) => e.type === 'message');
+    expect(messages).toHaveLength(2); // one event per socket, for a single seq
+    expect(new Set(messages.map((m) => m.seq)).size).toBe(1);
+    const acks = all.filter((e) => e.type === 'ack');
+    expect(acks).toHaveLength(1);
+    expect(acks[0]).toEqual({ type: 'ack', seq: messages[0].seq, clientId: 'race' });
+    expect(await history(a, team)).toHaveLength(1);
+    s1.ws.close(1000);
+    s2.ws.close(1000);
+  });
+
+  it('keeps dedup records after pruning and denies acks to removed senders', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await createTeam(a);
+    await setRole(a, team, BOB, 'member');
+    const sa = await openRoom(a, team, 'long');
+    const sb = await openRoom(b, team, 'long');
+    await sa.next();
+    await sb.next();
+    sb.send({ text: 'old', clientId: 'keep-me' });
+    const original = await sb.next();
+    for (let i = 0; i < 60; i++) {
+      sa.send({ text: `m${i}` });
+      await sa.next();
+    }
+    expect((await history(a, team, 'long')).some((m) => m.clientId === 'keep-me')).toBe(false);
+    sb.send({ text: 'old', clientId: 'keep-me' });
+    const ack = (await sb.drain(300)).filter((e) => e.type === 'ack');
+    expect(ack).toEqual([{ type: 'ack', seq: original.seq, clientId: 'keep-me' }]);
+
+    await call(a, `/api/teams/${team}/members/${BOB}`, { method: 'DELETE' });
+    sb.send({ text: 'old', clientId: 'keep-me' });
+    sb.send({ text: 'other text', clientId: 'keep-me' });
+    const after = await sb.drain(300);
+    expect(after.filter((e) => e.type === 'ack' || (e.type === 'error' && e.code === 'conflict'))).toEqual([]);
+    expect(after.length === 0 || after[0].code === 'forbidden').toBe(true);
+    sa.ws.close(1000);
+  });
+});
+
+describe('teams page roles', () => {
+  it('disables write controls for viewers in the page script', async () => {
+    const html = await (await SELF.fetch(BASE + '/teams.html')).text();
+    expect(html).toContain("rolesByTeam.get(currentTeam()) !== 'viewer'");
+    expect(html).toContain("$('team-upload').disabled = !canWrite()");
+  });
+});

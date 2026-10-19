@@ -6,7 +6,7 @@ config patches, tests and a one-page agent guide. An agent searches in ~100 toke
 reading the code, adapts the wiring from a checklist, and proves it with the block's own tests. shadcn's registry for
 the whole stack, built for agents first.
 
-**Benchmark status (2026-10-19): feature-source reuse did not save agent tokens or model cost in our measured task.** The selective-reference app passed the same checks as scratch but had a 62% higher CLI list-price estimate and took 15% longer; the installer arm cost 36% more and missed one browser check. All arms already shared framework dependencies. This tests additional feature-source reuse, not libraries versus no shared code. [Results, limitations, and reproducible apps](docs/research/kitchen-sink-discovery.md). Security, review, and maintenance benefits were not measured.
+**Benchmark status (2026-10-19): feature-source reuse has not demonstrated a model-cost saving.** The [small kitchen-sink study](docs/research/kitchen-sink-discovery.md) cost more with reuse. A [larger existing-app study with three integration-plus-maintenance pairs](docs/research/lifecycle-reuse.md) was nearly tied: reuse cost 0.8% more and used 4.6% less agent time. All twelve stages passed automated checks, but source review found one defect in each arm at different stages. These limited studies compare additional feature-source reuse; all arms already shared framework dependencies. CLI estimates exclude coordinating-agent and infrastructure costs.
 
 ## Why
 

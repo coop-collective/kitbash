@@ -1,0 +1,112 @@
+import { DurableObject } from 'cloudflare:workers';
+
+export type RoomSession = { userId: string; teamId: string; expiresAt: number };
+type Connection = RoomSession & { tokens: number; updatedAt: number };
+type Message = { seq: number; userId: string; text: string };
+
+const MAX_CONNECTIONS = 100;
+const MAX_MESSAGE_BYTES = 4096;
+const MAX_TEXT_CHARS = 1000;
+const HISTORY = 50;
+// Token bucket sized well above the acceptance workload (60 messages at 100ms intervals).
+const RATE_BURST = 100;
+const RATE_PER_SECOND = 100;
+const ID = /^[A-Za-z0-9_-]{1,80}$/;
+const encoder = new TextEncoder();
+
+/**
+ * One SQLite Durable Object per (team, room). Sockets use the hibernation API; the
+ * authoritative state is SQLite (history) and socket attachments (identity + lease).
+ * The object is only reachable through the authenticated gateway in routes/teams.ts.
+ */
+export class TeamRoom extends DurableObject<unknown> {
+  constructor(ctx: DurableObjectState, env: unknown) {
+    super(ctx, env);
+    // AUTOINCREMENT keeps seq strictly increasing even after pruning deletes old rows.
+    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS messages (seq INTEGER PRIMARY KEY AUTOINCREMENT, userId TEXT NOT NULL, text TEXT NOT NULL)');
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') return new Response('Upgrade required', { status: 426 });
+    // Only the gateway builds these headers; it discards everything the client sent.
+    const userId = request.headers.get('x-room-user');
+    const teamId = request.headers.get('x-room-team');
+    const expiresAt = Number(request.headers.get('x-room-expires'));
+    if (!userId || !teamId || !ID.test(userId) || !ID.test(teamId) || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+    let active = 0;
+    for (const peer of this.ctx.getWebSockets()) {
+      const attached = peer.deserializeAttachment() as Connection | null;
+      if (!attached || attached.expiresAt <= Date.now()) {
+        try { peer.close(1008, 'Session expired'); } catch { /* already closed */ }
+      } else if (peer.readyState === WebSocket.OPEN) active++;
+    }
+    if (active >= MAX_CONNECTIONS) return new Response('Room full', { status: 503 });
+
+    const pair = new WebSocketPair();
+    this.ctx.acceptWebSocket(pair[1]);
+    pair[1].serializeAttachment({ userId, teamId, expiresAt, tokens: RATE_BURST, updatedAt: Date.now() } satisfies Connection);
+    const latest = this.ctx.storage.sql
+      .exec<Message>('SELECT seq, userId, text FROM messages ORDER BY seq DESC LIMIT ?', HISTORY)
+      .toArray()
+      .reverse();
+    pair[1].send(JSON.stringify({ type: 'snapshot', messages: latest }));
+    return new Response(null, { status: 101, webSocket: pair[0] });
+  }
+
+  webSocketMessage(socket: WebSocket, input: string | ArrayBuffer): void {
+    const connection = socket.deserializeAttachment() as Connection | null;
+    if (!connection || connection.expiresAt <= Date.now()) { socket.close(1008, 'Session expired'); return; }
+    if (typeof input !== 'string') { socket.close(1003, 'Text frames only'); return; }
+    if (encoder.encode(input).byteLength > MAX_MESSAGE_BYTES) { socket.close(1009, 'Message too large'); return; }
+
+    let text: unknown;
+    try {
+      const parsed = JSON.parse(input) as unknown;
+      text = parsed && typeof parsed === 'object' ? (parsed as { text?: unknown }).text : undefined;
+    } catch {
+      socket.send(JSON.stringify({ type: 'error', error: 'invalid message' }));
+      return;
+    }
+    if (typeof text !== 'string' || !text.trim() || [...text].length > MAX_TEXT_CHARS) {
+      socket.send(JSON.stringify({ type: 'error', error: 'invalid text' }));
+      return;
+    }
+
+    const now = Date.now();
+    connection.tokens = Math.min(RATE_BURST, connection.tokens + (Math.max(0, now - connection.updatedAt) / 1000) * RATE_PER_SECOND);
+    connection.updatedAt = now;
+    if (connection.tokens < 1) { socket.close(1008, 'Rate limit'); return; }
+    connection.tokens--;
+    socket.serializeAttachment(connection);
+
+    // Persist (and prune) before anything is broadcast.
+    const row = this.ctx.storage.transactionSync(() => {
+      const inserted = this.ctx.storage.sql
+        .exec<Message>('INSERT INTO messages (userId, text) VALUES (?, ?) RETURNING seq, userId, text', connection.userId, text)
+        .one();
+      this.ctx.storage.sql.exec('DELETE FROM messages WHERE seq <= ?', inserted.seq - HISTORY);
+      return inserted;
+    });
+    const event = JSON.stringify({ type: 'message', seq: row.seq, userId: row.userId, text: row.text });
+    for (const peer of this.ctx.getWebSockets()) {
+      const attached = peer.deserializeAttachment() as Connection | null;
+      try {
+        if (!attached || attached.expiresAt <= now) peer.close(1008, 'Session expired');
+        else peer.send(event);
+      } catch {
+        try { peer.close(1011, 'Send failed'); } catch { /* already closed */ }
+      }
+    }
+  }
+
+  webSocketClose(socket: WebSocket, code: number, reason: string): void {
+    try { socket.close(code === 1005 || code === 1006 ? 1000 : code, reason); } catch { /* already closed */ }
+  }
+
+  webSocketError(socket: WebSocket): void {
+    try { socket.close(1011, 'Connection error'); } catch { /* already closed */ }
+  }
+}

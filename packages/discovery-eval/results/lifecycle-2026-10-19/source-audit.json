@@ -1,0 +1,1060 @@
+{
+  "version": 1,
+  "runRoot": "<RUN_DIRECTORY>",
+  "frozenCommit": "8aef032",
+  "method": "Independent read-only source review of SHA-256 verified immutable final-stage blobs; no application, harness, model calls, repairs or behavioral reruns. Source findings qualify behavioral acceptance separately.",
+  "criteria": [
+    "SQLite Durable Object per-team/room isolation and persistent sequence/history",
+    "Hibernation acceptWebSocket, serialized attachments and event methods; no authoritative socket map/recurring timer",
+    "Persist before fanout; authenticated gateway without public internal/control bypass",
+    "Phase-one bounded lease capped by actual session expiry",
+    "Phase-two current sender and recipient authority before delivery, sender authorization before dedup/conflict/ack",
+    "Atomic namespace-scoped dedup retained across history pruning and restart"
+  ],
+  "expectedStages": 12,
+  "status": "complete",
+  "reviews": [
+    {
+      "pair": 1,
+      "arm": "scratch",
+      "phase": "integration",
+      "snapshotSha256": "aa8d557b9b89ab05a816ae885d86b6659f74085f7298e8f13ed6481e329f4558",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "b9d94e6c4b153ca6f6902f9ce96697874c11a51e66057331d1b8a767a488d82a",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "4422b3619d4e5874c890893082dd14c07b7957ec6d49d3cf940f75304b5cf045",
+        "migrations/0003_team_uploads.sql": "b6130f8c7c574361980e183ca283406228a8c252b2c2bbaf2dc9495128e71a7d",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "87e8160233eaa9a9ae7a07b97c9e7db8f0a6a1763b96fd5eee6231d610080ee4",
+        "public/teams.html": "c088f8644272485b9ee9eb5f3c1ce4e4cf38338b9b0faa554b8ac06889d7f659",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "7ea20a5b1d6f8e723ca0840137e296f0890e5715f1599baf1649ef01002a6283",
+        "src/room.ts": "1b571f85815977917b1043552ef070f5982b8d6fa2354be8568eb26f5b9cd72f",
+        "src/teams.ts": "a4c0f4477ca8c7c7a97593f3d505a8f23ac632ef5aafe3db2745def4c00f6072",
+        "src/types.ts": "9b656e47034c2789f381347d57fc17fe17ca78f1e6e6b7bdae95eea646501f11",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "1ad8eb7a36d6faa3c671adbf1f82d19689294d4f49a358a83a87fac51069a99e",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "6b1b058094b2b8d600a63cc6eaafafb90c52b383ccc34c775c7db0bb1a73062c"
+      },
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "32-46",
+          "observation": "ROOMS binds TeamRoom and migration declares new_sqlite_classes."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "24-54,104-154",
+          "observation": "SQLite DO, acceptWebSocket, serializable session/team attachment, event handlers, and getWebSockets; no authoritative socket map or recurring timer."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "27-30,118-136",
+          "observation": "SQLite AUTOINCREMENT retains sequence after pruning; insertion and pruning precede synchronous fanout with no await in that section."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "143-164",
+          "observation": "Current authentication and membership plus strict Origin/query/room checks precede fixed internal forwarding; fresh allowlisted headers replace client identity. Team UUID plus constrained room names define distinct object IDs."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "8,43-48,77-101",
+          "observation": "One-minute lease capped by verified session expiry, renewed from D1 session and membership; expired sessions/members closed."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "27-38,92-138",
+          "observation": "Current authority guards HTTP mutations/files; verified team and stored file ID determine R2 keys."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing.",
+        "Phase-two live revocation and dedup are not required at this integration stage."
+      ],
+      "manifestAndAllBlobHashesVerified": true,
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "118-136",
+        "observation": "Authorization await finishes before commit; final recipient list is obtained synchronously after commit. Joins during authorization see pre-commit snapshot and are included in fanout; later joins see committed history.",
+        "pass": true
+      },
+      "recipientLeaseAudit": {
+        "file": "src/room.ts",
+        "lines": "118-136",
+        "observation": "Expired leases refresh from D1 and final fanout checks leaseValid(peer).",
+        "pass": true
+      }
+    },
+    {
+      "pair": 1,
+      "arm": "reuse",
+      "phase": "integration",
+      "snapshotSha256": "2b9e9c3135f331e977edb4a126522c0429f8fac5181f5393ae177ce5892d4dfc",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "e6bffd38c26118c372f5cd58e9aaf91e080cde2ac2011677fa28ff7c2ccaec8c",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "5f5dcc3c60a15b49f801e21695fc40c0997f8c2c2548d7e95922daf0b2b26c2a",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "8a3da097cbbfdb3daa161ce5e9412a3fed2383a5aa7b7776e453e0ed26a1a911",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "980ff051d1a4a3dec05156db1153b9c69494976b0fbefb5347dbadacc53f6775",
+        "src/lib/bounded.ts": "5dd2cbe961df44fd26fddd7517d8f0983d5c634b35d3b0ffb9194bb05b2acaaa",
+        "src/lib/team-room.ts": "98a69ac0a891b1cfa79890e7c5cce0a4fdff8e801dbc83f29812c770b2c4cc4f",
+        "src/routes/teams.ts": "cb65745c53cad82ac921ab8cdbd55eb4ca5e59896e92bb8e27af9cb0217d4e18",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "4debfce181b2e643dd3ec06f6c347cee2aba6d765e95a36c01c9308748218df9",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "344b167b12ca1ea3cfd1a9ce4cd0a613ca8d49ae3a5bbf0a4976b60ad658454a"
+      },
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "32-46",
+          "observation": "TEAM_ROOMS binds TeamRoom and migration declares new_sqlite_classes."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "22-56,59-111",
+          "observation": "SQLite DO, acceptWebSocket, serialized identity/lease/token-bucket attachment, event methods and getWebSockets; no authoritative socket map or recurring timer."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "25-26,85-102",
+          "observation": "AUTOINCREMENT sequence persists after pruning; message insertion plus latest-50 pruning share transactionSync before synchronous fanout."
+        },
+        {
+          "file": "src/routes/teams.ts",
+          "lines": "156-182",
+          "observation": "Current host session and D1 membership guard strict Origin, room and nonempty-query checks; fresh headers discard client identity and JSON([team,room]) namespaces the private object."
+        },
+        {
+          "file": "src/routes/teams.ts",
+          "lines": "167-179",
+          "observation": "Gateway rechecks live session and caps attachment lifetime at five minutes and the real session expiry."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "59-63,94-101",
+          "observation": "Expired senders and recipients are closed at application-event boundaries."
+        },
+        {
+          "file": "src/routes/teams.ts",
+          "lines": "25-28,100-151",
+          "observation": "Current membership guards HTTP file access; verified team and stored UUID derive tenant R2 keys."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing.",
+        "Phase-two live revocation and dedup are not required at this integration stage."
+      ],
+      "manifestAndAllBlobHashesVerified": true,
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "59-103",
+        "observation": "Application handler is synchronous through commit and getWebSockets/fanout, so handshake snapshot cannot interleave that section.",
+        "pass": true
+      },
+      "recipientLeaseAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "94-101",
+        "observation": "Every recipient attachment deadline is checked during fanout; expired peer is closed.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 1,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "snapshotSha256": "5cca87449e405dcfe97446376cf949dea1ad97015c8359c5812ea1230f98df0d",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "ce18a5e8ccae8e65389f7b67d254d017b3833b23ff88729979a9580c69ecf95c",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "5f5dcc3c60a15b49f801e21695fc40c0997f8c2c2548d7e95922daf0b2b26c2a",
+        "migrations/0003_team_viewer_role.sql": "4505b38fde280ef6edd68eb9b3c9f9648ba4d1f7568d6f6288d49d3fabbec772",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "f150fdc6b13e172af14eb435410bd162681fa5959d9e7959bf7a319e204e9a93",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "980ff051d1a4a3dec05156db1153b9c69494976b0fbefb5347dbadacc53f6775",
+        "src/lib/bounded.ts": "5dd2cbe961df44fd26fddd7517d8f0983d5c634b35d3b0ffb9194bb05b2acaaa",
+        "src/lib/team-room.ts": "56527bece0ba07319e70b943b227c80991234a18751398bee4530e46082eefc7",
+        "src/routes/teams.ts": "213bcefb8a5f70fc49b49f232ef525adad2e5b7f98af54fac9d29fb64f32d235",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "4debfce181b2e643dd3ec06f6c347cee2aba6d765e95a36c01c9308748218df9",
+        "test/viewers.test.ts": "dd430374ae0c3f394797b2591f99b078d539eb115db7310fc855b3a86ba54886",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "344b167b12ca1ea3cfd1a9ce4cd0a613ca8d49ae3a5bbf0a4976b60ad658454a"
+      },
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "29-43,68-75,98-104",
+          "observation": "SQLite class, bindings and DO migration remain; hibernation attachments/event methods remain. Promise chain orders in-flight work but holds no authoritative room/socket state."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "79-87,128-160",
+          "observation": "Current D1 session/member/role query runs before dedup lookup, conflict response or ack; revoked and viewer senders cannot commit or replay."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "143-161",
+          "observation": "Dedup lookup, message insert, user/clientId record and history pruning share transactionSync; only new messages fan out; retries reply solely to caller."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "37-42,145-155",
+          "observation": "AUTOINCREMENT sequence survives pruning; dedup is in a separate persistent table with (userId,clientId) primary key and no deletion path, inside the existing team/room object namespace."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "164-183",
+          "observation": "Fanout captures existing peers after commit, then authorizes each recipient from current D1. Query coalescing Map is local to this single delivery and not an authorization cache across events; missing/invalid authority closes socket."
+        },
+        {
+          "file": "src/routes/teams.ts",
+          "lines": "100-116,152,162-190",
+          "observation": "Current role guards viewer file mutations; guarded gateway adds only verified session identity, preserving private team/room forwarding."
+        },
+        {
+          "file": "migrations/0003_team_viewer_role.sql",
+          "lines": "1-15",
+          "observation": "New migration rebuilds role CHECK while copying all existing membership rows; prior SQL and DO tags remain unchanged."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing."
+      ],
+      "manifestAndAllBlobHashesVerified": true,
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "145-178",
+        "observation": "Commit is followed synchronously by broadcast() capturing peers before its first authorization await. New joins during recipient authorization see the committed message in snapshot and are excluded from captured fanout.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 1,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "snapshotSha256": "0d39dfda008be559adff02ccb48b6f05c532e71ab987158f42709c94b7e81e29",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "443eba0dddb2b6ad734e41bf6c398d3e334834e6100a13340d444c294ed12b2c",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "4422b3619d4e5874c890893082dd14c07b7957ec6d49d3cf940f75304b5cf045",
+        "migrations/0003_team_uploads.sql": "b6130f8c7c574361980e183ca283406228a8c252b2c2bbaf2dc9495128e71a7d",
+        "migrations/0004_team_viewer_role.sql": "7df748a3580a26466e472297cf67dc55b8ddea46fcf8c927d8a3d6f95479c8bc",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "87e8160233eaa9a9ae7a07b97c9e7db8f0a6a1763b96fd5eee6231d610080ee4",
+        "public/teams.html": "939e4f47f0b2f04bde4397547236cb75088fdf49ba96af013a2e5e53c23b4119",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "7ea20a5b1d6f8e723ca0840137e296f0890e5715f1599baf1649ef01002a6283",
+        "src/room.ts": "96befe07dbf5c19061ee8189f5034dc4f574c95127cea35fb892d00a118a7f57",
+        "src/teams.ts": "43966d18e3cfee3406a988776e6075f8bb5149c0385a87459568188698c59d89",
+        "src/types.ts": "9b656e47034c2789f381347d57fc17fe17ca78f1e6e6b7bdae95eea646501f11",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/roles.test.ts": "3271b44a333c77b03009511f9e0b2899181b7c0ce2eefb7271366d1339483918",
+        "test/teams.test.ts": "1ad8eb7a36d6faa3c671adbf1f82d19689294d4f49a358a83a87fac51069a99e",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "6b1b058094b2b8d600a63cc6eaafafb90c52b383ccc34c775c7db0bb1a73062c"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "src/room.ts",
+          "lines": "28-47,50-75,108-131",
+          "observation": "SQLite history and hibernation attachments/event handlers preserved; transient Promise queue only orders in-flight work and contains no authoritative room/socket state."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "86-98,134-156",
+          "observation": "Current D1 session/membership/role authorization precedes dedup lookup, conflict, ack and commit; viewer cannot write or replay."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "141-180",
+          "observation": "No await separates retry lookup from transactionSync; message, user/clientId dedup record and pruning commit atomically before captured recipients each receive current authorization."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "35-46,159-164",
+          "observation": "AUTOINCREMENT plus persistent independent user/clientId primary-key table retains sequence and dedup across message pruning/restarts; no dedup deletion path."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "16-29,102-151,153-178",
+          "observation": "Current role distinguishes viewer reads from writer mutations; handshake forwards only verified identity and membership grant via existing guarded team/room route."
+        },
+        {
+          "file": "migrations/0004_team_viewer_role.sql",
+          "lines": "4-17",
+          "observation": "New migration copies existing memberships while widening role CHECK and adding a grant token; old SQL and DO migration declarations stay unchanged."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing."
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "158-179",
+        "observation": "Commit is followed synchronously by getWebSockets().map; the returned array is fixed before recipient authorization awaits. New joins during those awaits see committed history and are excluded from that fanout.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "reuse",
+      "phase": "integration",
+      "snapshotSha256": "afdcbb939c412010f71fe6394522d3ccd0678b6a64710e4a8f6d89f531d87812",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "cb999824079358109e9168a61bff3d7e3c8aae03258765d1d234bacf8acb7bb5",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "241f5d727480140e66d18925599877f7ed4f0d4c43fce22d114afaf891467f5d",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/room-chat/index.html": "0877b783fe00bb4dde9175e40897bab66d86201c54e7d2c19133551b85923b5f",
+        "public/room-chat/room-client.js": "9f78e544a739679fddaf9200b0f71380df30b962525636a6281c4ba79b19a852",
+        "public/teams.html": "6374c0984603e1365f7cac4509c82eecc86b5247734e7d60333d6e83be40f2d8",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "b905afd3a11469194306d95775a24c458b52a412dd003e5254d84debf6e450c5",
+        "src/lib/team-room.ts": "e8ac6951a6c7bcd3fee16ece65fd577c4f9a5a25111e45912cf629ce64f45d7b",
+        "src/routes/team-room.ts": "e04b6f46057482effa3a0fbc240d472d272d75ea20274b26478570b8db4d1911",
+        "src/teams.ts": "72987251bbe921deb46cf872dd2ce618ff0f99f45c442edc3ae8696ce7997c74",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/team-room-client.test.mjs": "44dd9af7379d1141fe55a8d1fe8e09097eed3864157188187eee2a2574484a30",
+        "test/team-room.fixture.ts": "f030632f4a049f732216cf93ae2440284cc04b620d20cb6277ec8493f475b26c",
+        "test/team-room.test.mjs": "e4ce0d19c3f018b608cdecb146c58766f9c1183143595e20a273a51ec7087964",
+        "test/teams.test.ts": "a2d3151a8b07b806fbe08276edde4750b9e860223f5de27ec1370db38d473d30",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "5c8ee5c68f9b5683d03a468825464e34468be1cc5ffeaadd1c6a4f7173fe3cd7"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "38-53",
+          "observation": "TEAM_ROOMS binds TeamRoom with SQLite class migration."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "5-30,32-64",
+          "observation": "SQLite history, acceptWebSocket and serialized connection/rate-limit attachments, event methods and getWebSockets; no authoritative socket map or timer."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "8,46-58",
+          "observation": "AUTOINCREMENT survives pruning; insert and latest-50 pruning share transactionSync before fanout."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "135-149",
+          "observation": "Existing signed-session middleware, current D1 membership, strict Origin and room/query checks guard the only websocket entry."
+        },
+        {
+          "file": "src/routes/team-room.ts",
+          "lines": "10-23",
+          "observation": "Fixed forwarding helper creates fresh verified identity headers, bounds lease at five minutes and supplied actual session expiry, and uses JSON([team,room]) object names; no standalone public handler."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "32-36,52-58",
+          "observation": "Expired lease checked before writes and per recipient."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "19-23,83-130",
+          "observation": "Current verified membership controls file access and team-scoped server-generated R2 keys."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing.",
+        "Phase-two live revocation and dedup are not required at this integration stage."
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "32-58",
+        "observation": "Application handler commits and fans out synchronously; handshake snapshot cannot interleave that section.",
+        "pass": true
+      },
+      "recipientLeaseAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "52-58",
+        "observation": "Every recipient attachment deadline is checked during fanout; expired peer is closed.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "scratch",
+      "phase": "integration",
+      "snapshotSha256": "bdf9d6da2cfc468ff375e1647579310ac952cecfd22692d0cbfa411f58989da2",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "81a42ac47bd1a4450de8fcd001b44adb404ccb298c5976044aad2d9aca7681e6",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "6f06f9dce4ac7f948fd7f4ce3e4c6d59dcd3c87c7fa0a79d44cb13a5d5737482",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "6f2afb50d39ab8b4bf7cfc5a9034276712f17c8150bd3946a97ca71dbff79d2a",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "d42f8babea976a962f3bb8769c9f4efe79457688d1dd91a9586687c953f1f2eb",
+        "src/room.ts": "3ebc6f415ec6d1679a489c365cd6a133222b63f082b27fe4624150b4abd65c3f",
+        "src/teams.ts": "be6de204f83f5c6bd14c0d1a6b0fe399509a24ed0152a5c4c786d5fa1b401e1a",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "a95c5af56f0822f71c866be61f342a0f79c4a2fcc551d75eb88af242bec193a9",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "74c72b6c1ff26c56eedb5108f19e9ff271d9953ba7cb9a5c20424d8c36790766"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "32-46",
+          "observation": "ROOMS binds exported Room with SQLite class migration."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "25-50,63-119",
+          "observation": "SQLite-backed Room uses acceptWebSocket, serializable identity/lease attachment, event methods and getWebSockets without authoritative socket map/timer."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "29-30,85-101",
+          "observation": "AUTOINCREMENT sequence retained after pruning; synchronous storage insertion and pruning precede fanout."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "23-33,146-165",
+          "observation": "Existing host auth middleware plus current membership, strict Origin, query and room validation guard fixed private forwarding; verified identity overwrites all client identity headers."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "162-164",
+          "observation": "Lease limited to five minutes and actual session expiry; UUID team plus constrained room names give distinct object IDs."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "53-67,91-97",
+          "observation": "Expired sender/recipient leases are rejected or closed."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "93-140",
+          "observation": "Verified current membership controls team files, metadata lookup is tenant-scoped, and stored R2 key originates from server-generated ID."
+        }
+      ],
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing.",
+        "Phase-two live revocation and dedup are not required at this integration stage."
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "63-102",
+        "observation": "Application handler commits and fans out synchronously; handshake snapshot cannot interleave that section.",
+        "pass": true
+      },
+      "recipientLeaseAudit": {
+        "file": "src/room.ts",
+        "lines": "91-97",
+        "observation": "Every recipient is checked with leaseValid(peer) and expired peers close.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "snapshotSha256": "69e05d390a0758f74b16b1b789ce8eb2cefcb4fc973cd8584cf996fc27dd20b6",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "2154a23a7e4a056e4618294adcc43c58588b7b2f6bcaedcfe894d78d102d1bd6",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "6f06f9dce4ac7f948fd7f4ce3e4c6d59dcd3c87c7fa0a79d44cb13a5d5737482",
+        "migrations/0003_viewer_role.sql": "8056e5da84bcbba5b2d43797d8db2f587eacc2c4306fc52933f4be6792618acf",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "ca7868772681f348d6cb0d4908557cb0bc82b80bea0ace7cdaabb9c34676b24b",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "d42f8babea976a962f3bb8769c9f4efe79457688d1dd91a9586687c953f1f2eb",
+        "src/room.ts": "cd69fc1a534c63dbf27224d32bf4eee1eef5e66b07d109bd9a0dafce3483a6f1",
+        "src/teams.ts": "95a24c8eaad29f2ee74d3394a304c324b5219694e34db22b1ecdd8a633b5dc10",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "a95c5af56f0822f71c866be61f342a0f79c4a2fcc551d75eb88af242bec193a9",
+        "test/viewers.test.ts": "fae1df75601d76d112060c7b8dbfc12ebf90cb72ddd2e011190d9b01b782bbf9",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "74c72b6c1ff26c56eedb5108f19e9ff271d9953ba7cb9a5c20424d8c36790766"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": false,
+      "findings": [
+        {
+          "id": "lifecycle-source-001",
+          "priority": "P2",
+          "title": "Socket connecting during authorization can miss a committed message",
+          "file": "src/room.ts",
+          "lines": "150-159,183-204",
+          "blobSha256": "cd69fc1a534c63dbf27224d32bf4eee1eef5e66b07d109bd9a0dafce3483a6f1",
+          "evidence": "The handler captures getWebSockets() at line 151, awaits external D1 authorization at 159, commits only at 184-188, and broadcasts exclusively to the captured peers at 191. fetch() can accept a new socket and send its snapshot at 60-75 during that external await. Such a snapshot precedes the commit and lacks the message, while the new socket is absent from the saved peer array and misses its event. The comment at 197 does not change the fixed recipient array.",
+          "impact": "A connected authorized client can miss a live message until reconnect, violating message-to-every-connected-member and coherent snapshot/live delivery behavior.",
+          "verification": "Static review of exact immutable source plus a post-run deterministic mock executing its TypeScript-stripped class. Diagnostic reproduced the finding; this is not an actual workerd or Cloudflare platform reproduction.",
+          "officialSupport": "https://developers.cloudflare.com/durable-objects/api/state/",
+          "preparedDiagnostic": {
+            "path": "/tmp/kitbash-lifecycle-fanout-race.mjs",
+            "status": "executed-after-all-timed-stages-completed",
+            "method": "Exact immutable class, pinned snapshot/blob hashes, deterministic deferred D1 and socket/storage mocks; no model calls, timers or networking.",
+            "resultPath": "/tmp/kitbash-lifecycle-fanout-race-result.json",
+            "resultSha256": "56a7372d219e41f04621b0056e47f49d3b2d3febb01c56550c5da7bb309f1f68",
+            "result": {
+              "diagnostic": "immutable-source-delayed-D1-join",
+              "modelCalls": 0,
+              "runtime": "deterministic class mocks, not Workers runtime",
+              "snapshotSha256": "69e05d390a0758f74b16b1b789ce8eb2cefcb4fc973cd8584cf996fc27dd20b6",
+              "blobSha256": "cd69fc1a534c63dbf27224d32bf4eee1eef5e66b07d109bd9a0dafce3483a6f1",
+              "order": [
+                "sender-authorization-pending",
+                "newcomer-snapshot-sent-before-commit",
+                "sender-authorization-resolved",
+                "message-committed",
+                "broadcast-finished"
+              ],
+              "storedMessages": 1,
+              "existingPeerMessages": 1,
+              "newcomerSnapshotMessages": 0,
+              "newcomerLiveMessages": 0,
+              "findingReproduced": true
+            }
+          },
+          "persistsAtFinalMaintenance": true
+        }
+      ],
+      "evidence": [
+        {
+          "file": "src/room.ts",
+          "lines": "36-75",
+          "observation": "SQLite AUTOINCREMENT history and persistent client_ids with hibernation attachments/event methods retained."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "100-120,150-188",
+          "observation": "Current D1 authority is queried per event before retry lookup/ack/conflict; writer role is enforced. Retry lookup and message/dedup/prune transaction occur synchronously, with independent persistent dedup records never deleted."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "150-204",
+          "observation": "Recipient authority is freshly batched for captured peers, but the snapshot/fanout recipient-list race above prevents complete delivery to newly joined peers."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "93-140,146-166",
+          "observation": "Current writer role gates file mutations; guarded fixed gateway forwards verified user/team/session identity without exposing internal controls."
+        },
+        {
+          "file": "migrations/0003_viewer_role.sql",
+          "lines": "1-14",
+          "observation": "New migration copies existing memberships while widening role CHECK; prior SQL and DO class declaration remain."
+        }
+      ],
+      "limitations": [
+        "Behavioral acceptance results remain unchanged; this independent source failure qualifies them separately.",
+        "No runtime reproducer or Cloudflare platform hibernation/billing experiment was performed."
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "150-204",
+        "observation": "Recipient list is captured before external D1 authorization await; a handshake during the await sees pre-commit history but is absent from later fanout. This is the recorded source finding.",
+        "pass": false
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "snapshotSha256": "e073227fe3a497f8bf6f4ac7d78caffe18db7e6b94cf0538602707477e34d0bc",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "83e8c21e5929d77a624438f935e61b0f7370654a5597b24c1f729c6f9e546f4a",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "241f5d727480140e66d18925599877f7ed4f0d4c43fce22d114afaf891467f5d",
+        "migrations/0003_viewer_role.sql": "606892ffe1b25285f76d63e74dfd09083adcb6a3a8a39392ae6468220a9fd2b6",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/room-chat/index.html": "0877b783fe00bb4dde9175e40897bab66d86201c54e7d2c19133551b85923b5f",
+        "public/room-chat/room-client.js": "4349d659fe06b05cbe3f146a46056e6bcbc1f72960a078d19530f3a36803575c",
+        "public/teams.html": "ef9d0d1c0aab74f30f2ec7c67544b03cee45cf7a1f81de9898ead3418344425e",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "b905afd3a11469194306d95775a24c458b52a412dd003e5254d84debf6e450c5",
+        "src/lib/team-room.ts": "8e9440da5f6f9632ccbc411ddec5c892215a3428e83279789f3fb88792ac3fbf",
+        "src/routes/team-room.ts": "74cb1c07ce4bf178f775b2ac688d18083ac8aa5932034de256a0e0edbd516257",
+        "src/teams.ts": "a39db74eb85a7d683fdfc9f2e13101da761dda8d0d473ba8947e3a42e3d9413e",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/team-room-client.test.mjs": "44dd9af7379d1141fe55a8d1fe8e09097eed3864157188187eee2a2574484a30",
+        "test/team-room.fixture.ts": "f030632f4a049f732216cf93ae2440284cc04b620d20cb6277ec8493f475b26c",
+        "test/team-room.test.mjs": "e4ce0d19c3f018b608cdecb146c58766f9c1183143595e20a273a51ec7087964",
+        "test/teams.test.ts": "a2d3151a8b07b806fbe08276edde4750b9e860223f5de27ec1370db38d473d30",
+        "test/viewer.test.ts": "4d127257027781685f379376842ce4e26e41a4d874c19d1e774cae0e72720ee7",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "5c8ee5c68f9b5683d03a468825464e34468be1cc5ffeaadd1c6a4f7173fe3cd7"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "10-25,52-83",
+          "observation": "SQLite room state and hibernation attachments/events retained; transient Promise queue orders events only."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "37-49,90-137",
+          "observation": "Current D1 session/membership/grant and writer role are checked before retry lookup/ack/conflict; transactionSync commits message, user/clientId dedup and pruning together."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "18-24,130-136",
+          "observation": "AUTOINCREMENT and independent persistent dedup table survive pruning/restart; no deletion of dedup records."
+        },
+        {
+          "file": "src/lib/team-room.ts",
+          "lines": "139-151",
+          "observation": "Each recipient receives current D1 authority; local per-delivery coalescing Map is not a cross-event authorization cache."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "20-29,89-139,143-160",
+          "observation": "Current writer role protects viewer file mutations; current membership and host session protect fixed forwarding, which adds verified session and grant."
+        },
+        {
+          "file": "migrations/0003_viewer_role.sql",
+          "lines": "4-18",
+          "observation": "New migration preserves rows and widens role CHECK; earlier files and DO migration tags remain unchanged."
+        }
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/lib/team-room.ts",
+        "lines": "67-75,130-151",
+        "observation": "Recipients are captured synchronously after commit, before recipient-auth await; concurrent later joins receive committed history. Attachment since additionally suppresses events already present in its handshake snapshot.",
+        "pass": true
+      },
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing."
+      ]
+    },
+    {
+      "pair": 3,
+      "arm": "scratch",
+      "phase": "integration",
+      "snapshotSha256": "a5b3f59340a6968ef05627a63c2126429b91e02e3150ab45bfe504bfdec0fcc2",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "76a6593898a50de70d63f4d4e105c715cf2f9ba5aa478da5c82cc5cdcc6e603c",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "07b9e4c7cc6fc994976ab9759c5fdcaf34f6b6999782b5492d56f398c0ec68aa",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "4158ee97d480047e6098b7db60424743ec433a60f51451250fd67f522cd19bd8",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "52132359220195ebf7eb4c2872937461f49a0cd9cfdaef4024ffcdbe2b195b6c",
+        "src/room.ts": "fb6c1a050d55ceebdc0b9a424fb223dbbaee8444f2666526f3a7f9965ea45af8",
+        "src/teams.ts": "6f8b77049ea9f9b79cacb4a1aca3e9a670f7c4bda52afe0d6b1561e0959cfa12",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "49dab5d45162c6c65f12115446f73fd12b44703ac18672a66d46292d80e6e862",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "3156fb900ccc8f133a49a4020abc81b8ca92879a13c598252d37cf3519e317b3"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "32-46",
+          "observation": "ROOMS binds exported RoomDO with SQLite class migration."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "26-50,89-146",
+          "observation": "SQLite messages/meta counter with acceptWebSocket, serialized identity/session/lease attachment and event methods; no authoritative socket map/timer."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "59-67,104-108",
+          "observation": "Persistent sequence increment, message insertion and history pruning share transactionSync, before fanout; separate counter survives pruning/restart."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "46,70-77,104,111-129",
+          "observation": "Sender checks current session and membership; recipients use bounded five-minute session-capped leases and renew from D1 when expired."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "19-30,146-167",
+          "observation": "Existing host auth, current D1 membership, strict Origin/room/query checks guard fixed forwarding with fresh server-generated identity and team/room instance name."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "93-141",
+          "observation": "Current membership protects team files; tenant-scoped metadata and verified team/stored ID determine R2 keys."
+        }
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "104-118",
+        "observation": "After sender authorization, commit and call into broadcast are synchronous; getWebSockets captures recipients before its first lease-renewal await, so later joins see committed history.",
+        "pass": true
+      },
+      "limitations": [
+        "Source review covers requested architecture/security criteria, not complete behavioral validation or real platform hibernation/billing.",
+        "Phase-two live revocation and dedup are not required at this integration stage."
+      ],
+      "recipientLeaseAudit": {
+        "file": "src/room.ts",
+        "lines": "111-125",
+        "observation": "Recipient lease checked; expired lease requires live session/membership renewal capped by session expiry.",
+        "pass": true
+      }
+    },
+    {
+      "pair": 3,
+      "arm": "reuse",
+      "phase": "integration",
+      "snapshotSha256": "8cd9737798117e97316f8ea611980e1da4be0c156076ea5cbe67579431dce0af",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "9a05f051195c5c3729335d318712c38e3414e63b1746294aa904093e342cad94",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "b977dfe2213179eb0135da31a471c43c610153a2713edc227c754d6f702c6d7f",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "84096eba0ef4dc5edf4920f09bec80ef402042098e0fe0e6091b81911a178b50",
+        "public/teams.html": "34fe8429d477ddf2411fe2f4902484951c29e488e326c02e1ccb9d633c1c6453",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "f5b8e5773c541c9eb15a9c1f6f43e32ff20eb60465fdff28926f14fe4fa5a912",
+        "src/room.ts": "9bbc8d00c25c6b636e44114deca96684ef6a7d861bfc5618773465d8256b647e",
+        "src/teams.ts": "5c1e9c3fb5107f02ee581bc31c32ed8a7626b598d204061512c1391180e9ba53",
+        "src/users.ts": "218721f09f893bb5d16eeb163f1462cfa8a357b2ac250a34aa94eb3892de8ff8",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "dffe00e18e1ad29318ff5fc8c45064b668b12671133f04adfe4c5a5414f9a430",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "f4a5dc5b1b5f56f71130c8f9f42d223db06b73fb3dfa3a36e08f99dc67349901"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": false,
+      "findings": [
+        {
+          "id": "lifecycle-source-002",
+          "priority": "P2",
+          "title": "Broadcast ignores expired recipient authorization leases",
+          "file": "src/room.ts",
+          "lines": "51-53,73-75",
+          "blobSha256": "9bbc8d00c25c6b636e44114deca96684ef6a7d861bfc5618773465d8256b647e",
+          "contract": {
+            "file": "packages/discovery-eval/lifecycle/task-integration.md",
+            "line": 12,
+            "requirement": "Phase-one socket authorization may use a bounded lease of at most five minutes, capped by the actual session expiry."
+          },
+          "evidence": "src/teams.ts:9 sets LEASE_MS=4*60*1000, and :184-189 sets expiresAt=min(session.expires_at*1000, Date.now()+LEASE_MS) in server-created x-room-expires. src/room.ts:43 saves that deadline in the attachment. The sender checks its own deadline at :52-53 and fetch() evicts expired peers at :33-38, but broadcast at :73-75 sends unconditionally to every attached peer. There is no recipient deadline/current authority check on that path.",
+          "impact": "A socket connected earlier can continue receiving protected messages after its lease or actual session expires while a later-connected authorized sender remains active. It is only cleaned up if it sends a message or another handshake occurs.",
+          "verification": "Static review of exact immutable source plus a post-run deterministic mock executing its TypeScript-stripped class. Diagnostic reproduced the finding; this is not an actual workerd or Cloudflare platform reproduction.",
+          "preparedDiagnostic": {
+            "path": "/tmp/kitbash-lifecycle-expired-fanout.mjs",
+            "status": "executed-after-all-timed-stages-completed",
+            "method": "Pinned immutable class with a controllable clock and minimal socket/storage mocks. Old recipient expires, later sender remains valid, then sends. No model calls, timers, network or measured-app changes.",
+            "resultPath": "/tmp/kitbash-lifecycle-expired-fanout-result.json",
+            "resultSha256": "d66706da6acbcc956f9212bf9b41c40d46f38722535ec35e42a9bb49a6ea9bb6",
+            "result": {
+              "diagnostic": "immutable-source-expired-recipient-fanout",
+              "modelCalls": 0,
+              "runtime": "deterministic class mocks, not Workers runtime",
+              "snapshotSha256": "8cd9737798117e97316f8ea611980e1da4be0c156076ea5cbe67579431dce0af",
+              "blobSha256": "9bbc8d00c25c6b636e44114deca96684ef6a7d861bfc5618773465d8256b647e",
+              "now": 2000,
+              "recipientExpiresAt": 1000,
+              "senderExpiresAt": 5000,
+              "expiredRecipientMessages": 1,
+              "expiredRecipientClosed": false,
+              "findingReproduced": true
+            }
+          },
+          "persistsAtFinalMaintenance": false
+        }
+      ],
+      "evidence": [
+        {
+          "file": "wrangler.jsonc",
+          "lines": "32-46",
+          "observation": "ROOMS binds TeamRoom with a SQLite class migration."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "17-48,51-85",
+          "observation": "SQLite AUTOINCREMENT history, hibernation attachments and event methods remain; no authoritative socket map/timer."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "65-76",
+          "observation": "Message and pruning commit together before synchronous fanout; missing recipient authorization deadline is the material finding above."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "173-191",
+          "observation": "Host session and current membership plus strict Origin/query/room checks guard fixed private forwarding with fresh identity headers; initial attachment expiry assignment is correctly capped."
+        }
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "51-76",
+        "observation": "Handler is synchronous through commit and fanout, so no handshake snapshot can interleave that section; recipient expiry enforcement fails separately.",
+        "pass": true
+      },
+      "limitations": [
+        "Frozen behavioral acceptance scores remain unchanged; this independent integration-stage source finding is preserved even if later maintenance fixes it.",
+        "No real platform hibernation/billing or runtime reproduction was performed."
+      ],
+      "recipientLeaseAudit": {
+        "file": "src/room.ts",
+        "lines": "73-75",
+        "observation": "Fanout sends unconditionally without recipient lease/current-authority validation.",
+        "pass": false
+      }
+    },
+    {
+      "pair": 3,
+      "arm": "reuse",
+      "phase": "maintenance",
+      "snapshotSha256": "d18366d0f3b46915e58aa513ada79c9882481a1b5f738c41f1ac8751ea5a66ca",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "faa6ca7473319295463fe1607ea699b7648f48f538ca093910467e891664293a",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "b977dfe2213179eb0135da31a471c43c610153a2713edc227c754d6f702c6d7f",
+        "migrations/0003_viewer_role.sql": "e515130a5666958b8c443c3e10922c411013e40490fe7ee13bfa19c12cb76953",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "84096eba0ef4dc5edf4920f09bec80ef402042098e0fe0e6091b81911a178b50",
+        "public/teams.html": "d7390d8e668bbff248a213a091d621bc1da327da4e8fd00713cdfdb8d6c09684",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "f5b8e5773c541c9eb15a9c1f6f43e32ff20eb60465fdff28926f14fe4fa5a912",
+        "src/room.ts": "46aad9ebdfae78e89d259f8bad5e3a2c0b493000cccbb939c607efecba95cf01",
+        "src/teams.ts": "5b07610ea22257d18560bd9face6f73b8c7c2234ded75a2c914771fdb01469bf",
+        "src/users.ts": "218721f09f893bb5d16eeb163f1462cfa8a357b2ac250a34aa94eb3892de8ff8",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "dffe00e18e1ad29318ff5fc8c45064b668b12671133f04adfe4c5a5414f9a430",
+        "test/viewers.test.ts": "8220fdb2746d8735fc2852563d67369510167c4aa123dc08bc75b1679d868e19",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "f4a5dc5b1b5f56f71130c8f9f42d223db06b73fb3dfa3a36e08f99dc67349901"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "src/room.ts",
+          "lines": "24-37,75-104",
+          "observation": "Preserves the SQLite messages table, adds optional clientId and independent dedupe table, and uses hibernation attachments. A promise chain coordinates in-flight work without retaining authoritative sockets or roles."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "47-63,109-119,134-149",
+          "observation": "Sender attachment expiry and a fresh D1 session/membership batch are checked before dedup lookup or responses. Viewers cannot write. One synchronous SQLite transaction handles duplicate lookup, message insertion, permanent dedupe insertion and history pruning."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "151-166",
+          "observation": "Recipients are captured after commit, their current sessions and memberships are read from D1, and each attachment expiry is checked before delivery. This independently resolves integration-stage lifecycle-source-002; that earlier finding remains preserved."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "75-104,134-166",
+          "observation": "Handshake accept/snapshot and message handling share a queue. A join cannot receive a precommit snapshot then miss a saved precommit recipient set. Recipient capture itself also occurs after commit."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "17-22,93-106,123-137,165-173,178-202",
+          "observation": "Viewer role is read from current D1 membership for HTTP writes and fresh identity/session/team/expiry headers are forwarded through the authenticated room route. Namespace and strict origin protections remain intact."
+        },
+        {
+          "file": "migrations/0003_viewer_role.sql",
+          "lines": "1-13",
+          "observation": "Additive migration rebuilds the role CHECK constraint while copying existing memberships; original migrations and DO identity remain unchanged."
+        }
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "75-104,151-166",
+        "observation": "Both handshake snapshot and event processing share the promise chain, and recipients are captured after committed message insertion. No precommit snapshot/fanout gap found.",
+        "pass": true
+      },
+      "limitations": [
+        "Independent source review only; frozen automated acceptance scores are unchanged.",
+        "No additional model calls, measured-app changes, real hibernation exercise or runtime tests were performed."
+      ]
+    },
+    {
+      "pair": 3,
+      "arm": "scratch",
+      "phase": "maintenance",
+      "snapshotSha256": "3adf133cc5b50c18faa5fde6c37eb6ca6e80fd716630dcabd278208d44bc53d8",
+      "fileHashes": {
+        "FEATURE-NOTES.md": "8cb9cdf9aeddbecf8d72cf87686ec1ab5a3e95321b67232fc86be30c43a9f7c0",
+        "migrations/0000_initial.sql": "e861ee857a524ba9383b2e201fa2b35d46898446e012ff1dbd8e242f34d96ccd",
+        "migrations/0001_app.sql": "8d71f00e4ce171f09e6630d1981cf4d65f73f6fd4d0e56ec38fcede996d6ae31",
+        "migrations/0002_teams.sql": "07b9e4c7cc6fc994976ab9759c5fdcaf34f6b6999782b5492d56f398c0ec68aa",
+        "migrations/0003_viewer_role.sql": "e736c08f1b3ea9c5d20d85fafa2a75944aec5269b440e53be635d15001166cd9",
+        "package.json": "b4533a22b11604510342deac630909662f091e510a0d41ffbb1cd4ba308d80b3",
+        "pnpm-lock.yaml": "23a9a2643bc8b6ff38213768e84838a6a2222f06344a43a347d62ff186b724a0",
+        "pnpm-workspace.yaml": "5f5605b3f08ade6af3333cbc40478b15183eedb7e63db7e73d587b4794e1ddd6",
+        "public/index.html": "a70749a35ec06886c2da2a4cf878497c94fa2ff111daa1f8e54a447c212a6e4e",
+        "public/teams.html": "d91a55db9120da72d8d724b3150d3c6c9aae7c3ed1d610fe0358cae9a85b2068",
+        "README.md": "46dc4d01505dd3db9b5a06da283eb000ceb44f35a030a35b727ac60906013e2f",
+        "src/index.ts": "52132359220195ebf7eb4c2872937461f49a0cd9cfdaef4024ffcdbe2b195b6c",
+        "src/room.ts": "08bd9714a3589cdde291641da895198bbe7a980eeda067077d351416a7342409",
+        "src/teams.ts": "637b365b07eb22710936c75f92852139e4ae4b141369b662e369af5628168fd2",
+        "test/app.test.ts": "2faf4bc0953f4121752e9f1ae0bea823107b20b9985f2c246516639e495a31a2",
+        "test/apply-migrations.ts": "1707628cb59231fa4a7910cb0457c03553a3c8a0e21c90c1d13abd432eaab1b2",
+        "test/health.test.ts": "1e0b735a6aef42b2059a0753364c671a595d1f7ff07ec48d859111bb8d380511",
+        "test/teams.test.ts": "49dab5d45162c6c65f12115446f73fd12b44703ac18672a66d46292d80e6e862",
+        "test/viewer.test.ts": "eec4423699ef0102ab0e98c2978b27d6fdb3e2cd419cdd3a8167f177acdb374e",
+        "tsconfig.json": "3777134fb862ee07d392ae4af76fc6c5918a481dfc693a4b1ce907098bdc700e",
+        "vitest.config.ts": "41724fa7b46f25bd82be9a9ed2acd824de4a571488bc8fb23a9ab72e948bf41c",
+        "wrangler.jsonc": "3156fb900ccc8f133a49a4020abc81b8ca92879a13c598252d37cf3519e317b3"
+      },
+      "manifestAndAllBlobHashesVerified": true,
+      "pass": true,
+      "findings": [],
+      "evidence": [
+        {
+          "file": "src/room.ts",
+          "lines": "35-54,57-85,128-132,196-210",
+          "observation": "Preserves SQLite messages and monotonic meta counter, adds optional client_id and a separate dedup table. Hibernation accept/attachments/event methods remain; transient promise chain orders processing without authoritative memory state."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "88-113,154-163",
+          "observation": "Current D1 session and membership authority precede dedup lookup, conflict or ack. One synchronous transaction checks dedup, increments the durable sequence, inserts message and permanent dedup record, and prunes only history. Dedup scope is user plus clientId within unchanged team/room DO identity."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "165-193",
+          "observation": "Broadcast captures recipients after commit and queries current D1 authority for each session/user; coalescing map lasts only this broadcast. Unauthorized recipients are closed. No cross-event authorization cache or timer is introduced."
+        },
+        {
+          "file": "src/room.ts",
+          "lines": "57-85,161-193",
+          "observation": "A join during precommit D1 awaits gets the earlier snapshot and is included by postcommit recipient capture. A join during later recipient checks gets the committed message in its snapshot. joinedSeq also prevents duplicate live delivery of snapshotted records."
+        },
+        {
+          "file": "src/teams.ts",
+          "lines": "19-26,59-88,95-112,135-169",
+          "observation": "HTTP writes require owner/member current roles; owner protection and viewer reads remain. The public room gateway retains strict same-origin, room/query validation, session middleware and fresh server identity headers with unchanged team/room namespace."
+        },
+        {
+          "file": "migrations/0003_viewer_role.sql",
+          "lines": "1-14",
+          "observation": "Copies all existing membership rows into a rebuilt role-constrained table including viewer; original D1 migrations, Wrangler DO class migration and namespace remain unchanged."
+        }
+      ],
+      "snapshotFanoutBoundaryAudit": {
+        "file": "src/room.ts",
+        "lines": "57-85,161-193",
+        "observation": "Recipient list is captured after commit. New connections either enter that list with an earlier snapshot or observe the committed message in their snapshot; joinedSeq suppresses duplicate snapshot/live overlap.",
+        "pass": true
+      },
+      "limitations": [
+        "Independent source review only; frozen automated acceptance scores are unchanged.",
+        "No measured-app changes, model calls, real hibernation exercise or extra workerd checks were performed."
+      ]
+    }
+  ],
+  "commonBaselineSha256": "848648763c0b5f09325013ecf76d0ed7f8e75ea801e7e6be230b5931145cc6fd",
+  "baselineManifestsIdentical": true,
+  "summary": {
+    "reviewedStages": 12,
+    "sourcePassStages": 10,
+    "sourceFindingStages": 2,
+    "findings": 2,
+    "finalMaintenanceSourcePassStages": 5,
+    "finalMaintenanceStages": 6,
+    "persistentFinalFindings": [
+      "lifecycle-source-001"
+    ],
+    "resolvedDuringMaintenance": [
+      "lifecycle-source-002"
+    ],
+    "automatedAcceptanceScoresModified": false,
+    "postRunDiagnostics": "Two pinned-source deterministic mock reproductions passed; neither is an actual workerd or Cloudflare runtime reproduction."
+  }
+}

@@ -2,6 +2,8 @@
 
 This opt-in follow-up tests whether feature-source reuse helps on a harder task than the earlier kitchen-sink benchmark. It adds shared review rooms to the **same existing app** for both treatments, then adds read-only membership, live authorization changes and durable retry deduplication. The baseline already uses shared framework dependencies and includes sessions, profiles, personal files and reports.
 
+**Completed result:** three pairs cost $3.2611269 for scratch and $3.2861756 for reuse. Reuse cost 0.8% more and used 4.6% less agent time. All twelve stages passed automated checks on their first attempt; source review identified two defects in different arms/stages. Read the [report](../../../docs/research/lifecycle-reuse.md) and [immutable evidence](../results/lifecycle-2026-10-19/README.md). Normal tests and saved-source reproduction below do not call paid models.
+
 The treatment is access to the existing catalog. Reuse agents can search, inspect, copy/adapt or install suitable blocks and can skip unsuitable ones. Scratch agents receive the existing application and ordinary dependencies. No ritual requires downloading every file or using an unsuitable block. Catalog access continues during maintenance.
 
 ## Fixed protocol

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team review rooms</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  input:not([type=file]), select { display: block; width: 100%; box-sizing: border-box; padding: .4rem; font: inherit; margin: .3rem 0; }
+  button { padding: .5rem 1rem; font: inherit; margin-top: .5rem; }
+  ul { padding-left: 1.2rem; overflow-wrap: anywhere; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<h1>Team review rooms</h1>
+<p><a href="/">Home</a></p>
+<p id="auth-note" role="alert" hidden>Please <a href="/">sign in</a> first.</p>
+<p id="page-error" role="alert"></p>
+
+<div id="app" hidden>
+  <section>
+    <h2>Teams</h2>
+    <input data-testid="team-name" maxlength="80" placeholder="New team name" aria-label="New team name">
+    <button data-testid="team-create" type="button" disabled>Create team</button>
+    <select data-testid="team-select" aria-label="Team" disabled></select>
+  </section>
+
+  <section>
+    <h2>Room</h2>
+    <input data-testid="room-name" value="general" maxlength="40" aria-label="Room name">
+    <button data-testid="room-connect" type="button" disabled>Connect</button>
+    <p data-testid="room-status" role="status">disconnected</p>
+    <ul data-testid="room-messages"></ul>
+    <input data-testid="message-text" maxlength="1000" placeholder="Message" aria-label="Message" disabled>
+    <button data-testid="message-send" type="button" disabled>Send</button>
+  </section>
+
+  <section>
+    <h2>Team files</h2>
+    <label>File (max 1 MiB) <input data-testid="team-upload" type="file" disabled></label>
+    <p id="upload-status" role="status"></p>
+    <ul data-testid="file-list"></ul>
+  </section>
+</div>
+
+<script>
+const $ = (id) => document.querySelector(`[data-testid="${id}"]`);
+const byId = (id) => document.getElementById(id);
+const api = (path, opts = {}) => fetch(path, { credentials: 'same-origin', ...opts });
+const ROOM_RE = /^[A-Za-z0-9_-]{1,40}$/;
+const MAX_FILE = 1024 * 1024;
+
+let socket = null;        // the single live connection (or null)
+let generation = 0;       // invalidates events from superseded sockets
+let lastSeq = 0;
+let connected = false;
+
+function setStatus(text) { $('room-status').textContent = text; }
+function currentTeam() { return $('team-select').value; }
+
+function refreshControls() {
+  const hasTeam = !!currentTeam();
+  $('team-create').disabled = $('team-name').value.trim().length === 0;
+  $('team-select').disabled = $('team-select').options.length === 0;
+  $('room-connect').disabled = !hasTeam || !ROOM_RE.test($('room-name').value) || (socket && !connected);
+  $('message-text').disabled = !connected;
+  $('message-send').disabled = !connected;
+  $('team-upload').disabled = !hasTeam;
+}
+
+function renderMessage(m) {
+  if (typeof m.seq === 'number' && m.seq <= lastSeq) return;
+  lastSeq = Math.max(lastSeq, m.seq);
+  const li = document.createElement('li');
+  li.textContent = `${m.userId}: ${m.text}`;
+  li.dataset.seq = String(m.seq);
+  $('room-messages').appendChild(li);
+}
+
+function disconnect(label) {
+  generation++;
+  const s = socket;
+  socket = null;
+  connected = false;
+  if (s) { try { s.close(1000); } catch {} }
+  setStatus(label);
+  refreshControls();
+}
+
+function connect() {
+  const team = currentTeam();
+  const room = $('room-name').value;
+  if (!team || !ROOM_RE.test(room)) { setStatus('error: invalid room name'); return; }
+  disconnect('connecting');
+  lastSeq = 0;
+  $('room-messages').replaceChildren();
+  const gen = generation;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/api/teams/${encodeURIComponent(team)}/rooms/${encodeURIComponent(room)}/ws`);
+  socket = ws;
+  refreshControls();
+  ws.addEventListener('message', (ev) => {
+    if (gen !== generation) return;
+    let d;
+    try { d = JSON.parse(ev.data); } catch { return; }
+    if (d.type === 'snapshot') {
+      lastSeq = 0;
+      $('room-messages').replaceChildren();
+      for (const m of d.messages) renderMessage(m);
+      connected = true;
+      setStatus(`connected to ${room}`);
+      refreshControls();
+    } else if (d.type === 'message') {
+      renderMessage(d);
+    } else if (d.type === 'error') {
+      setStatus(`${connected ? 'connected' : 'error'}: ${d.error}`);
+    }
+  });
+  const gone = (label) => {
+    if (gen !== generation) return;
+    socket = null;
+    connected = false;
+    setStatus(label);
+    refreshControls();
+  };
+  ws.addEventListener('close', () => gone('disconnected'));
+  ws.addEventListener('error', () => gone('error: connection failed'));
+}
+
+async function loadTeams(selectId) {
+  const r = await api('/api/teams');
+  if (!r.ok) throw new Error('Could not load teams');
+  const { teams } = await r.json();
+  const sel = $('team-select');
+  const keep = selectId || sel.value;
+  sel.replaceChildren(...teams.map((t) => {
+    const o = document.createElement('option');
+    o.value = t.id;
+    o.textContent = `${t.name} (${t.role})`;
+    return o;
+  }));
+  if (teams.some((t) => t.id === keep)) sel.value = keep;
+  refreshControls();
+}
+
+$('team-name').addEventListener('input', refreshControls);
+$('room-name').addEventListener('input', refreshControls);
+
+$('team-create').addEventListener('click', async () => {
+  const btn = $('team-create');
+  btn.disabled = true;
+  byId('page-error').textContent = '';
+  try {
+    const r = await api('/api/teams', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: $('team-name').value }) });
+    if (!r.ok) { byId('page-error').textContent = r.status === 400 ? 'Team name must be 1-80 characters' : 'Could not create team'; return; }
+    const { id } = await r.json();
+    $('team-name').value = '';
+    await loadTeams(id);
+    onTeamChange();
+  } catch { byId('page-error').textContent = 'Could not create team'; }
+  finally { refreshControls(); }
+});
+
+function onTeamChange() {
+  if (socket || connected) disconnect('disconnected');
+  $('room-messages').replaceChildren();
+  $('file-list').replaceChildren();
+  byId('upload-status').textContent = '';
+  refreshControls();
+}
+$('team-select').addEventListener('change', onTeamChange);
+
+$('room-connect').addEventListener('click', connect);
+
+function send() {
+  const input = $('message-text');
+  const text = input.value;
+  if (!connected || !socket || text.trim().length === 0) return;
+  socket.send(JSON.stringify({ text }));
+  input.value = '';
+}
+$('message-send').addEventListener('click', send);
+$('message-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); send(); } });
+
+$('team-upload').addEventListener('change', async () => {
+  const input = $('team-upload');
+  const file = input.files[0];
+  const status = byId('upload-status');
+  const team = currentTeam();
+  if (!file || !team) return;
+  if (file.size > MAX_FILE) { status.textContent = 'File too large (max 1 MiB)'; input.value = ''; return; }
+  input.disabled = true;
+  status.textContent = 'Uploading...';
+  try {
+    const r = await api(`/api/teams/${encodeURIComponent(team)}/uploads`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+    if (!r.ok) { status.textContent = r.status === 413 ? 'File too large (max 1 MiB)' : 'Upload failed'; return; }
+    const { id } = await r.json();
+    if (team === currentTeam()) {
+      const a = document.createElement('a');
+      a.href = `/api/teams/${encodeURIComponent(team)}/uploads/${encodeURIComponent(id)}`;
+      a.download = file.name;
+      a.textContent = file.name;
+      const li = document.createElement('li');
+      li.appendChild(a);
+      $('file-list').appendChild(li);
+    }
+    status.textContent = 'Uploaded';
+  } catch { status.textContent = 'Upload failed'; }
+  finally { input.value = ''; refreshControls(); }
+});
+
+async function boot() {
+  const r = await api('/api/session');
+  if (!r.ok) { byId('auth-note').hidden = false; return; }
+  byId('app').hidden = false;
+  try { await loadTeams(); } catch { byId('page-error').textContent = 'Could not load teams'; }
+  refreshControls();
+}
+boot();
+</script>
+</body>
+</html>

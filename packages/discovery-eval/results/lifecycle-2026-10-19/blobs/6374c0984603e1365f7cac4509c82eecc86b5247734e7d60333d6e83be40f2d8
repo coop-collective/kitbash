@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared review rooms</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
+  section { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  label { display: block; margin: .5rem 0; }
+  input:not([type=file]), select { display: block; width: 100%; box-sizing: border-box; padding: .4rem; font: inherit; }
+  button { padding: .5rem 1rem; font: inherit; margin-top: .5rem; }
+  ul { padding-left: 1.2rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<h1>Shared review rooms</h1>
+<p><a href="/">Home</a></p>
+<p id="auth-note" role="alert" hidden>Not signed in. <a href="/">Sign in on the home page</a>, then reload.</p>
+
+<div id="app" hidden>
+  <section>
+    <h2>Teams</h2>
+    <label>New team name <input data-testid="team-name" maxlength="80"></label>
+    <button data-testid="team-create" type="button">Create team</button>
+    <label>Team <select data-testid="team-select"></select></label>
+    <p id="team-status" role="status"></p>
+  </section>
+
+  <section>
+    <h2>Room</h2>
+    <label>Room name <input data-testid="room-name" value="general" maxlength="40"></label>
+    <button data-testid="room-connect" type="button">Connect</button>
+    <p data-testid="room-status" role="status">idle</p>
+    <ul data-testid="room-messages"></ul>
+    <label>Message <input data-testid="message-text" maxlength="1000"></label>
+    <button data-testid="message-send" type="button">Send</button>
+  </section>
+
+  <section>
+    <h2>Team files</h2>
+    <label>File (max 1 MiB) <input data-testid="team-upload" type="file"></label>
+    <p id="upload-status" role="status"></p>
+    <ul data-testid="file-list"></ul>
+  </section>
+</div>
+
+<script type="module">
+import { connectRoom } from '/room-chat/room-client.js';
+
+const $ = (id) => document.querySelector(`[data-testid="${id}"]`);
+const MAX_UPLOAD = 1024 * 1024;
+const ROOM = /^[A-Za-z0-9_-]{1,40}$/;
+let conn = null;      // the single live connection
+let connected = false;
+let seen = 0;         // highest seq rendered for the current connection
+
+const teamId = () => $('team-select').value;
+const post = (path, body) => fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+function refresh() {
+  const hasTeam = !!teamId();
+  $('team-create').disabled = !$('team-name').value.trim();
+  $('room-connect').disabled = !hasTeam || !ROOM.test($('room-name').value);
+  $('message-send').disabled = !connected;
+  $('message-text').disabled = !connected;
+  $('team-upload').disabled = !hasTeam;
+}
+
+function setStatus(s) {
+  connected = s === 'connected';
+  $('room-status').textContent = s;
+  refresh();
+}
+
+function render(m) {
+  const li = document.createElement('li');
+  li.textContent = `${m.userId}: ${m.text}`;
+  $('room-messages').append(li);
+  seen = Math.max(seen, m.seq);
+}
+
+function onEvent(ev) {
+  if (ev.type === 'snapshot') {
+    $('room-messages').replaceChildren();
+    seen = 0;
+    for (const m of ev.messages) render(m);
+  } else if (ev.type === 'message' && ev.seq > seen) render(ev);
+}
+
+function leave() {
+  if (conn) conn.close();
+  conn = null;
+  setStatus('idle');
+}
+
+function addTeam(t, select) {
+  const opt = document.createElement('option');
+  opt.value = t.id;
+  opt.textContent = t.name;
+  $('team-select').append(opt);
+  if (select) $('team-select').value = t.id;
+}
+
+async function loadTeams() {
+  const r = await fetch('/api/teams', { credentials: 'same-origin' });
+  if (!r.ok) throw new Error('teams');
+  $('team-select').replaceChildren();
+  for (const t of (await r.json()).teams) addTeam(t, false);
+}
+
+$('team-name').addEventListener('input', refresh);
+$('room-name').addEventListener('input', refresh);
+$('team-select').addEventListener('change', () => {
+  leave();
+  $('room-messages').replaceChildren();
+  $('file-list').replaceChildren();
+  refresh();
+});
+
+$('team-create').addEventListener('click', async () => {
+  const name = $('team-name').value.trim();
+  if (!name) return;
+  $('team-create').disabled = true;
+  try {
+    const r = await post('/api/teams', { name });
+    if (!r.ok) { $('team-status').textContent = 'Could not create team'; return; }
+    const t = await r.json();
+    leave();
+    $('room-messages').replaceChildren();
+    $('file-list').replaceChildren();
+    addTeam(t, true);
+    $('team-name').value = '';
+    $('team-status').textContent = `Created ${t.name}`;
+  } catch {
+    $('team-status').textContent = 'Could not create team';
+  } finally {
+    refresh();
+  }
+});
+
+$('room-connect').addEventListener('click', () => {
+  if (!teamId() || !ROOM.test($('room-name').value)) return;
+  if (conn) conn.close(); // never keep two live connections
+  $('room-messages').replaceChildren();
+  seen = 0;
+  conn = connectRoom(`/api/teams/${encodeURIComponent(teamId())}/rooms/${encodeURIComponent($('room-name').value)}/ws`, onEvent, setStatus);
+});
+
+async function send() {
+  const text = $('message-text').value;
+  if (!connected || !text.trim() || text.length > 1000) return;
+  if (conn.send(text)) $('message-text').value = '';
+}
+$('message-send').addEventListener('click', send);
+$('message-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+$('team-upload').addEventListener('change', async (e) => {
+  const input = e.target;
+  const file = input.files[0];
+  const status = document.getElementById('upload-status');
+  if (!file || !teamId()) return;
+  if (file.size > MAX_UPLOAD) { status.textContent = 'File too large (max 1 MiB)'; input.value = ''; return; }
+  const team = teamId();
+  input.disabled = true;
+  try {
+    const r = await fetch(`/api/teams/${encodeURIComponent(team)}/uploads`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/octet-stream' }, body: file });
+    if (!r.ok) { status.textContent = r.status === 413 ? 'File too large (max 1 MiB)' : 'Upload failed'; return; }
+    const { id } = await r.json();
+    if (team === teamId()) {
+      const a = document.createElement('a');
+      a.href = `/api/teams/${encodeURIComponent(team)}/uploads/${encodeURIComponent(id)}`;
+      a.download = file.name;
+      a.textContent = file.name;
+      const li = document.createElement('li');
+      li.append(a);
+      $('file-list').append(li);
+    }
+    status.textContent = 'Uploaded';
+  } catch {
+    status.textContent = 'Upload failed';
+  } finally {
+    input.value = '';
+    input.disabled = false;
+    refresh();
+  }
+});
+
+async function boot() {
+  try {
+    const s = await fetch('/api/session', { credentials: 'same-origin' });
+    if (!s.ok) { document.getElementById('auth-note').hidden = false; return; }
+    await loadTeams();
+    document.getElementById('app').hidden = false;
+    refresh();
+  } catch {
+    document.getElementById('auth-note').hidden = false;
+  }
+}
+refresh();
+boot();
+</script>
+</body>
+</html>

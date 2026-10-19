@@ -1,0 +1,24 @@
+import type { TeamRoom, Session } from '../lib/team-room';
+
+export const ROOM_NAME = /^[A-Za-z0-9_-]{1,40}$/;
+
+/**
+ * Forwards a verified member to the team/room Durable Object. The caller must have
+ * authenticated the session and checked current membership. Client identity headers are
+ * discarded: the DO only ever sees the headers built here.
+ */
+export function forwardToRoom(
+  request: Request,
+  rooms: DurableObjectNamespace<TeamRoom>,
+  team: string,
+  room: string,
+  session: Session,
+): Promise<Response> {
+  const headers = new Headers({
+    upgrade: 'websocket',
+    'x-room-user': session.userId,
+    'x-room-tenant': session.tenantId,
+    'x-room-expires': String(Math.min(session.expiresAt, Date.now() + 300 * 1000)),
+  });
+  return rooms.getByName(JSON.stringify([team, room])).fetch(new Request(request.url, { headers }));
+}

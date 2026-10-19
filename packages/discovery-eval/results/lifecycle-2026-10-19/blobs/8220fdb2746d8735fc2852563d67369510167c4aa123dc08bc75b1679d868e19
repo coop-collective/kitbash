@@ -1,0 +1,213 @@
+import { describe, expect, it } from 'vitest';
+import { SELF } from 'cloudflare:test';
+
+const BASE = 'http://localhost';
+const JSON_H = { 'Content-Type': 'application/json' };
+
+async function login(email: string) {
+  const r = await SELF.fetch(BASE + '/api/login', { method: 'POST', headers: { Origin: BASE, ...JSON_H }, body: JSON.stringify({ email, password: 'local-demo-password' }) });
+  expect(r.status).toBe(200);
+  return r.headers.get('Set-Cookie')!.split(';')[0];
+}
+
+const call = (cookie: string | null, path: string, init: RequestInit = {}) =>
+  SELF.fetch(BASE + path, { ...init, headers: { Origin: BASE, ...(cookie ? { Cookie: cookie } : {}), ...(init.headers as object) } });
+
+const createTeam = async (cookie: string) => {
+  const r = await call(cookie, '/api/teams', { method: 'POST', headers: JSON_H, body: JSON.stringify({ name: 'Viewers' }) });
+  return (await r.json()) as { id: string };
+};
+
+const setRole = (cookie: string, team: string, user: string, role: unknown) =>
+  call(cookie, `/api/teams/${team}/members/${user}`, { method: 'PUT', headers: JSON_H, body: JSON.stringify({ role }) });
+
+async function openSocket(cookie: string, team: string, room: string) {
+  const res = await call(cookie, `/api/teams/${team}/rooms/${room}/ws`, { headers: { Upgrade: 'websocket' } });
+  if (res.status !== 101) return { res, ws: null as unknown as WebSocket, events: [] as any[] };
+  const ws = res.webSocket!;
+  const events: any[] = [];
+  ws.addEventListener('message', (e) => { events.push(JSON.parse(e.data as string)); });
+  ws.accept();
+  await until(() => events.length >= 1);
+  return { res, ws, events };
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const until = async (cond: () => boolean) => {
+  for (let i = 0; i < 150 && !cond(); i++) await sleep(20);
+  expect(cond()).toBe(true);
+};
+const send = (s: { ws: WebSocket }, body: unknown) => s.ws.send(JSON.stringify(body));
+const texts = (s: { events: any[] }) => s.events.filter((e) => e.type === 'message').map((e) => e.text);
+
+describe('viewer role', () => {
+  it('is read-only over HTTP but can read team files', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await createTeam(a);
+    expect((await setRole(a, t.id, 'user_bob', 'admin')).status).toBe(400);
+    expect((await setRole(a, t.id, 'user_bob', 'viewer')).status).toBe(204);
+    expect(((await (await call(b, '/api/teams')).json()) as any).teams).toContainEqual({ id: t.id, name: 'Viewers', role: 'viewer' });
+
+    const up = await call(a, `/api/teams/${t.id}/uploads`, { method: 'POST', body: new Uint8Array([9, 8, 7]) });
+    const { id } = (await up.json()) as { id: string };
+    expect(new Uint8Array(await (await call(b, `/api/teams/${t.id}/uploads/${id}`)).arrayBuffer())).toEqual(new Uint8Array([9, 8, 7]));
+    expect((await call(b, `/api/teams/${t.id}/uploads`, { method: 'POST', body: 'x' })).status).toBe(403);
+    expect((await call(b, `/api/teams/${t.id}/uploads/${id}`, { method: 'DELETE' })).status).toBe(403);
+    expect((await call(a, `/api/teams/${t.id}/uploads/${id}`)).status).toBe(200);
+    expect((await setRole(b, t.id, 'user_bob', 'member')).status).toBe(403);
+    expect((await call(b, `/api/teams/${t.id}/members/user_alice`, { method: 'DELETE' })).status).toBe(403);
+    expect((await setRole(a, t.id, 'user_alice', 'viewer')).status).toBe(409);
+    // Upgrading again works and unlocks writes immediately.
+    expect((await setRole(a, t.id, 'user_bob', 'member')).status).toBe(204);
+    expect((await call(b, `/api/teams/${t.id}/uploads`, { method: 'POST', body: 'x' })).status).toBe(201);
+  });
+});
+
+describe('open sockets follow current authority', () => {
+  it('viewers read but cannot send; downgrade, removal and logout apply to open sockets', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await createTeam(a);
+    await setRole(a, t.id, 'user_bob', 'viewer');
+    const sa = await openSocket(a, t.id, 'g');
+    const sb = await openSocket(b, t.id, 'g');
+
+    send(sb, { text: 'from viewer' });
+    await until(() => sb.events.some((e) => e.type === 'error' && e.code === 'forbidden'));
+    send(sa, { text: 'one' });
+    await until(() => texts(sb).includes('one'));
+    expect(texts(sa)).toEqual(['one']);
+
+    // Upgrade to member, then downgrade again: the same open socket follows the current role.
+    await setRole(a, t.id, 'user_bob', 'member');
+    send(sb, { text: 'as member' });
+    await until(() => texts(sa).includes('as member'));
+    await setRole(a, t.id, 'user_bob', 'viewer');
+    send(sb, { text: 'as viewer again' });
+    send(sa, { text: 'two' });
+    await until(() => texts(sb).includes('two'));
+    expect(texts(sa)).not.toContain('as viewer again');
+
+    // Removal: no commit from, and no delivery to, the removed connection.
+    await call(a, `/api/teams/${t.id}/members/user_bob`, { method: 'DELETE' });
+    const seen = sb.events.length;
+    send(sb, { text: 'after removal' });
+    send(sa, { text: 'three' });
+    await until(() => texts(sa).includes('three'));
+    await sleep(150);
+    expect(texts(sa)).not.toContain('after removal');
+    expect(sb.events.slice(seen).some((e) => e.type === 'message')).toBe(false);
+    expect((await openSocket(b, t.id, 'g')).res.status).toBe(403);
+
+    // Re-adding allows a new connection (with a still-valid login) and shows only committed history.
+    await setRole(a, t.id, 'user_bob', 'viewer');
+    const again = await openSocket(b, t.id, 'g');
+    expect(again.res.status).toBe(101);
+    expect(texts({ events: again.events[0].messages.map((m: any) => ({ ...m, type: 'message' })) })).not.toContain('after removal');
+
+    // Logout of bob's session: his socket gets nothing further and cannot send, even though still a member.
+    await setRole(a, t.id, 'user_bob', 'member');
+    await call(b, '/api/logout', { method: 'POST' });
+    const before = again.events.length;
+    send(again, { text: 'after logout' });
+    send(sa, { text: 'four' });
+    await until(() => texts(sa).includes('four'));
+    await sleep(150);
+    expect(texts(sa)).not.toContain('after logout');
+    expect(again.events.slice(before).some((e) => e.type === 'message')).toBe(false);
+    // Logging in again yields a new session; the revoked one stays dead.
+    expect((await call(b, '/api/session')).status).toBe(401);
+    const b2 = await login('bob@example.test');
+    expect((await openSocket(b2, t.id, 'g')).res.status).toBe(101);
+  });
+});
+
+describe('retry-safe messages', () => {
+  it('acks exact retries, rejects conflicts and scopes ids per user and room', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await createTeam(a);
+    await setRole(a, t.id, 'user_bob', 'member');
+    const s1 = await openSocket(a, t.id, 'r');
+    const s2 = await openSocket(a, t.id, 'r');
+    const sb = await openSocket(b, t.id, 'r');
+    const other = await openSocket(a, t.id, 'r2');
+
+    send(s1, { text: 'hello', clientId: 'id-1' });
+    await until(() => sb.events.some((e) => e.type === 'message'));
+    const first = sb.events.find((e) => e.type === 'message');
+    expect(first).toMatchObject({ text: 'hello', clientId: 'id-1', userId: 'user_alice' });
+
+    send(s1, { text: 'hello', clientId: 'id-1' });
+    await until(() => s1.events.some((e) => e.type === 'ack'));
+    expect(s1.events.find((e) => e.type === 'ack')).toEqual({ type: 'ack', seq: first.seq, clientId: 'id-1' });
+    expect(s2.events.some((e) => e.type === 'ack')).toBe(false);
+
+    send(s2, { text: 'different', clientId: 'id-1' });
+    await until(() => s2.events.some((e) => e.type === 'error'));
+    expect(s2.events.find((e) => e.type === 'error')).toMatchObject({ code: 'conflict', clientId: 'id-1' });
+
+    // Same id from another user, and in another room, is independent.
+    send(sb, { text: 'bob same id', clientId: 'id-1' });
+    send(other, { text: 'other room', clientId: 'id-1' });
+    await until(() => texts(sb).includes('bob same id') && texts(other).includes('other room'));
+
+    // Simultaneous retries on two sockets: one commit, one broadcast, one ack each.
+    send(s1, { text: 'race', clientId: 'race-1' });
+    send(s2, { text: 'race', clientId: 'race-1' });
+    await until(() => texts(sb).includes('race'));
+    await sleep(200);
+    expect(texts(sb).filter((x) => x === 'race')).toHaveLength(1);
+    expect(texts(s1).filter((x) => x === 'race')).toHaveLength(1);
+    expect([s1, s2].flatMap((s) => s.events).filter((e) => e.type === 'ack' && e.clientId === 'race-1')).toHaveLength(1);
+
+    // Validation, and no history impact from invalid ids.
+    const n = texts(sb).length;
+    for (const clientId of ['', 'bad id', 'x'.repeat(81), 7]) send(s1, { text: 'bad', clientId });
+    await until(() => s1.events.filter((e) => e.type === 'error' && e.code === 'invalid').length === 4);
+    expect(texts(sb)).toHaveLength(n);
+
+    // Plain {text} still works; late snapshots carry clientId only where one was given.
+    send(s1, { text: 'plain' });
+    await until(() => texts(sb).includes('plain'));
+    const late = await openSocket(b, t.id, 'r');
+    const snap = late.events[0].messages as any[];
+    expect(snap.find((m) => m.text === 'hello').clientId).toBe('id-1');
+    expect('clientId' in snap.find((m) => m.text === 'plain')).toBe(false);
+  });
+
+  it('keeps dedupe after pruning and never lets a revoked or read-only sender replay', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const t = await createTeam(a);
+    await setRole(a, t.id, 'user_bob', 'member');
+    const sa = await openSocket(a, t.id, 'p');
+    const sb = await openSocket(b, t.id, 'p');
+
+    send(sb, { text: 'original', clientId: 'keep' });
+    await until(() => texts(sa).includes('original'));
+    const seq = sa.events.find((e) => e.text === 'original').seq;
+    for (let i = 0; i < 260; i++) send(sa, { text: `m${i}` });
+    await until(() => texts(sa).includes('m259'));
+    const late = await openSocket(a, t.id, 'p');
+    expect(late.events[0].messages.some((m: any) => m.text === 'original')).toBe(false);
+
+    send(sb, { text: 'original', clientId: 'keep' });
+    await until(() => sb.events.some((e) => e.type === 'ack'));
+    expect(sb.events.find((e) => e.type === 'ack').seq).toBe(seq);
+
+    // A previous success grants nothing once the sender is read-only or removed.
+    await setRole(a, t.id, 'user_bob', 'viewer');
+    const n = sb.events.length;
+    send(sb, { text: 'original', clientId: 'keep' });
+    send(sb, { text: 'changed', clientId: 'keep' });
+    await until(() => sb.events.length >= n + 2);
+    expect(sb.events.slice(n).every((e) => e.type === 'error' && e.code === 'forbidden')).toBe(true);
+    await call(a, `/api/teams/${t.id}/members/user_bob`, { method: 'DELETE' });
+    const m = sb.events.length;
+    send(sb, { text: 'original', clientId: 'keep' });
+    await sleep(200);
+    expect(sb.events.slice(m).some((e) => e.type === 'ack' || e.code === 'conflict')).toBe(false);
+  });
+});

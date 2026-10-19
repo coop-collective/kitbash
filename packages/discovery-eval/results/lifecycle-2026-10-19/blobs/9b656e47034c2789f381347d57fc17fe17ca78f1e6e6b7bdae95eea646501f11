@@ -1,0 +1,5 @@
+import type { Context } from 'hono';
+
+export type AppEnv = Env & { SESSION_SECRET?: string; DEMO_PASSWORD?: string };
+export type Vars = { userId: string; email: string; sessionId: string; sessionExpires: number };
+export type C = Context<{ Bindings: AppEnv; Variables: Vars }>;

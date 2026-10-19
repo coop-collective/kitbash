@@ -1,0 +1,72 @@
+{
+  "code": 0,
+  "signal": null,
+  "timedOut": false,
+  "wallMs": 213752,
+  "logTruncated": false,
+  "stdoutTruncated": false,
+  "stderrTruncated": false,
+  "resultPresent": true,
+  "subtype": "success",
+  "isError": false,
+  "model": "claude-sonnet-5-5",
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 40,
+      "outputTokens": 26548,
+      "cacheReadInputTokens": 906907,
+      "cacheCreationInputTokens": 71650,
+      "webSearchRequests": 0,
+      "costUSD": 0.5361677,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 5293,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "costUsd": 0.5361677,
+  "usage": {
+    "input_tokens": 40,
+    "cache_creation_input_tokens": 71650,
+    "cache_read_input_tokens": 906907,
+    "output_tokens": 26548,
+    "output_tokens_details": {
+      "thinking_tokens": 5293
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 528,
+      "ephemeral_5m_input_tokens": 71122
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "durationMs": 212780,
+  "numTurns": 46,
+  "toolCalls": {
+    "Glob": 6,
+    "mcp__project__catalog_search": 1,
+    "mcp__project__catalog_get": 1,
+    "Read": 12,
+    "mcp__project__project_init": 1,
+    "mcp__project__block_install": 2,
+    "Edit": 6,
+    "Write": 11,
+    "mcp__project__project_check": 5
+  },
+  "mcpServers": [
+    {
+      "name": "project",
+      "status": "connected",
+      "source": "dynamic"
+    }
+  ]
+}

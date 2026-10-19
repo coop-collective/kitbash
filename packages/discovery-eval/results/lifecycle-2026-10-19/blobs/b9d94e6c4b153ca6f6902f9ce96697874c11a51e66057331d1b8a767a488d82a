@@ -1,0 +1,40 @@
+# Shared review rooms
+
+## Architecture
+
+- `src/teams.ts` – Hono sub-app mounted at `/api/teams`. Every route authenticates first (401), then requires a
+  same-origin `Origin` for mutations (403). Membership is always read from D1 (`team_members`); nothing is cached.
+  Non-members get 403.
+- `migrations/0002_teams.sql`, `0003_team_uploads.sql` – teams, membership (one owner per team enforced by a partial
+  unique index) and team upload metadata. Existing migrations are untouched.
+- Team uploads: R2 key is `teams/<team>/uploads/<server uuid>`, rebuilt from the verified team and a D1 row looked up by
+  `(id, team_id)`; a foreign ID returns 404 on GET/DELETE and no bytes are touched. Bodies are bounded while streaming
+  (`readBounded`, also covers chunked input). Personal `/api/uploads` is unchanged and separate.
+- `src/room.ts` – `TeamRoom`, a SQLite Durable Object, one per `<team>:<room>`. It uses the hibernation API
+  (`acceptWebSocket`, `serializeAttachment`, `webSocketMessage/Close/Error`) and `setWebSocketAutoResponse` for `ping`/`pong`.
+  Messages are inserted into the DO's SQLite table (`seq INTEGER PRIMARY KEY AUTOINCREMENT`) before being broadcast, so
+  `seq` stays strictly increasing across restarts and pruning (the latest 1000 rows are kept; snapshots send 50).
+  The insert-and-broadcast section is synchronous, so concurrent senders cannot interleave.
+- The Worker's WebSocket route validates the room name, rejects query strings, requires same-origin `Origin`, checks
+  membership, and forwards a freshly built request containing only upgrade headers plus `X-Verified-*` headers
+  derived from the session. Client-supplied identity headers are never forwarded. The DO has no other entry point.
+- Authorization lease: each socket carries a 60 s lease (capped at session expiry). When it lapses, the next message
+  to the room re-checks session and membership in D1 for all lapsed sockets; revoked or removed users are closed (1008),
+  others renewed. Lapsed sockets are skipped when broadcasting.
+- `public/teams.html` – UI with the required `data-testid` controls; text is rendered with `textContent`; reconnect
+  closes the previous socket first (a generation counter ignores events from stale sockets).
+
+## Commands
+
+`pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm db:local` (or the equivalent project tools).
+
+## Limitations
+
+- A removed member's or logged-out user's already-open socket can keep sending/receiving for up to the lease (60 s) —
+  and a connection nobody sends on is only revalidated when the next message arrives. New handshakes and HTTP requests
+  are denied immediately.
+- No exactly-once delivery: a client that disconnects mid-send does not get a replay beyond the 50-message snapshot.
+- Team file list in the UI only shows files uploaded in the current page session (no list endpoint). Uploads of
+  deleted teams/members' bytes are not garbage-collected; there is no team deletion.
+- Membership management is API-only. Restart persistence of room history relies on Durable Object SQLite storage and
+  is not covered by an automated test (Wrangler local state is persisted by default).

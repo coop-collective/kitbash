@@ -1,0 +1,13 @@
+{
+  "diagnostic": "immutable-source-expired-recipient-fanout",
+  "modelCalls": 0,
+  "runtime": "deterministic class mocks, not Workers runtime",
+  "snapshotSha256": "8cd9737798117e97316f8ea611980e1da4be0c156076ea5cbe67579431dce0af",
+  "blobSha256": "9bbc8d00c25c6b636e44114deca96684ef6a7d861bfc5618773465d8256b647e",
+  "now": 2000,
+  "recipientExpiresAt": 1000,
+  "senderExpiresAt": 5000,
+  "expiredRecipientMessages": 1,
+  "expiredRecipientClosed": false,
+  "findingReproduced": true
+}

@@ -1,0 +1,245 @@
+import { describe, expect, it } from 'vitest';
+import { SELF } from 'cloudflare:test';
+
+const BASE = 'http://localhost';
+const json = (path: string, method: string, body: unknown, cookie?: string, headers: Record<string, string> = {}) =>
+  SELF.fetch(BASE + path, {
+    method,
+    headers: { Origin: BASE, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}), ...headers },
+    body: JSON.stringify(body),
+  });
+
+async function login(email: string) {
+  const r = await json('/api/login', 'POST', { email, password: 'local-demo-password' });
+  expect(r.status).toBe(200);
+  return r.headers.get('Set-Cookie')!.split(';')[0];
+}
+
+const req = (cookie: string | null, path: string, init: RequestInit = {}) =>
+  SELF.fetch(BASE + path, { ...init, headers: { Origin: BASE, ...(cookie ? { Cookie: cookie } : {}), ...(init.headers as object) } });
+
+async function newTeam(cookie: string, name = 'Reviewers') {
+  const r = await json('/api/teams', 'POST', { name }, cookie);
+  expect(r.status).toBe(201);
+  return ((await r.json()) as { id: string; name: string }).id;
+}
+
+const addBob = (cookie: string, team: string) => json(`/api/teams/${team}/members/user_bob`, 'PUT', { role: 'member' }, cookie);
+
+async function openSocket(cookie: string | null, team: string, room: string, headers: Record<string, string> = {}) {
+  const r = await SELF.fetch(`${BASE}/api/teams/${team}/rooms/${room}/ws`, {
+    headers: { Upgrade: 'websocket', Origin: BASE, ...(cookie ? { Cookie: cookie } : {}), ...headers },
+  });
+  return r;
+}
+
+function collector(ws: WebSocket) {
+  const events: any[] = [];
+  const waiters: (() => void)[] = [];
+  ws.addEventListener('message', (e) => {
+    const raw = e.data as string;
+    events.push(raw === 'pong' ? { type: 'pong' } : JSON.parse(raw));
+    waiters.splice(0).forEach((w) => w());
+  });
+  const until = async (pred: () => boolean) => {
+    for (let i = 0; i < 200 && !pred(); i++) await new Promise<void>((res) => { waiters.push(res); setTimeout(res, 50); });
+    expect(pred()).toBe(true);
+  };
+  return { events, until };
+}
+
+async function connect(cookie: string, team: string, room = 'general') {
+  const r = await openSocket(cookie, team, room);
+  expect(r.status).toBe(101);
+  const ws = r.webSocket!;
+  const c = collector(ws);
+  ws.accept();
+  await c.until(() => c.events.length >= 1);
+  expect(c.events[0].type).toBe('snapshot');
+  return { ws, ...c };
+}
+
+describe('teams and membership', () => {
+  it('creates teams, validates names, lists only own teams', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    expect((await json('/api/teams', 'POST', { name: '   ' }, a)).status).toBe(400);
+    expect((await json('/api/teams', 'POST', { name: 'x'.repeat(81) }, a)).status).toBe(400);
+    expect((await json('/api/teams', 'POST', { name: 'Alpha' })).status).toBe(401);
+    expect((await json('/api/teams', 'POST', { name: 'Alpha' }, a, { Origin: 'http://evil.test' })).status).toBe(403);
+    const r = await json('/api/teams', 'POST', { name: '  Alpha  ' }, a);
+    expect(r.status).toBe(201);
+    const team = (await r.json()) as { id: string; name: string };
+    expect(team.name).toBe('Alpha');
+    const mine = (await (await req(a, '/api/teams')).json()) as any;
+    expect(mine.teams).toContainEqual({ id: team.id, name: 'Alpha', role: 'owner' });
+    const bobs = (await (await req(b, '/api/teams')).json()) as any;
+    expect(bobs.teams.find((t: any) => t.id === team.id)).toBeUndefined();
+    expect((await req(null, '/api/teams')).status).toBe(401);
+  });
+
+  it('only the owner manages members; owner is fixed; removal takes effect immediately', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await newTeam(a);
+    expect((await addBob(b, team)).status).toBe(403);
+    expect((await json(`/api/teams/${team}/members/user_eve`, 'PUT', { role: 'member' }, a)).status).toBe(400);
+    expect((await json(`/api/teams/${team}/members/user_bob`, 'PUT', { role: 'owner' }, a)).status).toBe(400);
+    expect((await json(`/api/teams/${team}/members/user_alice`, 'PUT', { role: 'member' }, a)).status).toBe(409);
+    expect((await req(a, `/api/teams/${team}/members/user_alice`, { method: 'DELETE' })).status).toBe(409);
+    expect((await addBob(a, team)).status).toBe(204);
+    expect((await addBob(a, team)).status).toBe(204);
+    expect(((await (await req(b, '/api/teams')).json()) as any).teams.map((t: any) => t.role)).toContain('member');
+    expect((await req(b, `/api/teams/${team}/members/user_bob`, { method: 'DELETE' })).status).toBe(403);
+    expect((await req(a, `/api/teams/${team}/members/user_bob`, { method: 'DELETE' })).status).toBe(204);
+    expect(((await (await req(b, '/api/teams')).json()) as any).teams.find((t: any) => t.id === team)).toBeUndefined();
+    expect((await req(b, `/api/teams/${team}/uploads/x`)).status).toBe(403);
+  });
+});
+
+describe('team uploads', () => {
+  it('shares bytes between members, isolates teams, bounds bodies', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await newTeam(a);
+    const other = await newTeam(a, 'Other');
+    await addBob(a, team);
+    const bytes = new Uint8Array([0, 1, 2, 255, 254, 10, 13]);
+    const up = await req(a, `/api/teams/${team}/uploads`, { method: 'POST', body: bytes });
+    expect(up.status).toBe(201);
+    const { id } = (await up.json()) as { id: string };
+
+    const dl = await req(b, `/api/teams/${team}/uploads/${id}`);
+    expect(dl.status).toBe(200);
+    expect(new Uint8Array(await dl.arrayBuffer())).toEqual(bytes);
+    expect(dl.headers.get('Content-Type')).toBe('application/octet-stream');
+    expect(dl.headers.get('Content-Disposition')).toContain('attachment');
+    expect(dl.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(dl.headers.get('Cache-Control')).toBe('private, no-store');
+
+    // File ID from another team never resolves; non-members are refused.
+    expect((await req(a, `/api/teams/${other}/uploads/${id}`)).status).toBe(404);
+    expect((await req(a, `/api/teams/${other}/uploads/${id}`, { method: 'DELETE' })).status).toBe(204);
+    expect((await req(b, `/api/teams/${other}/uploads/${id}`)).status).toBe(403);
+    expect((await req(a, `/api/teams/${team}/uploads/${id}`)).status).toBe(200);
+    // Personal uploads are not reachable through team routes (or vice versa).
+    const personal = (await (await req(a, '/api/uploads', { method: 'POST', body: bytes })).json()) as { id: string };
+    expect((await req(a, `/api/teams/${team}/uploads/${personal.id}`)).status).toBe(404);
+    expect((await req(b, `/api/uploads/${id}`)).status).toBe(404);
+
+    expect((await req(a, `/api/teams/${team}/uploads`, { method: 'POST', body: new Uint8Array(1024 * 1024 + 1) })).status).toBe(413);
+    const chunked = new ReadableStream({
+      start(ctl) {
+        ctl.enqueue(new Uint8Array(700 * 1024));
+        ctl.enqueue(new Uint8Array(700 * 1024));
+        ctl.close();
+      },
+    });
+    const big = await SELF.fetch(`${BASE}/api/teams/${team}/uploads`, { method: 'POST', headers: { Origin: BASE, Cookie: a }, body: chunked, duplex: 'half' } as RequestInit);
+    expect(big.status).toBe(413);
+    expect((await req(a, `/api/teams/${team}/uploads`, { method: 'POST', body: new Uint8Array(1024 * 1024) })).status).toBe(201);
+    expect((await req(null, `/api/teams/${team}/uploads`, { method: 'POST', body: bytes })).status).toBe(401);
+
+    expect((await req(b, `/api/teams/${team}/uploads/${id}`, { method: 'DELETE' })).status).toBe(204);
+    expect((await req(a, `/api/teams/${team}/uploads/${id}`)).status).toBe(404);
+  });
+});
+
+describe('rooms', () => {
+  it('rejects bad handshakes', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await newTeam(a);
+    expect((await openSocket(null, team, 'general')).status).toBe(401);
+    expect((await openSocket(b, team, 'general')).status).toBe(403);
+    expect((await openSocket(a, team, 'bad room')).status).toBe(400);
+    expect((await openSocket(a, team, 'a'.repeat(41))).status).toBe(400);
+    expect((await openSocket(a, team, 'general', { Origin: 'http://evil.test' })).status).toBe(403);
+    expect((await openSocket(a, team, 'general', { Origin: 'null' })).status).toBe(403);
+    const noOrigin = await SELF.fetch(`${BASE}/api/teams/${team}/rooms/general/ws`, { headers: { Upgrade: 'websocket', Cookie: a } });
+    expect(noOrigin.status).toBe(403);
+    const q = await SELF.fetch(`${BASE}/api/teams/${team}/rooms/general/ws?x=1`, { headers: { Upgrade: 'websocket', Origin: BASE, Cookie: a } });
+    expect(q.status).toBe(400);
+    // Client-supplied identity headers cannot impersonate anyone.
+    const spoof = await openSocket(a, team, 'spoof', { 'x-room-user': 'user_bob', 'x-room-team': 'other' });
+    expect(spoof.status).toBe(101);
+    const ws = spoof.webSocket!;
+    const c = collector(ws);
+    ws.accept();
+    ws.send(JSON.stringify({ text: 'hi' }));
+    await c.until(() => c.events.some((e) => e.type === 'message'));
+    expect(c.events.find((e) => e.type === 'message').userId).toBe('user_alice');
+    ws.close(1000);
+  });
+
+  it('broadcasts persisted messages with increasing seq and validates input', async () => {
+    const a = await login('alice@example.test');
+    const b = await login('bob@example.test');
+    const team = await newTeam(a);
+    await addBob(a, team);
+    const alice = await connect(a, team);
+    const bob = await connect(b, team);
+
+    alice.ws.send(JSON.stringify({ text: 'one' }));
+    await bob.until(() => bob.events.some((e) => e.text === 'one'));
+    await alice.until(() => alice.events.some((e) => e.text === 'one'));
+    const first = bob.events.find((e) => e.text === 'one');
+    expect(first).toMatchObject({ type: 'message', userId: 'user_alice' });
+    expect(first.seq).toBeGreaterThan(0);
+
+    // Concurrent distinct messages each appear exactly once.
+    for (let i = 0; i < 20; i++) (i % 2 ? alice : bob).ws.send(JSON.stringify({ text: `c${i}` }));
+    await alice.until(() => alice.events.filter((e) => e.type === 'message').length >= 21);
+    const seqs = alice.events.filter((e) => e.type === 'message').map((e) => e.seq);
+    expect(new Set(seqs).size).toBe(seqs.length);
+    expect(seqs).toEqual([...seqs].sort((x, y) => x - y));
+
+    // Invalid frames are rejected and never persisted.
+    const before = alice.events.length;
+    alice.ws.send('not json');
+    alice.ws.send(JSON.stringify({ text: '   ' }));
+    alice.ws.send(JSON.stringify({ text: 'x'.repeat(1001) }));
+    alice.ws.send(JSON.stringify({ text: 'y'.repeat(5000) }));
+    alice.ws.send(JSON.stringify({ text: 5 }));
+    alice.ws.send(new Uint8Array([1, 2, 3]));
+    await alice.until(() => alice.events.length >= before + 6);
+    expect(alice.events.slice(before).every((e) => e.type === 'error')).toBe(true);
+    alice.ws.send(JSON.stringify({ text: 'x'.repeat(1000) }));
+    await alice.until(() => alice.events.some((e) => e.type === 'message' && e.text.length === 1000));
+
+    // A late joiner gets a snapshot of only valid messages, capped at 50, ascending.
+    for (let i = 0; i < 40; i++) alice.ws.send(JSON.stringify({ text: `m${i}` }));
+    await alice.until(() => alice.events.some((e) => e.text === 'm39'));
+    const late = await connect(b, team);
+    const snap = late.events[0].messages;
+    expect(snap).toHaveLength(50);
+    expect(snap.map((m: any) => m.seq)).toEqual([...snap.map((m: any) => m.seq)].sort((x: number, y: number) => x - y));
+    expect(snap[snap.length - 1].text).toBe('m39');
+    expect(snap.every((m: any) => m.text.trim().length > 0 && m.text.length <= 1000)).toBe(true);
+
+    // Rooms are isolated.
+    const other = await connect(a, team, 'other');
+    expect(other.events[0].messages).toEqual([]);
+
+    // Removed members cannot continue to post; new handshakes are refused.
+    expect((await req(a, `/api/teams/${team}/members/user_bob`, { method: 'DELETE' })).status).toBe(204);
+    bob.ws.send(JSON.stringify({ text: 'after removal' }));
+    await bob.until(() => bob.events.some((e) => e.type === 'error' && e.error === 'unauthorized'));
+    expect(alice.events.some((e) => e.text === 'after removal')).toBe(false);
+    expect((await openSocket(b, team, 'general')).status).toBe(403);
+
+    // Logout revokes new handshakes.
+    expect((await req(a, '/api/logout', { method: 'POST', headers: { Cookie: a } })).status).toBe(204);
+    expect((await openSocket(a, team, 'general')).status).toBe(401);
+    for (const s of [alice, bob, late, other]) s.ws.close(1000);
+  });
+
+  it('answers application pings', async () => {
+    const a = await login('alice@example.test');
+    const team = await newTeam(a);
+    const s = await connect(a, team);
+    s.ws.send('ping');
+    await s.until(() => s.events.some((e) => e.type === 'pong'));
+    s.ws.close(1000);
+  });
+});

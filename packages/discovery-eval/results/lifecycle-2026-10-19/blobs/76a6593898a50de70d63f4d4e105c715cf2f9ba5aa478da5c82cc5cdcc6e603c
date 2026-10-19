@@ -1,0 +1,23 @@
+# Shared review rooms – feature notes
+
+## Architecture
+
+- **Teams / membership / team files** – D1 tables from `migrations/0002_teams.sql` (`teams`, `team_members`, `team_uploads`). Existing migrations are untouched. Routes live in `src/teams.ts` and are registered from `src/index.ts`, reusing the host's session auth, same-origin mutation guard, bounded body reader and JSON reader.
+- **Authority** – every team request reads `team_members` in D1 at request time (no authorization cache). Only the owner (the creator, sole owner) may add/update/remove members. Owner membership is immutable (409). Only the two demo accounts can be added (400 otherwise).
+- **Team files** – R2 key `teams/<teamId>/uploads/<server-uuid>`, derived from the verified team id and a server-generated id. The D1 lookup is scoped by `team_id`, so a file id from another team returns 404 (GET) or a no-op 204 (DELETE). Bodies are bounded to 1 MiB while streaming (works for chunked input) → 413. Personal `/api/uploads` stay owner-private and are not reachable through team routes.
+- **Rooms** – `GET /api/teams/:team/rooms/:room/ws`. The Worker validates session, exact same-origin `Origin`, no query string, room name, and membership, then calls the `RoomDO` Durable Object (SQLite-backed, one per `team:room`) with a *fresh* header set: client headers other than WebSocket protocol headers are dropped and `x-room-*` identity headers are generated from the verified session. The DO is only reachable via the Worker binding; there is no forwarding/admin endpoint.
+- **RoomDO** (`src/room.ts`) – hibernation API (`acceptWebSocket`, `serializeAttachment`, `webSocketMessage/Close/Error`), no socket map or timers. Messages and a monotonic counter (`meta.seq`) are stored in DO SQLite in one `transactionSync`, so `seq` is strictly increasing even after pruning (history is trimmed to the latest 1000) or restart, and the write is durable before the broadcast is delivered. Snapshot = latest 50 ascending. Text must be a nonblank string ≤1000 chars in a text frame ≤4096 UTF-8 bytes; otherwise an `{type:"error"}` event is sent and nothing is stored. `ping` is auto-answered with `pong` without waking the DO.
+- **Authorization lease** – each socket carries a lease of ≤5 minutes, capped at session expiry. A sender is re-validated against D1 (session not revoked/expired and still a member) on every message; for broadcast recipients, once the lease lapses they are re-validated before the next delivery and closed (1008) if they lost access. New handshakes always consult D1.
+- **UI** – `public/teams.html` (testids as specified). One live socket at a time; connect/team change supersede the old socket via a generation counter; messages rendered with `textContent`.
+
+## Commands
+
+`pnpm typecheck`, `pnpm test`, `pnpm build` (dry run), `pnpm db:local` (local D1 migrations); `pnpm dev` runs Wrangler.
+
+## Limitations
+
+- A removed member / logged-out user that is only *listening* may still receive broadcasts until their lease lapses (≤5 min); they can no longer send.
+- Membership management is API-only; there are no invitations and only the demo accounts can be members.
+- No exactly-once replay: after reconnect clients get the latest-50 snapshot and may miss older messages. Room history keeps 1000 messages.
+- Team files have no listing endpoint (the page shows files uploaded in the current page session); the filename is not stored.
+- No rate limiting on room messages.

@@ -1,0 +1,203 @@
+import { Hono, type Context } from 'hono';
+import type { TeamRoom } from './room';
+import { isKnownUserId } from './users';
+
+type Vars = { userId: string; email: string; sessionId: string };
+type C = Context<{ Bindings: Env; Variables: Vars }>;
+
+const MAX_UPLOAD = 1024 * 1024;
+const LEASE_MS = 4 * 60 * 1000;
+const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+const ROOM_RE = /^[A-Za-z0-9_-]{1,40}$/;
+
+export const teamRoutes = new Hono<{ Bindings: Env; Variables: Vars }>();
+
+// Authority always comes from D1 on every call; there is no authorization cache.
+type Role = 'owner' | 'member' | 'viewer';
+async function roleOf(c: C, teamId: string, userId: string): Promise<Role | null> {
+  if (!ID_RE.test(teamId)) return null;
+  const row = await c.env.DB.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?')
+    .bind(teamId, userId)
+    .first<{ role: Role }>();
+  return row?.role ?? null;
+}
+
+async function readBounded(req: Request, limit: number): Promise<Uint8Array | null> {
+  const declared = Number(req.headers.get('Content-Length'));
+  if (Number.isFinite(declared) && declared > limit) return null;
+  if (!req.body) return new Uint8Array(0);
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel().catch(() => {});
+      return null;
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const ch of chunks) {
+    out.set(ch, off);
+    off += ch.byteLength;
+  }
+  return out;
+}
+
+async function readJson(c: C): Promise<Record<string, unknown> | null> {
+  const body = await readBounded(c.req.raw, 16 * 1024);
+  if (!body) return null;
+  try {
+    const v = JSON.parse(new TextDecoder().decode(body));
+    return v && typeof v === 'object' && !Array.isArray(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+// ---- teams ----
+
+teamRoutes.post('/', async (c) => {
+  const body = await readJson(c);
+  const name = typeof body?.name === 'string' ? body.name.trim() : '';
+  if (name.length < 1 || name.length > 80) return c.json({ error: 'invalid name' }, 400);
+  const id = crypto.randomUUID();
+  const userId = c.get('userId');
+  const now = Math.floor(Date.now() / 1000);
+  await c.env.DB.batch([
+    c.env.DB.prepare('INSERT INTO teams (id, name, owner_id, created_at) VALUES (?, ?, ?, ?)').bind(id, name, userId, now),
+    c.env.DB.prepare("INSERT INTO team_members (team_id, user_id, role, created_at) VALUES (?, ?, 'owner', ?)").bind(id, userId, now),
+  ]);
+  return c.json({ id, name }, 201);
+});
+
+teamRoutes.get('/', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT t.id, t.name, m.role FROM team_members m JOIN teams t ON t.id = m.team_id WHERE m.user_id = ? ORDER BY t.created_at, t.id',
+  ).bind(c.get('userId')).all<{ id: string; name: string; role: string }>();
+  c.header('Cache-Control', 'private, no-store');
+  return c.json({ teams: results });
+});
+
+// ---- membership (owner only) ----
+
+async function authorizeOwner(c: C): Promise<Response | null> {
+  const role = await roleOf(c, c.req.param('team') ?? '', c.get('userId'));
+  return role === 'owner' ? null : c.json({ error: 'forbidden' }, 403);
+}
+
+teamRoutes.put('/:team/members/:userId', async (c) => {
+  const denied = await authorizeOwner(c);
+  if (denied) return denied;
+  const body = await readJson(c);
+  const role = body?.role;
+  if (role !== 'member' && role !== 'viewer') return c.json({ error: 'invalid role' }, 400);
+  const target = c.req.param('userId') ?? '';
+  if (!isKnownUserId(target)) return c.json({ error: 'unknown user' }, 400);
+  const team = c.req.param('team') ?? '';
+  if ((await roleOf(c, team, target)) === 'owner') return c.json({ error: 'owner is immutable' }, 409);
+  await c.env.DB.prepare(
+    "INSERT INTO team_members (team_id, user_id, role, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(team_id, user_id) DO UPDATE SET role = excluded.role WHERE team_members.role <> 'owner'",
+  ).bind(team, target, role, Math.floor(Date.now() / 1000)).run();
+  return c.body(null, 204);
+});
+
+teamRoutes.delete('/:team/members/:userId', async (c) => {
+  const denied = await authorizeOwner(c);
+  if (denied) return denied;
+  const team = c.req.param('team') ?? '';
+  const target = c.req.param('userId') ?? '';
+  if (!isKnownUserId(target)) return c.json({ error: 'unknown user' }, 400);
+  if ((await roleOf(c, team, target)) === 'owner') return c.json({ error: 'owner is immutable' }, 409);
+  await c.env.DB.prepare("DELETE FROM team_members WHERE team_id = ? AND user_id = ? AND role <> 'owner'").bind(team, target).run();
+  return c.body(null, 204);
+});
+
+// ---- team uploads ----
+
+// Reads need any membership; mutations additionally need write permission (viewers are read-only).
+async function requireMember(c: C, write = false): Promise<{ team: string; role: Role } | Response> {
+  const team = c.req.param('team') ?? '';
+  const role = await roleOf(c, team, c.get('userId'));
+  if (!role || (write && role === 'viewer')) return c.json({ error: 'forbidden' }, 403);
+  return { team, role };
+}
+
+teamRoutes.post('/:team/uploads', async (c) => {
+  const m = await requireMember(c, true);
+  if (m instanceof Response) return m;
+  const data = await readBounded(c.req.raw, MAX_UPLOAD);
+  if (!data) return c.json({ error: 'too large' }, 413);
+  const id = crypto.randomUUID();
+  const key = `teams/${m.team}/${id}`;
+  await c.env.UPLOADS.put(key, data, { httpMetadata: { contentType: 'application/octet-stream' } });
+  await c.env.DB.prepare('INSERT INTO team_uploads (id, team_id, uploader_id, object_key, size, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(id, m.team, c.get('userId'), key, data.byteLength, Math.floor(Date.now() / 1000))
+    .run();
+  return c.json({ id }, 201);
+});
+
+const findTeamUpload = (c: C, team: string) =>
+  c.env.DB.prepare('SELECT object_key FROM team_uploads WHERE id = ? AND team_id = ?')
+    .bind(c.req.param('id') ?? '', team)
+    .first<{ object_key: string }>();
+
+teamRoutes.get('/:team/uploads/:id', async (c) => {
+  const m = await requireMember(c);
+  if (m instanceof Response) return m;
+  const row = await findTeamUpload(c, m.team);
+  const obj = row ? await c.env.UPLOADS.get(row.object_key) : null;
+  if (!obj) return c.json({ error: 'not found' }, 404);
+  return new Response(obj.body, {
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': String(obj.size),
+      'Content-Disposition': 'attachment; filename="download.bin"',
+      'X-Content-Type-Options': 'nosniff',
+      'Cache-Control': 'private, no-store',
+    },
+  });
+});
+
+teamRoutes.delete('/:team/uploads/:id', async (c) => {
+  const m = await requireMember(c, true);
+  if (m instanceof Response) return m;
+  const row = await findTeamUpload(c, m.team);
+  if (!row) return c.json({ error: 'not found' }, 404);
+  await c.env.UPLOADS.delete(row.object_key);
+  await c.env.DB.prepare('DELETE FROM team_uploads WHERE id = ? AND team_id = ?').bind(c.req.param('id') ?? '', m.team).run();
+  return c.body(null, 204);
+});
+
+// ---- rooms ----
+
+teamRoutes.get('/:team/rooms/:room/ws', async (c) => {
+  const url = new URL(c.req.url);
+  // The Origin header is mandatory for handshakes: browsers always send it, and it blocks cross-site hijacking.
+  if (c.req.header('Origin') !== url.origin) return c.json({ error: 'bad origin' }, 403);
+  if (url.search) return c.json({ error: 'query not allowed' }, 400);
+  const room = c.req.param('room') ?? '';
+  if (!ROOM_RE.test(room)) return c.json({ error: 'invalid room' }, 400);
+  const m = await requireMember(c);
+  if (m instanceof Response) return m;
+  if (c.req.header('Upgrade')?.toLowerCase() !== 'websocket') return c.json({ error: 'upgrade required' }, 426);
+
+  const session = await c.env.DB.prepare('SELECT expires_at FROM sessions WHERE id = ?').bind(c.get('sessionId')).first<{ expires_at: number }>();
+  if (!session) return c.json({ error: 'unauthorized' }, 401);
+  const expiresAt = Math.min(session.expires_at * 1000, Date.now() + LEASE_MS);
+
+  // Fresh headers only: nothing the client sent is forwarded, so identity cannot be spoofed.
+  const headers = new Headers({
+    upgrade: 'websocket',
+    'x-room-user': c.get('userId'),
+    'x-room-session': c.get('sessionId'),
+    'x-room-team': m.team,
+    'x-room-expires': String(expiresAt),
+  });
+  const rooms = c.env.ROOMS as DurableObjectNamespace<TeamRoom>;
+  return rooms.getByName(JSON.stringify([m.team, room])).fetch(new Request('https://room.internal/', { headers }));
+});
