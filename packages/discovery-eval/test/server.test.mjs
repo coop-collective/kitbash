@@ -52,6 +52,11 @@ test("real MCP contract browses, selects source and delegates dry-run/apply thro
       plan_id: plan.result.plan_id,
     });
     assert.equal(applied.code, 0, JSON.stringify(applied));
+    const container = await call('catalog_get', { id: 'block:cloudflare-container' });
+    assert.deepEqual(container.variants.map(v => v.id).sort(), ['bun', 'go', 'rust']);
+    assert.ok(container.files.includes('variants/rust/container/Cargo.lock'));
+    const goPlan = await call('block_install', { id: 'block:cloudflare-container', variant: 'go' });
+    assert.equal(goPlan.code, 0, JSON.stringify(goPlan));
     const rejected = await client.callTool({
       name: "block_install",
       arguments: { id: "recipe-reference:cloudflare-ci" },
