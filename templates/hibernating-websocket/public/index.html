@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Room chat</title><style>body{max-width:42rem;margin:3rem auto;padding:0 1rem;font:18px system-ui}input,button{font:inherit;padding:.5rem}li{margin:.5rem 0;overflow-wrap:anywhere}</style>
+<h1>Room chat</h1><p>Sign in through your application's session provider before connecting.</p>
+<form id="join"><label>Room <input id="room" value="lobby" required pattern="[A-Za-z0-9_-]{1,80}"></label> <button>Connect</button></form>
+<p id="status" role="status">Disconnected</p><ol id="messages"></ol>
+<form id="compose"><label>Message <input id="text" maxlength="1000" required></label> <button>Send</button></form>
+<script type="module">
+import { connectRoom } from './room-client.js';
+let connection;
+const list = document.querySelector('#messages'), status = document.querySelector('#status');
+function append(message) { const li = document.createElement('li'); li.textContent = `${message.userId}: ${message.text}`; list.append(li); while (list.children.length > 100) list.firstChild.remove(); }
+document.querySelector('#join').onsubmit = (event) => { event.preventDefault(); connection?.close(); connection = connectRoom(document.querySelector('#room').value, (event) => { if (event.type === 'snapshot') { list.replaceChildren(); event.messages.forEach(append); } else if (event.type === 'message') append(event); }, (text) => { status.textContent = text; }); };
+document.querySelector('#compose').onsubmit = (event) => { event.preventDefault(); const input = document.querySelector('#text'); if (connection?.send(input.value)) input.value = ''; };
+addEventListener('pagehide', () => connection?.close());
+</script></html>
