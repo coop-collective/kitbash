@@ -1,0 +1,9 @@
+# Cloudflare delivery bootstrap
+
+Source: `~/Workspace/inference-market` at `9231c25a2b7cbf9a04c428fe44324efaec3344f4`, `.github/workflows/ci.yml`, `deploy.yml`, `deploy-staging.yml`, `deploy-production.yml`. Shared patterns: reusable credential-free checks, explicit environment, exact checked revision, environment approval configuration, serialized migration-then-deploy. The extraction removes account IDs, product URLs, tools dependencies, release tags and optional third-party secret synchronization.
+
+Primary references checked 2026-10-19: [Cloudflare GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/), [Wrangler environments](https://developers.cloudflare.com/workers/wrangler/environments/), [GitHub deployment environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/managing-environments-for-deployment). Current Cloudflare examples use checkout v6; this recipe calls the locally pinned Wrangler directly, preserving lockfile resolution.
+
+Verification from `recipes/cloudflare-ci`: `npm ci`, `npm test`, `npm run typecheck`, `npm run build -- --env staging`, `npm run build -- --env production`, `actionlint workflows/worker-ci.yml workflows/worker-deploy.yml`. Unit tests execute the real planning/failure-control functions with a fake process runner, so no remote command runs. Local builds validate both explicit environment configurations.
+
+Limits: no live GitHub workflow or remote deployment is claimed. GitHub environment protection is configured outside YAML. Migrations must be backward-compatible with the previously deployed Worker; deployment rollback is not database rollback. Vite/vinext build-time environment selection requires a framework-specific adaptation. Workflows are reviewable inert files because the installer forbids writing `.github/workflows`.
