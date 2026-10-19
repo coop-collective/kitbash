@@ -114,6 +114,28 @@ async function fixtureV14() {
 }
 
 describe("planUpgrade / applyUpgrade (3-way re-apply)", () => {
+  it("refreshes rendered interface metadata so subsequent installs detect new bindings", async () => {
+    const { bundle, fs, profile, entry } = await installFixture();
+    const next = await fixtureV14();
+    next.manifest.params.push({ name: "cacheBinding", type: "identifier", default: "EXTRA_CACHE" });
+    next.manifest.bindings.push({ type: "kv", name: "{{kit.cacheBinding}}" });
+    next.manifest.routes.push({ method: "GET", path: "/{{kit.cacheBinding}}", auth: "public" });
+    const upgrade = await planUpgrade({ oldBundle: bundle, newBundle: next, entry, blockId: FIXTURE_ID, profile, current: fs.tree });
+    await applyUpgrade(fs, upgrade);
+    const lock = await readLock(fs);
+    expect(lock.blocks[FIXTURE_ID]!.interface).toMatchObject({
+      tables: expect.arrayContaining(["sessions"]),
+      bindings: expect.arrayContaining(["kv:EXTRA_CACHE"]),
+      routes: expect.arrayContaining(["GET /EXTRA_CACHE"]),
+    });
+    const collision = cloneBundle(bundle);
+    collision.manifest.name = "other-feature";
+    for (const file of collision.manifest.files) if (file.target) file.target = file.target.replace(".kit/blocks/email-code-auth-fixture/", ".kit/blocks/other-feature/");
+    collision.manifest.bindings.push({ type: "r2", name: "EXTRA_CACHE" });
+    const plan = await planInstall({ bundle: collision, blockId: "@coop/other-feature", profile, project: fs.tree, lock });
+    expect(plan.conflicts).toContainEqual(expect.objectContaining({ kind: "binding", name: "EXTRA_CACHE" }));
+  });
+
   it("untouched files merge clean, edited files conflict, new migrations renumber after the project's highest", async () => {
     const { bundle, fs, profile, entry } = await installFixture();
     // the project edits codes.ts on the same line upstream changes, and tokens.ts elsewhere

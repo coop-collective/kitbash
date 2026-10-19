@@ -9,7 +9,7 @@ import { KitError } from "./errors.ts";
 import type { BlockBundle, FileTree, KitFs } from "./fs.ts";
 import { normalizeRelative } from "./paths.ts";
 
-const SKIP_DIRS = new Set([".git", "node_modules", ".DS_Store", ".wrangler", "dist", "coverage", ".turbo", "target", ".pnpm"]);
+const SKIP_DIRS = new Set([".git", "node_modules", ".DS_Store", ".wrangler", "dist", "coverage", ".turbo", "target", ".pnpm", ".cargo"]);
 
 /**
  * A file-system adapter rooted at `root`. Every path is project-relative and normalized; any path whose existing

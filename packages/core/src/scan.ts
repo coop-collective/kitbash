@@ -12,7 +12,7 @@ import { containerPackageProblem } from "./container-package.ts";
 import type { BlockBundle } from "./fs.ts";
 import { byteLength, countLines, isText, sha256Hex, tryDecodeUtf8 } from "./hash.ts";
 import { findInjection } from "./injection.ts";
-import { pathProblem, dirname } from "./paths.ts";
+import { pathProblem, dirname, forbiddenTarget } from "./paths.ts";
 import { renderTemplate } from "./render.ts";
 import {
   bundlePath,
@@ -225,6 +225,8 @@ export async function scanBlock(bundle: BlockBundle, opts: ScanOptions = {}): Pr
       rendered.set(bp, out);
       try {
         const renderedTarget = target ? renderTemplate(target, { params: defaults, paths: { ...DEFAULT_PATHS } }) : "";
+        const forbidden = renderedTarget ? forbiddenTarget(renderedTarget, m.name) : null;
+        if (forbidden) findings.push(finding("forbidden_target", "block", bp, forbidden));
         const problem = containerPackageProblem(renderedTarget, out);
         if (problem) findings.push(finding("container_package", "block", bp, problem));
       } catch { /* Rendering failures are reported above. */ }

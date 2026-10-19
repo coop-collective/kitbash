@@ -108,7 +108,7 @@ describe("verify runner", () => {
     expect(r.results[0]!.exit).toBe(0);
     expect(r.passed).toBe(true);
     await writeFile(path.join(root, "test", "bad.test.mjs"), "import test from 'node:test';\ntest('bad', () => { throw new Error('no'); });\n");
-    const r2 = await runVerifyCommands(["node --test test/bad.test.mjs"], { root, env: process.env, runner: execRunner, timeoutMs: 30_000 });
+    const r2 = await runVerifyCommands(["node --test test/bad.test.mjs"], { root, env: { ...process.env, NODE_TEST_CONTEXT: "child-v8" }, runner: execRunner, timeoutMs: 30_000 });
     expect(r2.passed).toBe(false);
     expect(r2.results[0]!.exit).not.toBe(0);
   });

@@ -94,6 +94,13 @@ export function forbiddenTarget(target: string, blockName: string): string | nul
   const first = lower.split("/")[0] ?? "";
   if (first === ".git" || first === ".hg" || first === ".svn") return "VCS directory";
   if (lower.split("/").includes("node_modules")) return "node_modules";
+  const base = lower.slice(lower.lastIndexOf("/") + 1);
+  if ([".npmrc", ".yarnrc", ".yarnrc.yml", ".yarnrc.yaml", ".pnpmfile.cjs", ".pnpmfile.mjs", "pnpmfile.cjs", "pnpm-workspace.yaml", "pnpm-workspace.yml"].includes(base)) {
+    return "package manager configuration or hook";
+  }
+  if ((base === "package.json" && !isContainerPackage(target)) || base === "package-lock.json" || base === "pnpm-lock.yaml" || base === "yarn.lock") {
+    return "package manifest (dependencies are added by the planner from `dependencies[]`, never by a block file)";
+  }
   if (first === ".kit") {
     if (lower.startsWith(`.kit/blocks/${blockName.toLowerCase()}/`)) return null;
     return "kit state (.kit/ is written by the installer only)";
@@ -101,13 +108,6 @@ export function forbiddenTarget(target: string, blockName: string): string | nul
   if (first === ".github" && lower.includes("/workflows/")) return "CI workflow";
   if (first === ".claude" || first === ".codex" || first === ".agents" || first === ".cursor") {
     return "agent configuration";
-  }
-  const base = lower.slice(lower.lastIndexOf("/") + 1);
-  if ((base === "package.json" && !isContainerPackage(target)) || base === "package-lock.json" || base === "pnpm-lock.yaml" || base === "yarn.lock") {
-    return "package manifest (dependencies are added by the planner from `dependencies[]`, never by a block file)";
-  }
-  if (lower === ".npmrc" || lower === ".yarnrc" || lower === ".yarnrc.yml" || lower === ".pnpmfile.cjs") {
-    return "package manager configuration";
   }
   if (/(^|\/)\.(dev\.vars|env)(\.[a-z]+)?$/.test(lower) && !lower.endsWith(".example")) {
     return "secret file (only *.example env files may be written)";

@@ -31,7 +31,9 @@ const readJson = async (p) => JSON.parse(await readFile(p, "utf8"));
 /** Run a command to completion; never throws, returns { code, out, err }. */
 function sh(cmd, args, { cwd, env = {}, timeout = 600_000 } = {}) {
   return new Promise((resolve) => {
-    execFile(cmd, args, { cwd, timeout, maxBuffer: 64 * 1024 * 1024, env: { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1", ...env } }, (e, stdout, stderr) => {
+    const childEnv = { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1", ...env };
+    delete childEnv.NODE_TEST_CONTEXT;
+    execFile(cmd, args, { cwd, timeout, maxBuffer: 64 * 1024 * 1024, env: childEnv }, (e, stdout, stderr) => {
       resolve({ code: e ? (typeof e.code === "number" ? e.code : 1) : 0, out: String(stdout), err: String(stderr) + (e && typeof e.code !== "number" ? `\n${e.message}` : "") });
     });
   });

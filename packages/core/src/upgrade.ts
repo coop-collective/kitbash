@@ -14,6 +14,7 @@ import { threeWayMerge } from "./lock.ts";
 import { basename, forbiddenTarget, normalizeRelative } from "./paths.ts";
 import { prepareBlock as prepare, renderBlockFiles, renderInstalled, renumberMigrations, renamedTarget, type PlannedFile } from "./plan.ts";
 import type { ProjectProfile } from "./profile.ts";
+import { renderTemplate } from "./render.ts";
 import { changelogUpgradeSection } from "./summary.ts";
 
 export interface UpgradeInput {
@@ -187,6 +188,11 @@ export async function planUpgrade(input: UpgradeInput): Promise<UpgradePlan> {
     manifest_sha256: await manifestSha256(input.newBundle.manifest),
     registry_signature: input.registrySignature ?? "",
     params: newPrep.params,
+    interface: {
+      tables: (m.tables ?? []).map(table => renderTemplate(table, { params: newPrep.params, paths: newPrep.paths })),
+      routes: (m.routes ?? []).map(route => `${route.method} ${renderTemplate(route.path, { params: newPrep.params, paths: newPrep.paths })}`),
+      bindings: (m.bindings ?? []).map(binding => `${binding.type}:${binding.name}`),
+    },
     files: nextFiles.sort((a, b) => a.target.localeCompare(b.target)),
     migrations: migrationMap,
     adapt: { ...Object.fromEntries((m.agent?.adapt ?? []).map((a) => [a.id, entry.adapt[a.id] ?? ("pending" as const)])) },

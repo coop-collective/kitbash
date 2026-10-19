@@ -575,6 +575,8 @@ devEngines.runtime, registry semver dependencies/devDependencies, and explicit t
 Install lifecycle hooks, pre/post hooks, workspace/package-manager configuration and local/Git dependency
 specifications are rejected. The scanner, planner, apply and upgrade paths validate the payload; saved plans cannot
 bypass those checks. This does not automatically install or execute the native project's tasks.
+Package-manager configuration and auto-loaded hook files (`.npmrc`, `.yarnrc*`, `.pnpmfile.cjs`, `.pnpmfile.mjs`,
+`pnpmfile.cjs`, `pnpm-workspace.yaml`/`.yml`) are forbidden at every depth, including native payloads and block metadata.
 
 `bindings[].name` and `exports[].symbol` may be a literal identifier or a single `{{kit.paramName}}` token.
 Defaults and supplied values must render to valid identifiers; conflict checks and lock metadata use the resolved names.
