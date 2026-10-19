@@ -92,10 +92,16 @@ test('delayed profile responses reproduce the old race and cannot overwrite edit
     try {
       await page.goto(server.base);
       await server.loads[0].promise;
-      for (const name of controls) assert.equal(await page.getByTestId(name).isDisabled(), true, `${name} must wait for initial profile load`);
+      for (const name of controls) {
+        assert.equal(await page.getByTestId(name).isVisible(), false, `${name} must not appear before the initial profile loads`);
+        assert.equal(await page.getByTestId(name).isDisabled(), true, `${name} must wait for initial profile load`);
+      }
       server.release(0, profile(7, 'Persisted name'));
-      await page.waitForFunction(() => !document.querySelector('[data-testid="profile-save"]').disabled);
+      // Match the legacy acceptance boundary: visibility alone must imply that
+      // values/revision have arrived, with no extra readiness wait in the test.
+      await page.getByTestId('profile-display-name').waitFor({ state: 'visible' });
       assert.equal(await page.getByTestId('profile-display-name').inputValue(), 'Persisted name');
+      for (const name of controls) assert.equal(await page.getByTestId(name).isEnabled(), true);
       await page.getByTestId('profile-display-name').fill('Edited after load');
       await page.getByTestId('profile-save').click();
       await page.getByTestId('profile-status').filter({ hasText: 'Saved (revision 8)' }).waitFor();

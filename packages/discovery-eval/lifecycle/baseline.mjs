@@ -43,8 +43,9 @@ async function loadProfile() {
     await loadProfile();`,
     `  if (r.ok) {
     setProfileBusy(true);
-    show((await r.json()).user);
-    await loadProfile();`,
+    const user = (await r.json()).user;
+    await loadProfile();
+    show(user);`,
   );
 }
 
