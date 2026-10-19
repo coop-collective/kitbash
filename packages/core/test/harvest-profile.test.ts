@@ -118,6 +118,17 @@ describe("secrets", () => {
 });
 
 describe("config merges", () => {
+  it("preserves append-only Durable Object migration tags", () => {
+    const base = '{ "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Existing"] }] }';
+    const collision = mergeJsonc(base, '{ "migrations": [{ "tag": "v1", "new_sqlite_classes": ["New"] }] }', "jsonc-deep", { file: "wrangler.jsonc" });
+    expect(collision.conflicts[0]?.detail).toMatch(/choose a new tag/);
+    expect(collision.text).toBe(base);
+    expect(mergeJsonc(base, '{ "migrations": [{ "new_sqlite_classes": ["Existing"], "tag": "v1" }] }', "jsonc-deep").changed).toBe(false);
+    const fresh = mergeJsonc(base, '{ "migrations": [{ "tag": "v2", "new_sqlite_classes": ["New"] }] }', "jsonc-deep");
+    expect(JSON.parse(fresh.text).migrations).toHaveLength(2);
+    expect(mergeJsonc(null, '{ "migrations": [{ "tag": "v1" }, { "tag": "v1" }] }', "jsonc-deep").conflicts).toHaveLength(1);
+  });
+
   it("unions container definitions by class without replacing host image settings", () => {
     const base = '{ "containers": [{ "class_name": "App", "image": "./custom.Dockerfile" }] }';
     const patch = '{ "containers": [{ "class_name": "App", "image": "./Dockerfile", "max_instances": 2 }, { "class_name": "Other", "image": "./other.Dockerfile" }] }';

@@ -41,6 +41,9 @@ export function scrubbedEnv(env: Record<string, string | undefined>): Record<str
   const out: Record<string, string> = {};
   const deny = /^(KIT_|NPM_TOKEN$|NODE_AUTH_TOKEN$|GITHUB_TOKEN$|GH_TOKEN$|CLOUDFLARE_|CF_|AWS_|ANTHROPIC_|OPENAI_|HQ_)|TOKEN|SECRET|PASSWORD|PRIVATE|API_KEY|CREDENTIAL/i;
   for (const [k, v] of Object.entries(env)) if (v !== undefined && !deny.test(k)) out[k] = v;
+  // Node's parent test runner marks children with this private IPC context. A new
+  // standalone `node --test` must discover and execute tests independently.
+  delete out.NODE_TEST_CONTEXT;
   out.CI = "1";
   out.NO_COLOR = "1";
   return out;

@@ -11,6 +11,7 @@
  */
 import * as jsonc from "jsonc-parser";
 import { parseJsonc } from "./profile.ts";
+import { canonicalJson } from "./hash.ts";
 
 export interface MergeConflict {
   name: string;
@@ -88,6 +89,15 @@ export function mergeJsonc(
       delete patch[k];
     }
   }
+  // Wrangler DO migrations are append-only. Reusing a tag cannot add another class to an already deployed step.
+  if (Array.isArray(patch.migrations)) {
+    const tags = new Set<string>();
+    for (const migration of patch.migrations) {
+      if (!isObj(migration) || typeof migration.tag !== "string") continue;
+      if (tags.has(migration.tag)) conflicts.push({ name: `${opts.file}:migrations:${migration.tag}`, detail: `duplicate migration tag ${migration.tag}` });
+      tags.add(migration.tag);
+    }
+  }
   const removals = (v: Json, p: Path): void => {
     if (v === null) conflicts.push({ name: `${opts.file}:${fmtPath(p)}`, detail: `the patch would remove ${fmtPath(p)}; config patches never remove keys` });
     else if (isObj(v)) for (const [k, x] of Object.entries(v)) removals(x, [...p, k]);
@@ -130,6 +140,15 @@ export function mergeJsonc(
         return;
       }
       for (const el of pv) {
+        if (path.length === 1 && path[0] === "migrations" && isObj(el) && typeof el.tag === "string") {
+          const existing = bv.filter(b => isObj(b) && b.tag === el.tag);
+          if (existing.length) {
+            if (existing.length !== 1 || canonicalJson(existing[0]) !== canonicalJson(el)) {
+              conflicts.push({ name: `${opts.file}:migrations:${el.tag}`, detail: `migration tag ${el.tag} already exists; choose a new tag without changing deployed migration history` });
+            }
+            continue;
+          }
+        }
         const id = identity(el);
         if (id !== undefined) {
           const idx = bv.findIndex((b) => identity(b) === id);
