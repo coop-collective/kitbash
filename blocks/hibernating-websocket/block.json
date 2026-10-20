@@ -5,7 +5,7 @@
   "title": "Tenant-scoped hibernating WebSocket rooms",
   "description": "Install a SQLite Durable Object, authorized same-origin upgrade handler, browser client and tests into an existing Worker. Bounded history, attachment-based session leases, ping auto-response and configurable bindings/routes.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "durable-objects",
@@ -57,7 +57,8 @@
       "name": "fileSlug",
       "type": "identifier",
       "default": "hibernating-room",
-      "pattern": "^[a-z][a-z0-9-]{0,39}$"
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "description": "Prefix for installed verification files."
     },
     {
       "name": "assetsDirectory",
@@ -135,15 +136,15 @@
   ],
   "files": [
     {
-      "path": "src/room.ts",
-      "target": "{{paths.lib}}/{{kit.fileSlug}}.ts",
+      "path": "src/lib/hibernating-websocket/room.ts",
+      "target": "{{paths.lib}}/hibernating-websocket/room.ts",
       "role": "service",
       "type": "registry:lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/upgrade.ts",
-      "target": "{{paths.routes}}/{{kit.fileSlug}}.ts",
+      "path": "src/routes/hibernating-websocket/upgrade.ts",
+      "target": "{{paths.routes}}/hibernating-websocket/upgrade.ts",
       "role": "route",
       "type": "registry:lib",
       "variant": "hono-d1"
@@ -231,17 +232,17 @@
   "exports": [
     {
       "symbol": "handleRoomUpgrade",
-      "from": "src/upgrade.ts",
+      "from": "src/routes/hibernating-websocket/upgrade.ts",
       "kind": "function"
     },
     {
       "symbol": "{{kit.className}}",
-      "from": "src/room.ts",
+      "from": "src/lib/hibernating-websocket/room.ts",
       "kind": "durable-object"
     },
     {
       "symbol": "createRoomRoutes",
-      "from": "src/upgrade.ts",
+      "from": "src/routes/hibernating-websocket/upgrade.ts",
       "kind": "hono-router"
     }
   ],
@@ -288,7 +289,7 @@
   "docs": "docs/README.md",
   "skill": "SKILL.md",
   "agent": {
-    "summary": "Installable hibernating room feature: configurable SQLite DO class/binding, same-origin authenticated upgrade handler, bounded history and browser reconnect client. Real workerd tests run independently of the host Vitest config.",
+    "summary": "Hibernating SQLite DO rooms, authenticated same-origin upgrades, bounded history, reconnect client, and independent workerd tests.",
     "when_to_use": [
       "A Worker needs tenant-scoped room broadcasts with bounded recent history."
     ],
@@ -301,7 +302,7 @@
         "required": true,
         "title": "Export the Durable Object and mount the handler",
         "where": "Worker entrypoint and routes",
-        "do": "Export the rendered class from the Worker entrypoint. Mount handleRoomUpgrade at the rendered route prefix, passing the DO binding and an authorization callback that checks session and room membership.",
+        "do": "Export the DO class from the Worker entrypoint. Mount handleRoomUpgrade at routePrefix with its DO binding and a callback checking session and room membership.",
         "check": "A real same-origin authorized upgrade succeeds; unauthenticated or forbidden-room handshakes fail."
       },
       {
@@ -309,7 +310,7 @@
         "required": true,
         "title": "Serve the installed browser files",
         "where": "Host static asset configuration",
-        "do": "Serve the rendered assets directory under the existing host asset setup; preserve existing asset binding and routing. The installed HTML imports its sibling client module.",
+        "do": "Serve the installed asset directory with existing host routing and bindings. The HTML imports its sibling client.",
         "check": "The page connects through the same origin after host sign-in."
       },
       {

@@ -258,8 +258,8 @@
     },
     {
       "name": "path kept",
-      "input": "/Users/coop/Workspace2/project/src/analytics/client.ts",
-      "expected": "/Users/coop/Workspace2/project/src/analytics/client.ts"
+      "input": "/Users/coop/Workspace2/project/src/lib/cf-analytics/client.ts",
+      "expected": "/Users/coop/Workspace2/project/src/lib/cf-analytics/client.ts"
     },
     {
       "name": "dashed title kept",

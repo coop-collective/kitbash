@@ -5,7 +5,7 @@
   "title": "Bounded private R2 attachments with tenant-scoped keys",
   "description": "Adds authenticated raw attachment uploads, streamed downloads, HEAD and deletion using an R2 binding. Actual body bytes are bounded; keys derive from the verified tenant and a server-generated UUID, and downloads are private attachments with no client-supplied metadata.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -72,14 +72,14 @@
   ],
   "files": [
     {
-      "path": "src/uploads.ts",
+      "path": "src/lib/r2-private-uploads/uploads.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/r2-private-uploads/uploads.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes.ts",
+      "path": "src/lib/r2-private-uploads/routes.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/r2-private-uploads/routes.ts",
       "role": "route",
@@ -155,32 +155,32 @@
   "exports": [
     {
       "symbol": "uploadAttachment",
-      "from": "src/uploads.ts",
+      "from": "src/lib/r2-private-uploads/uploads.ts",
       "kind": "function"
     },
     {
       "symbol": "downloadAttachment",
-      "from": "src/uploads.ts",
+      "from": "src/lib/r2-private-uploads/uploads.ts",
       "kind": "function"
     },
     {
       "symbol": "deleteAttachment",
-      "from": "src/uploads.ts",
+      "from": "src/lib/r2-private-uploads/uploads.ts",
       "kind": "function"
     },
     {
       "symbol": "objectKey",
-      "from": "src/uploads.ts",
+      "from": "src/lib/r2-private-uploads/uploads.ts",
       "kind": "function"
     },
     {
       "symbol": "readBoundedBody",
-      "from": "src/uploads.ts",
+      "from": "src/lib/r2-private-uploads/uploads.ts",
       "kind": "function"
     },
     {
       "symbol": "uploadRoutes",
-      "from": "src/routes.ts",
+      "from": "src/lib/r2-private-uploads/routes.ts",
       "kind": "function"
     }
   ],

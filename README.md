@@ -1,6 +1,16 @@
 # Kitbash (working name: feature-registry)
 
-**New direction: explicit maintenance skills for coding agents.** The first [maintenance skills](skills/README.md) cover TypeScript, Rust and page-specific rendering/caching. They run only when explicitly assigned, normally after merge, and require evidence before refactoring. The existing feature registry below remains available as implementation examples and tested tooling; no recurring maintenance agent is enabled yet.
+**Project bootstrapping and explicit maintenance for coding agents.** Create a vinext app, Cloudflare Worker, or local Rust server with compatible feature blocks, Infisical secret helpers, and optional GitHub/Gitstalk repository creation. [Maintenance skills](skills/README.md) cover TypeScript, Rust and page-specific rendering/caching when explicitly assigned, normally after merge. [Pstack composition](docs/PSTACK.md) shows how to implement and verify features with the generated project, then select maintenance work separately. No recurring agent is enabled by bootstrap.
+
+```sh
+pnpm --filter @kitbash/cli build
+node packages/cli/dist/kit.js bootstrap --list --preset worker
+node packages/cli/dist/kit.js bootstrap ../my-api --preset worker --blocks jwt-session-cookie,r2-private-uploads --yes
+node packages/cli/dist/kit.js bootstrap ../my-web --preset vinext --blocks public-edge-cache --yes
+node packages/cli/dist/kit.js bootstrap ../my-server --preset rust-server --host 127.0.0.1 --port 8080 --yes
+```
+
+Use `kit bootstrap` interactively to choose a preset and blocks. The plugin exposes the same operation through `kitbash_bootstrap` and `/kit:bootstrap`. See [bootstrap usage, hosting, source layout, and secrets](docs/BOOTSTRAP.md). Presets supply the project shell; feature code remains in versioned blocks with tests and adaptation checklists. Generated projects retain source snapshots for later verification. The registry design and earlier experiments remain documented below.
 
 **A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
 rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,

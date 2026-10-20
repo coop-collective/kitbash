@@ -4,14 +4,14 @@
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
-import { issueToken, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
-import { requireBearer } from "{{paths.lib|rel}}/auth/middleware";
-import { setMailHook, type Mail } from "{{paths.lib|rel}}/orgs/invite-mail";
-import { ORG_HEADER, requireOrg, type OrgVars } from "{{paths.lib|rel}}/orgs/middleware";
-import { doName, inOrg, orgKey, orgOf, ORG_DATA_TABLES{{#kit.if productRoles}}, productRole{{/kit.if}}{{#kit.if legacyOrgId}}, LEGACY_ORG_ID{{/kit.if}} } from "{{paths.lib|rel}}/orgs/scope";
-import { onSignIn } from "{{paths.lib|rel}}/orgs/service";
-import type { OrgsEnv } from "{{paths.lib|rel}}/orgs/types";
-import { orgRoutes } from "{{paths.routes|rel}}/orgs";
+import { issueToken, upsertMember } from "{{paths.lib|rel}}/email-code-auth/tokens";
+import { requireBearer } from "{{paths.lib|rel}}/email-code-auth/middleware";
+import { setMailHook, type Mail } from "{{paths.lib|rel}}/orgs-roles-invites/invite-mail";
+import { ORG_HEADER, requireOrg, type OrgVars } from "{{paths.lib|rel}}/orgs-roles-invites/middleware";
+import { doName, inOrg, orgKey, orgOf, ORG_DATA_TABLES{{#kit.if productRoles}}, productRole{{/kit.if}}{{#kit.if legacyOrgId}}, LEGACY_ORG_ID{{/kit.if}} } from "{{paths.lib|rel}}/orgs-roles-invites/scope";
+import { onSignIn } from "{{paths.lib|rel}}/orgs-roles-invites/service";
+import type { OrgsEnv } from "{{paths.lib|rel}}/orgs-roles-invites/types";
+import { orgRoutes } from "{{paths.routes|rel}}/orgs-roles-invites/orgs";
 
 const testEnv = { ...(env as unknown as OrgsEnv), TOKEN_PEPPER: "test-pepper-not-a-secret-32-chars-min" } as OrgsEnv & { TOKEN_PEPPER: string };
 

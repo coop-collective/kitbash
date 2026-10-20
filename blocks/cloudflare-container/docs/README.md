@@ -8,7 +8,7 @@ pnpm install
 kit verify @local/cloudflare-container
 ```
 
-Use the block ID reported by the installer for `kit verify`. Its shared source lands under `src/lib/hash/`, the native payload under `containers/hash/`, and the dedicated config at `container.hash.wrangler.jsonc`. `serviceName`, `routePath`, `authService` and `maxInstances` are install parameters. Native port 8080, two simultaneous jobs and a 1 MiB input cap are matching source constants across variants; change the Worker and native contract together when adapting them.
+Use the block ID reported by the installer for `kit verify`. Its shared source lands under `src/lib/cloudflare-container/`, the native payload under `containers/hash/`, and the dedicated config at `container.hash.wrangler.jsonc`. `serviceName`, `routePath`, `authService` and `maxInstances` are install parameters. Native port 8080, two simultaneous jobs and a 1 MiB input cap are matching source constants across variants; change the Worker and native contract together when adapting them.
 
 The dedicated config owns its Worker entrypoint, DO binding/class migration and image. The application's existing `wrangler.jsonc` and entrypoint remain intact. Wrangler config is merged explicitly; existing conflicting scalar values remain reviewable conflicts. The bundled legacy `migrations` format remains supported; do not add the newer `exports` provisioning format alongside it.
 

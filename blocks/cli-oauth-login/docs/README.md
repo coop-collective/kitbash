@@ -19,7 +19,7 @@ Bearers with your own token prefix (the desktop app's tokens) never go through O
 
 ## Branding
 
-The pages are `src/lib/oauth/templates/*.html`. `brandName` and `brandColor` are filled at install; edit the HTML freely
+The pages are `src/lib/cli-oauth-login/templates/*.html`. `brandName` and `brandColor` are filled at install; edit the HTML freely
 afterwards. Placeholders at runtime: `{{name}}` (escaped), `{{{name}}}` (raw, only HTML built by `pages.ts`),
 `{{#name}}…{{/name}}` and `{{^name}}…{{/name}}`.
 

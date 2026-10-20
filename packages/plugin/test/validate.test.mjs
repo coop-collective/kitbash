@@ -11,15 +11,15 @@ const run = (dir) => spawnSync(process.execPath, [path.join(dir, "scripts/valida
 async function copy() {
   const dir = await tmpDir("kit-plugin-validate-");
   // inside the package dir so `@kitbash/core` still resolves through node_modules
-  fs.cpSync(pluginRoot, dir, { recursive: true, filter: (src) => !src.includes("node_modules") });
+  fs.cpSync(pluginRoot, dir, { recursive: true, filter: (src) => !path.relative(pluginRoot, src).split(path.sep).some((part) => ["node_modules", "runtime"].includes(part)) });
   fs.symlinkSync(path.join(pluginRoot, "node_modules"), path.join(dir, "node_modules"));
   return dir;
 }
 
-test("the plugin as shipped validates: 11 registry tools, 3 skills, 3 commands, the SessionStart hook", () => {
+test("the plugin as shipped validates registry and bootstrap tools, skills, commands, and the SessionStart hook", () => {
   const r = run(pluginRoot);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /11 registry tools, 3 skills, 3 commands/);
+  assert.match(r.stdout, /11 registry tools, 1 bootstrap tool, 4 skills, 4 commands/);
 });
 
 test("manifests: Claude Code and Codex agree; MCP is a stdio command in both; commands are /kit:*", () => {

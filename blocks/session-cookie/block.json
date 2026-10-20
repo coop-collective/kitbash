@@ -5,7 +5,7 @@
   "title": "Revocable browser sessions with host cookies and strict mutation origins",
   "description": "Adds HMAC-authenticated browser cookies backed by D1 sessions, immediate logout and revoke-all, expiry cleanup, and Hono middleware that rejects unsafe requests without a same-origin Origin header.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -79,14 +79,14 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/session.ts",
+      "path": "src/lib/session-cookie/session.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/session-cookie/session.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes.ts",
+      "path": "src/lib/session-cookie/routes.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/session-cookie/routes.ts",
       "role": "route",
@@ -172,32 +172,32 @@
   "exports": [
     {
       "symbol": "createSession",
-      "from": "src/session.ts",
+      "from": "src/lib/session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "readSession",
-      "from": "src/session.ts",
+      "from": "src/lib/session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "revokeOwnerSessions",
-      "from": "src/session.ts",
+      "from": "src/lib/session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "cleanupSessions",
-      "from": "src/session.ts",
+      "from": "src/lib/session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "requireSession",
-      "from": "src/routes.ts",
+      "from": "src/lib/session-cookie/routes.ts",
       "kind": "function"
     },
     {
       "symbol": "sessionRoutes",
-      "from": "src/routes.ts",
+      "from": "src/lib/session-cookie/routes.ts",
       "kind": "function"
     }
   ],

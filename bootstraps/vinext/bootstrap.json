@@ -1,0 +1,39 @@
+{
+  "id": "vinext",
+  "title": "Vinext on Cloudflare Workers",
+  "description": "App Router with src/app, reusable server modules, and workerd tests.",
+  "defaultHost": "127.0.0.1",
+  "defaultPort": 3000,
+  "profile": {
+    "stack": {
+      "runtime": "cloudflare-workers",
+      "framework": "vinext",
+      "ui": "react",
+      "lang": "ts",
+      "test": "vitest-workerd"
+    },
+    "paths": {
+      "app": "src",
+      "routes": "src/app/api",
+      "lib": "src/lib",
+      "ui": "src/components",
+      "migrations": "migrations",
+      "tests": "test"
+    },
+    "migrations": {
+      "pattern": "NNNN_name.sql",
+      "width": 4
+    },
+    "package_manager": "pnpm",
+    "config": {
+      "env_example": ".dev.vars.example",
+      "wrangler": "wrangler.jsonc"
+    }
+  },
+  "compatibleBlocks": [
+    "crypto-utils",
+    "public-edge-cache",
+    "tiered-result-cache"
+  ],
+  "compatibilityDate": "2026-08-22"
+}

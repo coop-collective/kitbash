@@ -1,6 +1,6 @@
 // Local test entrypoint only. Production exports the original class and supplies real authorization.
-import { {{kit.className}} as RoomBase } from '{{paths.lib|rel}}/{{kit.fileSlug}}';
-import { createRoomRoutes } from '{{paths.routes|rel}}/{{kit.fileSlug}}';
+import { {{kit.className}} as RoomBase } from '{{paths.lib|rel}}/hibernating-websocket/room';
+import { createRoomRoutes } from '{{paths.routes|rel}}/hibernating-websocket/upgrade';
 export class {{kit.className}} extends RoomBase {
   override async fetch(request: Request): Promise<Response> {
     if (new URL(request.url).pathname !== '/__inspect') return super.fetch(request);

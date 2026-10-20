@@ -1,4 +1,14 @@
-# 1.0.0
+# Changelog
+
+## 2.0.0
+
+Source payloads mirror installation paths.
+
+### Upgrade
+
+Use `src/lib/tiered-result-cache/` and the declared route paths; update imports and catalog checkouts. HTTP URLs and database migrations are unchanged.
+
+## 1.0.0
 
 Shared typed result cache with named edge Cache API, optional KV, authoritative loaders, absolute freshness/staleness bounds, request-local dedupe, tenant/version keys and strict bypass.
 

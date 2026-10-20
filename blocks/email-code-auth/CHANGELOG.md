@@ -1,3 +1,13 @@
+# Changelog
+
+## 2.0.0
+
+Source payloads mirror installation paths.
+
+### Upgrade
+
+Use `src/lib/email-code-auth/` and the declared route paths; update imports and catalog checkouts. HTTP URLs and database migrations are unchanged.
+
 ## 1.1.0
 
 - Adds `consumeCode(env, email, code, name?)`: uses up a code and returns `{member, created}` without minting a token

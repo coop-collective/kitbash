@@ -1,6 +1,6 @@
 {
   "name": "{{kit.serviceName}}-container",
-  "main": "{{paths.lib}}/{{kit.serviceName}}/worker.ts",
+  "main": "{{paths.lib}}/cloudflare-container/worker.ts",
   "compatibility_date": "2026-10-19",
   "observability": { "enabled": true, "traces": { "enabled": true } },
   "services": [{ "binding": "AUTH", "service": "{{kit.authService}}" }],

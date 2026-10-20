@@ -3,7 +3,7 @@ name: cf-analytics
 description: Use when a Hono Worker should send first-party analytics (signed server events, exact facts, logs, browser events through a relay) to a Canvalytics ingest instead of a hosted vendor.
 license: MIT
 metadata:
-  kitbash: "@coop/cf-analytics@1.0.0"
+  kitbash: "@coop/cf-analytics@2.0.0"
 ---
 
 # cf-analytics

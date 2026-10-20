@@ -5,7 +5,7 @@
   "title": "Orgs with roles and email invitations",
   "description": "Personal workspaces and team orgs with owner/admin/member roles, email invitations (existing accounts join at once, new addresses on first sign-in) with a daily cap, and org scoping where orgOf(env) throws when unscoped.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -127,44 +127,44 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/orgs/types.ts",
+      "path": "src/lib/orgs-roles-invites/types.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/orgs/types.ts",
+      "target": "{{paths.lib}}/orgs-roles-invites/types.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/orgs/scope.ts",
+      "path": "src/lib/orgs-roles-invites/scope.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/orgs/scope.ts",
+      "target": "{{paths.lib}}/orgs-roles-invites/scope.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/orgs/service.ts",
+      "path": "src/lib/orgs-roles-invites/service.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/orgs/service.ts",
+      "target": "{{paths.lib}}/orgs-roles-invites/service.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/orgs/invite-mail.ts",
+      "path": "src/lib/orgs-roles-invites/invite-mail.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/orgs/invite-mail.ts",
+      "target": "{{paths.lib}}/orgs-roles-invites/invite-mail.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/orgs/middleware.ts",
+      "path": "src/lib/orgs-roles-invites/middleware.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/orgs/middleware.ts",
+      "target": "{{paths.lib}}/orgs-roles-invites/middleware.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes/orgs.ts",
+      "path": "src/routes/orgs-roles-invites/orgs.ts",
       "type": "registry:lib",
-      "target": "{{paths.routes}}/orgs.ts",
+      "target": "{{paths.routes}}/orgs-roles-invites/orgs.ts",
       "role": "route",
       "variant": "hono-d1"
     },
@@ -189,7 +189,7 @@
     "@cloudflare/vitest-pool-workers@>=0.8"
   ],
   "registryDependencies": [
-    "@coop/email-code-auth@^1"
+    "@coop/email-code-auth@^2"
   ],
   "env": [
     {
@@ -283,23 +283,23 @@
   "exports": [
     {
       "symbol": "requireOrg",
-      "from": "src/orgs/middleware.ts"
+      "from": "src/lib/orgs-roles-invites/middleware.ts"
     },
     {
       "symbol": "optionalOrg",
-      "from": "src/orgs/middleware.ts"
+      "from": "src/lib/orgs-roles-invites/middleware.ts"
     },
     {
       "symbol": "orgOf",
-      "from": "src/orgs/scope.ts"
+      "from": "src/lib/orgs-roles-invites/scope.ts"
     },
     {
       "symbol": "inOrg",
-      "from": "src/orgs/scope.ts"
+      "from": "src/lib/orgs-roles-invites/scope.ts"
     },
     {
       "symbol": "orgRoutes",
-      "from": "src/routes/orgs.ts"
+      "from": "src/routes/orgs-roles-invites/orgs.ts"
     }
   ],
   "ui": [],

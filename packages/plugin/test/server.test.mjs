@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { z } from "zod";
 import { REGISTRY_TOOLS, UNTRUSTED_NOTICE } from "@kitbash/core";
 import { UNTRUSTED_BEGIN, UNTRUSTED_END } from "@kitbash/cli";
-import { toArgv } from "../plugins/kitbash/scripts/server.mjs";
+import { PLUGIN_TOOLS, toArgv } from "../plugins/kitbash/scripts/server.mjs";
 import { API, FIXTURE_BLOCK, call, connect, exists, fixtureCopy, noNetwork, readJson, snapshot, templateCopy, tmpDir } from "./helpers.mjs";
 
 const { createMockRegistry } = await import("../../cli/test/mock-registry.ts");
@@ -36,12 +36,12 @@ async function registryClient(extra = {}) {
   return { reg, client, cwd, home };
 }
 
-test("tools/list is exactly core's REGISTRY_TOOLS: 11 tools, static descriptions, schemas and annotations", async () => {
+test("tools/list preserves core's registry contract and adds the plugin bootstrap tool", async () => {
   const client = await connect();
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 11);
-  assert.deepEqual(tools.map((t) => t.name).sort(), REGISTRY_TOOLS.map((t) => t.name).sort());
-  for (const def of REGISTRY_TOOLS) {
+  assert.equal(tools.length, 12);
+  assert.deepEqual(tools.map((t) => t.name).sort(), PLUGIN_TOOLS.map((t) => t.name).sort());
+  for (const def of PLUGIN_TOOLS) {
     const t = tools.find((x) => x.name === def.name);
     assert.equal(t.description, def.description, `${def.name} description`);
     for (const [k, v] of Object.entries(def.annotations)) assert.equal(t.annotations?.[k], v, `${def.name} annotation ${k}`);

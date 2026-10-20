@@ -5,7 +5,7 @@
   "title": "Email code sign-in with peppered bearer tokens",
   "description": "Six-digit email codes over Cloudflare Email Service (uniform, single use, 5 guesses counted before the compare, 5/address/hour and 200/10 min caps) and opaque prefixed bearer tokens, both stored as HMAC under a TOKEN_PEPPER-derived key; a Hono requireBearer middleware; sign-up on first verified code.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -95,37 +95,37 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/auth/types.ts",
+      "path": "src/lib/email-code-auth/types.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/auth/types.ts",
+      "target": "{{paths.lib}}/email-code-auth/types.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/auth/tokens.ts",
+      "path": "src/lib/email-code-auth/tokens.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/auth/tokens.ts",
+      "target": "{{paths.lib}}/email-code-auth/tokens.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/auth/codes.ts",
+      "path": "src/lib/email-code-auth/codes.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/auth/codes.ts",
+      "target": "{{paths.lib}}/email-code-auth/codes.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/auth/middleware.ts",
+      "path": "src/lib/email-code-auth/middleware.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/auth/middleware.ts",
+      "target": "{{paths.lib}}/email-code-auth/middleware.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/auth/routes.ts",
+      "path": "src/routes/email-code-auth/auth.ts",
       "type": "registry:lib",
-      "target": "{{paths.routes}}/auth.ts",
+      "target": "{{paths.routes}}/email-code-auth/auth.ts",
       "role": "route",
       "variant": "hono-d1"
     },
@@ -166,8 +166,8 @@
     "@cloudflare/vitest-pool-workers@>=0.8"
   ],
   "registryDependencies": [
-    "@coop/crypto-utils@^1",
-    "@coop/cf-email-sender@^1"
+    "@coop/crypto-utils@^2",
+    "@coop/cf-email-sender@^2"
   ],
   "secrets": [
     {
@@ -231,47 +231,47 @@
   "exports": [
     {
       "symbol": "requireBearer",
-      "from": "src/auth/middleware.ts",
+      "from": "src/lib/email-code-auth/middleware.ts",
       "kind": "hono-middleware"
     },
     {
       "symbol": "authenticate",
-      "from": "src/auth/tokens.ts",
+      "from": "src/lib/email-code-auth/tokens.ts",
       "kind": "function"
     },
     {
       "symbol": "issueToken",
-      "from": "src/auth/tokens.ts",
+      "from": "src/lib/email-code-auth/tokens.ts",
       "kind": "function"
     },
     {
       "symbol": "revokeToken",
-      "from": "src/auth/tokens.ts",
+      "from": "src/lib/email-code-auth/tokens.ts",
       "kind": "function"
     },
     {
       "symbol": "startCode",
-      "from": "src/auth/codes.ts",
+      "from": "src/lib/email-code-auth/codes.ts",
       "kind": "function"
     },
     {
       "symbol": "verifyCode",
-      "from": "src/auth/codes.ts",
+      "from": "src/lib/email-code-auth/codes.ts",
       "kind": "function"
     },
     {
       "symbol": "consumeCode",
-      "from": "src/auth/codes.ts",
+      "from": "src/lib/email-code-auth/codes.ts",
       "kind": "function"
     },
     {
       "symbol": "authRoutes",
-      "from": "src/auth/routes.ts",
+      "from": "src/routes/email-code-auth/auth.ts",
       "kind": "hono-app"
     },
     {
       "symbol": "meRoutes",
-      "from": "src/auth/routes.ts",
+      "from": "src/routes/email-code-auth/auth.ts",
       "kind": "hono-app"
     }
   ],
@@ -315,7 +315,7 @@
         "required": true,
         "title": "Mount the auth routes",
         "where": "{{paths.app}}/index.ts (where the Hono app is created)",
-        "do": "app.route('{{kit.routePrefix}}', authRoutes); app.route('/', meRoutes); (import from './routes/auth')",
+        "do": "app.route('{{kit.routePrefix}}', authRoutes); app.route('/', meRoutes); (import from './routes/email-code-auth/auth')",
         "check": "POST {{kit.routePrefix}}/email/start answers 200."
       },
       {
@@ -323,7 +323,7 @@
         "required": true,
         "title": "Protect your routes with requireBearer",
         "where": "{{paths.app}}/index.ts",
-        "do": "app.use('/api/*', requireBearer) (from './lib/auth/middleware'); handlers read c.get('member').",
+        "do": "app.use('/api/*', requireBearer) (from './lib/email-code-auth/middleware'); handlers read c.get('member').",
         "check": "GET /api/me without a token answers 401."
       },
       {

@@ -3,7 +3,7 @@ name: orgs-roles-invites
 description: Use when a Hono + D1 app needs workspaces shared by several people, with owner/admin/member roles, email invitations and every request scoped to one org.
 license: MIT
 metadata:
-  kitbash: "@coop/orgs-roles-invites@1.0.1"
+  kitbash: "@coop/orgs-roles-invites@2.0.0"
 ---
 
 # orgs-roles-invites

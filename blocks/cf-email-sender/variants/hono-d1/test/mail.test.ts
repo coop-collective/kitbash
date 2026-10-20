@@ -1,6 +1,6 @@
 // cf-email-sender: which mailer each environment gets, what reaches the binding, and how failures surface.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { APP_NAME, escapeHtml, layout, mailer, MailError, mailErrorCode, sendMail, setMailerOverride, type EmailBinding, type Mail, type MailEnv } from "{{paths.lib|rel}}/mail";
+import { APP_NAME, escapeHtml, layout, mailer, MailError, mailErrorCode, sendMail, setMailerOverride, type EmailBinding, type Mail, type MailEnv } from "{{paths.lib|rel}}/cf-email-sender/mail";
 
 type Sent = Parameters<EmailBinding["send"]>[0];
 

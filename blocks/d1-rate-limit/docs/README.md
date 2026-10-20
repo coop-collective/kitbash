@@ -5,7 +5,7 @@ resets an expired window or counts the hit, and returns no row when the limit is
 read-modify-write race between isolates.
 
 ```ts
-import { rateLimit, isRateLimited, getClientIp } from "./lib/rate-limit";
+import { rateLimit, isRateLimited, getClientIp } from "./lib/d1-rate-limit/rate-limit";
 app.use("/auth/*", rateLimit({ name: "auth", limit: 10, window: "15 m" }));          // by client IP
 if (await isRateLimited(c.env, { name: "api", limit: 600, window: "1 m", key: keyId })) return c.json({ error: "rate_limited" }, 429);
 ```

@@ -5,7 +5,7 @@
   "title": "Explicit public GET caching behind a Worker gateway",
   "description": "A conservative Cache API fallback with exact route and query policies, credential bypass, response eligibility checks, bounded TTL and streamed background writes.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "cache",
@@ -59,9 +59,9 @@
   ],
   "files": [
     {
-      "path": "src/public-edge-cache.ts",
+      "path": "src/lib/public-edge-cache/public-edge-cache.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/public-edge-cache.ts",
+      "target": "{{paths.lib}}/public-edge-cache/public-edge-cache.ts",
       "role": "service",
       "variant": "hono-d1"
     },
@@ -92,12 +92,12 @@
   "exports": [
     {
       "symbol": "publicCacheKey",
-      "from": "src/public-edge-cache.ts",
+      "from": "src/lib/public-edge-cache/public-edge-cache.ts",
       "kind": "function"
     },
     {
       "symbol": "withPublicEdgeCache",
-      "from": "src/public-edge-cache.ts",
+      "from": "src/lib/public-edge-cache/public-edge-cache.ts",
       "kind": "function"
     }
   ],

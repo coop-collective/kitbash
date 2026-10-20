@@ -2,12 +2,13 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { selectSecrets, selectTarget, withSecretsFile } from "./secrets.mjs";
 
-export function plan(target) {
+export function plan(target, secretsFile) {
   if (!["staging", "production"].includes(target)) throw new Error("Target must be staging or production");
   return [
     ["d1", "migrations", "apply", "DB", "--remote", "--env", target],
-    ["deploy", "--env", target],
+    ["deploy", ...(secretsFile ? ["--secrets-file", secretsFile] : []), "--env", target],
   ];
 }
 export function preflight(config, credentials) {
@@ -19,8 +20,8 @@ export function preflight(config, credentials) {
   });
   if (ids[0] === ids[1]) throw new Error("Staging and production must use different D1 databases");
 }
-export function execute(target, runner) {
-  for (const args of plan(target)) {
+export function execute(target, runner, secretsFile) {
+  for (const args of plan(target, secretsFile)) {
     const code = runner(args);
     if (code !== 0) throw new Error(`Wrangler ${args[0]} failed (${code}); remaining steps skipped`);
   }
@@ -33,10 +34,15 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   else if (mode === "--execute") {
     const root = fileURLToPath(new URL("../", import.meta.url));
     preflight(JSON.parse(readFileSync(path.join(root, "wrangler.json"), "utf8")), process.env);
-    execute(target, (args) => {
-      const result = spawnSync(process.execPath, [path.join(root, "node_modules/wrangler/bin/wrangler.js"), ...args], { cwd: root, stdio: "inherit" });
-      if (result.error) throw result.error;
-      return result.status ?? 1;
+    const secretConfig = JSON.parse(readFileSync(path.join(root, ".kitbash/secrets.json"), "utf8"));
+    selectTarget(secretConfig, target);
+    withSecretsFile(selectSecrets(secretConfig, process.env), (secretsFile) => {
+      execute(target, (args) => {
+        const result = spawnSync(process.execPath, [path.join(root, "node_modules/wrangler/bin/wrangler.js"), ...args], { cwd: root, stdio: ["ignore", "pipe", "pipe"] });
+        // Wrangler diagnostics can include values. Do not forward captured output.
+        if (result.error) throw new Error("Unable to run Wrangler; diagnostic values omitted");
+        return result.status ?? 1;
+      }, secretsFile);
     });
   } else throw new Error("Only --execute is supported; omit it to inspect the plan");
 }

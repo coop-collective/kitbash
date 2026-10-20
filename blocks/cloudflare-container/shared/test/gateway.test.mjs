@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gateway } from '{{paths.lib|rel}}/{{kit.serviceName}}/gateway.ts';
+import { gateway } from '{{paths.lib|rel}}/cloudflare-container/gateway.ts';
 const post = (headers = {}, body = 'hello', pathname = '{{kit.routePath}}') => new Request(`https://example.com${pathname}`, { method: 'POST', headers, body, duplex: 'half' });
 test('forwards bounded input only to the authorized tenant, with no caller credentials', async () => {
   const response = await gateway(post({ authorization: 'Bearer test', cookie: 'private', 'x-tenant-id': 'evil' }), async () => ({ tenantId: 'verified' }), async (tenant, request) => {

@@ -2,16 +2,16 @@
 
 Install this block into an existing Cloudflare Worker. It adds a SQLite Durable Object, an upgrade handler, a browser page/client, local integration tests and a Wrangler merge. It preserves the host entrypoint, existing bindings, asset configuration and Vitest configuration.
 
-Defaults install `src/lib/hibernating-room.ts`, `src/routes/hibernating-room.ts`, `public/room-chat/`, and tests. Class, binding, file names, route prefix, asset directory, migration tag and limits are parameters. Choose an unused `migrationTag`; Wrangler DO migration tags are independent of D1 SQL migration numbering.
+Defaults install `src/lib/hibernating-websocket/room.ts`, `src/routes/hibernating-websocket/upgrade.ts`, `public/room-chat/`, and tests. Class, binding, test file prefix, route prefix, asset directory, migration tag and limits are parameters. Choose an unused `migrationTag`; Wrangler DO migration tags are independent of D1 SQL migration numbering.
 
 Wire the host using the installed names:
 
 ```ts
 // Existing Worker entrypoint: required for Wrangler to instantiate the configured class.
-export { HibernatingRoom } from './lib/hibernating-room';
+export { HibernatingRoom } from './lib/hibernating-websocket/room';
 
 // Existing Hono application:
-import { handleRoomUpgrade } from './routes/hibernating-room';
+import { handleRoomUpgrade } from './routes/hibernating-websocket/upgrade';
 app.get('/rooms/:room', (c) => handleRoomUpgrade(c.req.raw, c.env.ROOM_SOCKETS,
   async (request, room) => {
     const session = await yourSessionProvider(request);

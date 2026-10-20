@@ -5,7 +5,7 @@
   "title": "Prefixed API keys with HMAC storage, optional KV verify cache and owner routes",
   "description": "Keys like ak_live_<id8>_<secret43>: the secret is shown once and stored only as an HMAC with a pepper. Verification reads an optional KV cache, then D1, with a constant-time compare. Revocation busts the cache. Includes a requireApiKey middleware, owner-scoped create/list/rename/revoke routes, a 50-key cap and optional scope labels. Without a KV binding there is simply no cache.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -93,28 +93,28 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/crypto.ts",
+      "path": "src/lib/api-keys/crypto.ts",
       "type": "registry:lib",
       "target": "{{paths.lib}}/api-keys/crypto.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/keys.ts",
+      "path": "src/lib/api-keys/keys.ts",
       "type": "registry:lib",
       "target": "{{paths.lib}}/api-keys/keys.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/middleware.ts",
+      "path": "src/lib/api-keys/middleware.ts",
       "type": "registry:lib",
       "target": "{{paths.lib}}/api-keys/middleware.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes.ts",
+      "path": "src/lib/api-keys/routes.ts",
       "type": "registry:lib",
       "target": "{{paths.lib}}/api-keys/routes.ts",
       "role": "route",
@@ -223,32 +223,32 @@
   "exports": [
     {
       "symbol": "requireApiKey",
-      "from": "src/middleware.ts",
+      "from": "src/lib/api-keys/middleware.ts",
       "kind": "hono-middleware"
     },
     {
       "symbol": "authenticateKey",
-      "from": "src/keys.ts",
+      "from": "src/lib/api-keys/keys.ts",
       "kind": "function"
     },
     {
       "symbol": "createKey",
-      "from": "src/keys.ts",
+      "from": "src/lib/api-keys/keys.ts",
       "kind": "function"
     },
     {
       "symbol": "revokeKey",
-      "from": "src/keys.ts",
+      "from": "src/lib/api-keys/keys.ts",
       "kind": "function"
     },
     {
       "symbol": "hasScope",
-      "from": "src/keys.ts",
+      "from": "src/lib/api-keys/keys.ts",
       "kind": "function"
     },
     {
       "symbol": "apiKeyRoutes",
-      "from": "src/routes.ts",
+      "from": "src/lib/api-keys/routes.ts",
       "kind": "hono-app-factory"
     }
   ],

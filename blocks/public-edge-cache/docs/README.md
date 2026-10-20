@@ -3,6 +3,8 @@
 An installable Cache API fallback for an always-executed Worker gateway. New applications should first consider [Workers Cache](https://developers.cloudflare.com/workers/cache/) and its cached inner entrypoints. Use this block when the application's pinned runtime or explicit local-cache ownership requires the Cache API.
 
 ```ts
+import { withPublicEdgeCache } from './lib/public-edge-cache/public-edge-cache';
+
 return withPublicEdgeCache(request, ctx, {
   version: 'v1',
   routes: { '/catalog': ['page', 'q'] },

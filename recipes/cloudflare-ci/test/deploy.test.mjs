@@ -27,3 +27,9 @@ test("credentials and distinct provisioned D1 IDs are mandatory", () => {
   assert.throws(() => preflight(config("0", "2"), credentials), /Provision/);
   assert.throws(() => preflight(config("1", "1"), credentials), /different/);
 });
+test("runtime secrets deploy with code after migration, with no intermediate secret deployment", () => {
+  const commands = [];
+  execute("production", (args) => { commands.push(args); return 0; }, "/private/secrets.json");
+  assert.deepEqual(commands[0], ["d1", "migrations", "apply", "DB", "--remote", "--env", "production"]);
+  assert.deepEqual(commands[1], ["deploy", "--secrets-file", "/private/secrets.json", "--env", "production"]);
+});

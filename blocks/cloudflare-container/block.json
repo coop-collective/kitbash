@@ -5,7 +5,7 @@
   "title": "Authenticated Cloudflare Containers in Bun, Go or Rust",
   "description": "Installable Wrangler gateway and non-root Bun/Go/Rust container with tenant routing, bounded input, private temporary jobs, cleanup and runtime tests.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "containers",
@@ -63,7 +63,7 @@
       "type": "identifier",
       "default": "hash",
       "pattern": "^[a-z][a-z0-9-]{0,39}$",
-      "description": "Names the dedicated Worker config, payload directory and source folder."
+      "description": "Names the dedicated Worker config, container payload directory and verification files."
     },
     {
       "name": "routePath",
@@ -90,15 +90,15 @@
   ],
   "files": [
     {
-      "path": "shared/src/worker.ts",
+      "path": "shared/src/lib/cloudflare-container/worker.ts",
       "type": "registry:file",
-      "target": "{{paths.lib}}/{{kit.serviceName}}/worker.ts",
+      "target": "{{paths.lib}}/cloudflare-container/worker.ts",
       "role": "service"
     },
     {
-      "path": "shared/src/gateway.ts",
+      "path": "shared/src/lib/cloudflare-container/gateway.ts",
       "type": "registry:file",
-      "target": "{{paths.lib}}/{{kit.serviceName}}/gateway.ts",
+      "target": "{{paths.lib}}/cloudflare-container/gateway.ts",
       "role": "service"
     },
     {
@@ -408,12 +408,12 @@
   "exports": [
     {
       "symbol": "HashContainer",
-      "from": "shared/src/worker.ts",
+      "from": "shared/src/lib/cloudflare-container/worker.ts",
       "kind": "durable-object"
     },
     {
       "symbol": "gateway",
-      "from": "shared/src/gateway.ts",
+      "from": "shared/src/lib/cloudflare-container/gateway.ts",
       "kind": "function"
     }
   ],

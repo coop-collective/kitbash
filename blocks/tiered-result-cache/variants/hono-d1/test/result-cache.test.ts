@@ -1,6 +1,6 @@
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
 import { describe, expect, it, vi } from 'vitest';
-import { createResultCache, type ResultKey } from '{{paths.lib|rel}}/result-cache';
+import { createResultCache, type ResultKey } from '{{paths.lib|rel}}/tiered-result-cache/result-cache';
 const key = (): ResultKey => ({ scope: 'catalog', tenant: crypto.randomUUID(), version: 'r1', parts: ['summary'] });
 const parse = (value: unknown): { count: number } => {
   if (!value || typeof value !== 'object' || typeof (value as { count?: unknown }).count !== 'number') throw new Error('Invalid count');

@@ -15,6 +15,8 @@ export interface Io {
   err(s: string): void;
   /** Reads a pasted token (kit login). */
   readStdin(): Promise<string>;
+  /** Present only for a human at an interactive terminal; automation never waits for answers. */
+  prompt?(question: string): Promise<string>;
   /** ISO time, injectable for deterministic tests. */
   now(): string;
   /** Runs one allowlisted verify command (argv, never a shell). */

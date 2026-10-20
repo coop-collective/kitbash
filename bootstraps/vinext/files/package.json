@@ -1,0 +1,43 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "types": "wrangler types --strict-vars=false",
+    "typecheck": "pnpm types && tsc --noEmit",
+    "test": "vitest run && node scripts/test-node.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "smoke": "node scripts/smoke.mjs",
+    "deploy": "node scripts/secrets.mjs deploy",
+    "dev": "vite dev",
+    "start": "wrangler dev --config dist/server/wrangler.json",
+    "build": "vite build",
+    "build:staging": "CLOUDFLARE_ENV=staging vite build",
+    "build:production": "CLOUDFLARE_ENV=production vite build"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-server-dom-webpack": "19.3.1",
+    "vinext": "1.2.1",
+    "@vinext/cloudflare": "1.1.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.23.0",
+    "@types/node": "24.0.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11",
+    "wrangler": "4.151.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@cloudflare/vite-plugin": "1.64.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitejs/plugin-rsc": "0.5.38",
+    "vite": "8.3.4"
+  }
+}

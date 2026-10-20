@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { consumeRateLimit, getClientIp, isRateLimited, purgeExpired, rateLimit, windowMs, type RateLimitEnv } from "{{paths.lib|rel}}/rate-limit";
+import { consumeRateLimit, getClientIp, isRateLimited, purgeExpired, rateLimit, windowMs, type RateLimitEnv } from "{{paths.lib|rel}}/d1-rate-limit/rate-limit";
 
 const LOGIN = { name: "login", limit: 3, window: "15 m", key: "203.0.113.7" };
 const TABLE = "{{kit.tablePrefix}}rate_limits";

@@ -5,7 +5,7 @@
   "title": "First-party analytics SDK for Canvalytics: signed server events, facts, logs and a 1 KB client relay",
   "description": "Server track, fact, log and identify that scrub PII and send one HMAC-signed POST per invocation to a Canvalytics ingest, plus an anonymous-id middleware, a browser relay route and a 1 KB client snippet. The server key is a Worker secret read by name.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "analytics",
@@ -119,45 +119,45 @@
   ],
   "files": [
     {
-      "path": "src/analytics/client.ts",
+      "path": "src/lib/cf-analytics/client.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/client.ts",
+      "target": "{{paths.lib}}/cf-analytics/client.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/analytics/track.ts",
+      "path": "src/lib/cf-analytics/track.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/track.ts",
+      "target": "{{paths.lib}}/cf-analytics/track.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/analytics/scrub.ts",
+      "path": "src/lib/cf-analytics/scrub.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/scrub.ts",
+      "target": "{{paths.lib}}/cf-analytics/scrub.ts",
       "role": "service",
       "variant": "hono-d1",
       "template": false
     },
     {
-      "path": "src/analytics/middleware.ts",
+      "path": "src/lib/cf-analytics/middleware.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/middleware.ts",
+      "target": "{{paths.lib}}/cf-analytics/middleware.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/analytics/relay.ts",
+      "path": "src/lib/cf-analytics/relay.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/relay.ts",
+      "target": "{{paths.lib}}/cf-analytics/relay.ts",
       "role": "route",
       "variant": "hono-d1"
     },
     {
-      "path": "src/analytics/snippet.ts",
+      "path": "src/lib/cf-analytics/snippet.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/analytics/snippet.ts",
+      "target": "{{paths.lib}}/cf-analytics/snippet.ts",
       "role": "service",
       "variant": "hono-d1"
     },
@@ -269,47 +269,47 @@
   "exports": [
     {
       "symbol": "track",
-      "from": "src/analytics/track.ts",
+      "from": "src/lib/cf-analytics/track.ts",
       "kind": "function"
     },
     {
       "symbol": "fact",
-      "from": "src/analytics/track.ts",
+      "from": "src/lib/cf-analytics/track.ts",
       "kind": "function"
     },
     {
       "symbol": "log",
-      "from": "src/analytics/track.ts",
+      "from": "src/lib/cf-analytics/track.ts",
       "kind": "function"
     },
     {
       "symbol": "identify",
-      "from": "src/analytics/track.ts",
+      "from": "src/lib/cf-analytics/track.ts",
       "kind": "function"
     },
     {
       "symbol": "flush",
-      "from": "src/analytics/client.ts",
+      "from": "src/lib/cf-analytics/client.ts",
       "kind": "function"
     },
     {
       "symbol": "analytics",
-      "from": "src/analytics/middleware.ts",
+      "from": "src/lib/cf-analytics/middleware.ts",
       "kind": "hono-middleware"
     },
     {
       "symbol": "handleRelay",
-      "from": "src/analytics/relay.ts",
+      "from": "src/lib/cf-analytics/relay.ts",
       "kind": "hono-handler"
     },
     {
       "symbol": "CLIENT_SNIPPET",
-      "from": "src/analytics/snippet.ts",
+      "from": "src/lib/cf-analytics/snippet.ts",
       "kind": "constant"
     },
     {
       "symbol": "scrub",
-      "from": "src/analytics/scrub.ts",
+      "from": "src/lib/cf-analytics/scrub.ts",
       "kind": "function"
     }
   ],
@@ -354,7 +354,7 @@
         "required": true,
         "title": "Mount the middleware and relay",
         "where": "{{paths.app}}/index.ts",
-        "do": "app.use('*', analytics()); app.post('{{kit.relayPath}}', handleRelay); import both from './lib/analytics/...'.",
+        "do": "app.use('*', analytics()); app.post('{{kit.relayPath}}', handleRelay); import both from './lib/cf-analytics/...'.",
         "check": "POST {{kit.relayPath}} with a $pageview body answers 204 and sets the cookie once."
       },
       {

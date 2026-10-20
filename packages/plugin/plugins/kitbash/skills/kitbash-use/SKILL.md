@@ -1,9 +1,12 @@
 ---
 name: kitbash-use
-description: The protocol for adding a whole feature (sign-in, orgs, billing, rate limits, API keys, email sending...) to a project from the Kitbash block registry instead of writing it from scratch - search, read the summary, dry-run install and read the diff, apply by plan id, work the adapt checklist, verify with the block's own tests, then propose improvements upstream. Use when the user asks to add or build a feature that a block might already cover, mentions Kitbash, blocks or the kit CLI, or says install, adapt, upgrade or verify a block.
+description: Add a whole feature to an existing project from the Kitbash block registry - search, inspect, dry-run install, apply, adapt and verify, then propose improvements upstream. Use when adding a feature that a block might cover or installing, adapting, upgrading or verifying a block. For a new repository, use kitbash-bootstrap first.
 ---
 
 # Use a Kitbash block
+
+For a new repository, start with `kitbash-bootstrap` to choose a runtime preset and compatible blocks. Use this
+protocol for later additions and for adapting and verifying the resulting installed features.
 
 A block is a whole feature (migrations, routes, services, UI, env declarations, config patches, tests, an agent guide),
 versioned and signed. You find it in about 100 tokens, judge it in about 1,000, install it without reading its code,

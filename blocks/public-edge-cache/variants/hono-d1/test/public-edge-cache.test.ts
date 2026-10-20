@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
-import { publicCacheKey, withPublicEdgeCache } from '{{paths.lib|rel}}/public-edge-cache';
+import { publicCacheKey, withPublicEdgeCache } from '{{paths.lib|rel}}/public-edge-cache/public-edge-cache';
 const policy = { version: 'v1', routes: { '/catalog': ['page', 'q'] } };
 const req = (path = '/catalog', init?: RequestInit) => new Request(`https://example.com${path}`, init);
 const response = () => new Response('catalog', { headers: { 'cache-control': 'public, max-age=60' } });
