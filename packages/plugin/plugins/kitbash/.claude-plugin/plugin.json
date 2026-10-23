@@ -1,6 +1,6 @@
 {
   "name": "kit",
-  "description": "Bootstrap Worker, vinext and Rust projects with selected blocks, then install, adapt and verify reusable features. Includes a local MCP server, CLI launcher and optional pstack composition.",
+  "description": "Bootstrap projects with blocks, verify features, and generate secrets or register CI access through an operator-configured broker. Includes a local MCP client and optional pstack composition.",
   "version": "0.1.0",
   "author": {
     "name": "Xava Labs"

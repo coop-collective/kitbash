@@ -12,6 +12,8 @@ node packages/cli/dist/kit.js bootstrap ../my-server --preset rust-server --host
 
 Use `kit bootstrap` interactively to choose a preset and blocks. The plugin exposes the same operation through `kitbash_bootstrap` and `/kit:bootstrap`. See [bootstrap usage, hosting, source layout, and secrets](docs/BOOTSTRAP.md). Presets supply the project shell; feature code remains in versioned blocks with tests and adaptation checklists. Generated projects retain source snapshots for later verification. The registry design and earlier experiments remain documented below.
 
+For automated secret setup, `/kit:secrets setup my-app staging` generates all declared missing application keys, registers GitHub OIDC access, and configures Infisical's Worker sync through an [isolated secrets broker](docs/SECRETS-BROKER.md). The agent receives names and status; provider credentials and generated values stay outside its workspace. Bootstrap emits a policy proposal for registration with that broker.
+
 **A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
 rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,
 config patches, tests and a one-page agent guide. An agent searches in ~100 tokens, judges in ~1,000, installs without

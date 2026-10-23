@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { cp, mkdir } from "node:fs/promises";
+import { createServer } from "node:http";
+import { once } from "node:events";
 import { test } from "node:test";
 import { BOOTSTRAP_TOOL, catalogEnv } from "../plugins/kitbash/scripts/bootstrap-tool.mjs";
 import { toArgv } from "../plugins/kitbash/scripts/server.mjs";
@@ -66,7 +68,7 @@ test("the packaged plugin bootstraps from its own catalog outside the checkout w
   const isolated = await tmpDir("kit-plugin-installed-");
   const installed = path.join(isolated, "plugin");
   await mkdir(path.join(installed, "scripts"), { recursive: true });
-  for (const name of ["bootstrap.mjs", "load-kit.mjs"]) {
+  for (const name of ["bootstrap.mjs", "secrets.mjs", "load-kit.mjs"]) {
     await cp(path.join(pluginRoot, "plugins/kitbash/scripts", name), path.join(installed, "scripts", name));
   }
   await cp(path.join(pluginRoot, "plugins/kitbash/runtime"), path.join(installed, "runtime"), { recursive: true });
@@ -79,4 +81,24 @@ test("the packaged plugin bootstraps from its own catalog outside the checkout w
   assert.ok(await exists(path.join(isolated, "app", ".kit", "bootstrap.json")));
   assert.equal(await exists(path.join(installed, "node_modules")), false);
   assert.equal(await exists(path.join(isolated, "app", "node_modules")), false);
+  // The installed plugin's secrets client also needs no checkout or provider CLI.
+  const broker = createServer(async (request, response) => {
+    let body = "";
+    for await (const part of request) body += part;
+    const input = JSON.parse(body);
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ ...input, status: "ready", secrets: [], privateValue: "must-stay-hidden" }));
+  });
+  broker.listen(0, "127.0.0.1");
+  await once(broker, "listening");
+  try {
+    const result = await execFileP(process.execPath, [path.join(installed, "scripts/secrets.mjs"), "status", "example", "staging"], {
+      cwd: isolated, env: { ...env, KIT_SECRETS_BROKER_URL: `http://127.0.0.1:${broker.address().port}`,
+        KIT_SECRETS_BROKER_TOKEN: "operator_scoped_test_token_for_broker", KIT_SECRETS_BROKER_ALLOW_LOOPBACK_HTTP: "1" },
+    });
+    assert.deepEqual(JSON.parse(result.stdout), { operation: "status", project: "example", target: "staging", status: "ready", secrets: [] });
+    assert.equal(result.stderr, "");
+  } finally {
+    await new Promise((resolve) => broker.close(resolve));
+  }
 });

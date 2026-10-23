@@ -1,0 +1,13 @@
+{
+  "name": "@kitbash/secrets-broker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated, metadata-only secret generation and access provisioning for Kitbash agents",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "node --check src/server.mjs && node --check src/service.mjs && node --check src/api.mjs && node --check src/config.mjs && node --check src/state.mjs && node --check src/provision.mjs && node --check src/scope.mjs && node --check src/credentials.mjs && node --check src/issue-client.mjs"
+  }
+}

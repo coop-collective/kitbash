@@ -36,10 +36,10 @@ async function registryClient(extra = {}) {
   return { reg, client, cwd, home };
 }
 
-test("tools/list preserves core's registry contract and adds the plugin bootstrap tool", async () => {
+test("tools/list preserves core's registry contract and adds bootstrap and secrets broker tools", async () => {
   const client = await connect();
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 12);
+  assert.equal(tools.length, 13);
   assert.deepEqual(tools.map((t) => t.name).sort(), PLUGIN_TOOLS.map((t) => t.name).sort());
   for (const def of PLUGIN_TOOLS) {
     const t = tools.find((x) => x.name === def.name);

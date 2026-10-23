@@ -87,6 +87,7 @@ The generated project records:
 - `.kit/catalog/blocks/`: local source snapshots for later block verification and updates.
 - `.kit/skills/`: explicit maintenance reviews, kept out of ordinary feature-agent instructions.
 - `.kit/verification/README.md`: project verification entrypoint to extend as actual user journeys are added.
+- `.kitbash/secrets-broker.request.json`: names and destination metadata proposed to the separately controlled broker; no credentials or grants.
 
 After generation, resolve `pending_adapt`, run the project's check command, and drive the app's actual behavior.
 The bootstrap JSON result includes `next_steps`; scripts can consume it with `--json`.
@@ -98,16 +99,19 @@ project's Infisical connection. `.kitbash/secrets.json` lists secret names and e
 `scripts/secrets.mjs` helper supports local materialization, importing values through stdin, random generation,
 and configured provider-native rotation.
 
-Register each application-owned secret name in `.kitbash/secrets.json` first; random generation also requires
-`generate: true` on its policy. For a new `APP_KEY`, choose either importing an existing value or generating one;
-both operations refuse to replace an existing value. Then materialize the local environment.
+For agents, use the [isolated secrets broker](SECRETS-BROKER.md). After its operator registers the intended alias and
+account access, one call generates every missing `generate: true` application key, creates the environment/folders,
+registers GitHub's OIDC identity and variables, and configures Worker synchronization. The agent receives only names
+and status. Existing secrets are preserved; missing required provider-issued credentials remain explicit pending work.
 
-```sh
-node scripts/secrets.mjs create APP_KEY --env local < /path/to/protected-value
-# Alternatively, generate an application-owned key:
-node scripts/secrets.mjs generate APP_KEY --env local
-node scripts/secrets.mjs local --env local
+```json
+{"operation":"setup","project":"my-api","target":"staging"}
 ```
+
+The plugin command is `/kit:secrets setup my-api staging`. Source declarations in `.kitbash/secrets.json` become a
+broker policy proposal, not authority to access another account. Local materialization/import/run helpers remain
+available for trusted operators; an agent with local filesystem or process access could read those values, so use
+non-sensitive fixtures locally when requiring secret isolation.
 
 Read the generated `docs/secrets.md` and helper help for authentication, environment, and deployment operations. CI should fetch the deployment
 environment through Infisical's configured identity, then use the generated deployment command. Creating a secret

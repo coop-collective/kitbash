@@ -1,7 +1,7 @@
 {
   "name": "kit",
   "version": "0.1.0",
-  "description": "Bootstrap projects with selected blocks and Git hosting; search, install, adapt, verify, harvest and publish reusable features.",
+  "description": "Bootstrap projects with blocks and Git hosting; verify features and manage secrets through a metadata-only broker.",
   "author": {
     "name": "Xava Labs"
   },
@@ -26,7 +26,7 @@
   "interface": {
     "displayName": "Kitbash",
     "shortDescription": "Bootstrap projects and install tested feature blocks",
-    "longDescription": "Create Worker, vinext or local Rust server projects with compatible blocks and optional Git hosting. The local MCP server also searches, installs and verifies blocks, with a dry-run diff for existing projects. Pstack can supply the engineering playbook as a separate optional dependency.",
+    "longDescription": "Create Worker, vinext or local Rust server projects with compatible blocks and optional Git hosting. Search, install and verify blocks with dry-run diffs. An operator-configured remote broker generates secrets and registers GitHub Actions or Worker sync access without returning values. Pstack is an optional separate dependency.",
     "developerName": "Xava Labs",
     "category": "Developer Tools",
     "capabilities": [
@@ -39,7 +39,8 @@
       "Use $kitbash-use to add email sign-in to this project.",
       "Use $kitbash-use to find a block for rate limiting and install it.",
       "Use $kitbash-harvest to turn this feature into a block.",
-      "Use $kitbash-publish to publish this block privately."
+      "Use $kitbash-publish to publish this block privately.",
+      "Use $kitbash-secrets to generate staging secrets through the configured broker."
     ],
     "brandColor": "#F5A524"
   }

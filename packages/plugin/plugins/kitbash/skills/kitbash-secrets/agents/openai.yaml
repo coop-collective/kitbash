@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: manage secrets"
+  short_description: "Generate secrets and register CI access through a broker"
+  default_prompt: "Use $kitbash-secrets to provision staging secrets and GitHub Actions access for the configured project."

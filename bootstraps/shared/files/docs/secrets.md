@@ -2,7 +2,13 @@
 
 The generated project uses Infisical as the source of application secrets. `.kitbash/secrets.json` contains identifiers and policy, never values. Bootstrap records selected blocks' secret names; complete their adaptation checklist before enabling a deployment. Optional names use `required: false`.
 
-## Configure once
+## Agent automation
+
+Use the Kitbash plugin's `kitbash_secrets` tool with `operation: "setup"`, the registered project alias, and an explicit target. The isolated broker generates all missing application keys with cryptographic randomness, creates configured environment/folders, registers GitHub OIDC access, and connects the native Worker sync. It preserves existing keys and returns names/status only. `.kitbash/secrets-broker.request.json` is a proposal for the broker operator; it cannot authorize itself. See [broker setup and boundaries](https://github.com/coop-collective/kitbash/blob/main/docs/SECRETS-BROKER.md).
+
+Agents must not use the local materialization or arbitrary `run` commands below when secret isolation is required. Those commands put values in files or application process memory accessible to the local user. Use non-sensitive test fixtures locally and an isolated trusted runtime for real secrets. Provider-issued credentials come from authorized provider APIs/connections, never random application strings.
+
+## Trusted operator fallback
 
 1. Create or select an Infisical project and set its UUID and HTTPS domain in `.kitbash/secrets.json`. `kit bootstrap --infisical-project UUID --infisical-domain https://your-vault.example` can record these existing identifiers. Bootstrap does not create a vault project, identities, provider credentials, environments, or rotation jobs.
 2. Create `dev`, `staging`, and `production` environments and `/app` folders. `local` maps to `dev`; staging and production remain separate. An operation must name its target. Put application values in `/app`; put only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in each deployment environment's `/ci` folder. Use account-scoped deployment tokens with the necessary Worker/resource permissions. The rotation administrator credential belongs in an Infisical app connection, not `/ci`.

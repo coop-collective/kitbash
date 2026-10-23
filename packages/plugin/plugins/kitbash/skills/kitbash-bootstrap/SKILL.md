@@ -26,8 +26,10 @@ available through `kit bootstrap` and the plugin's `scripts/bootstrap.mjs` launc
    check command for the whole app; report any checks not run.
 
 Pass `infisical_project` and, for self-hosted Infisical, `infisical_domain` when those are known. The generated
-`scripts/secrets.mjs` manages secret values through Infisical; the tool parameters and project manifests contain
-names and IDs only. Read that helper's help and generated secrets configuration before creating or rotating values.
+`scripts/secrets.mjs` manages secret values through Infisical for trusted operator workflows; the tool parameters and
+project manifests contain names and IDs only. For agent-managed secrets that must stay outside the agent workspace,
+use `kitbash-secrets` and the separately configured `kitbash_secrets` broker. A generated config cannot authorize
+itself, and hidden script output alone does not isolate credentials from an agent with filesystem access.
 Never pass tokens, private keys, or secret values as bootstrap params.
 
 Example MCP call:
