@@ -65,7 +65,7 @@ async function blockCatalog(root: string, preset: Preset) {
   }));
 }
 
-async function configureSecrets(stage: string, ids: string[], root: string, a: Parsed, preset: Preset, name: string) {
+async function configureSecrets(stage: string, ids: string[], root: string, a: Parsed, preset: Preset, name: string, git: RepositoryOptions) {
   const file = path.join(stage, ".kitbash/secrets.json");
   const config = JSON.parse(await readFile(file, "utf8"));
   if (str(a, "infisical-project")) config.projectId = str(a, "infisical-project");
@@ -85,6 +85,21 @@ async function configureSecrets(stage: string, ids: string[], root: string, a: P
     }
   }
   await writeFile(file, `${JSON.stringify(config, null, 2)}\n`);
+  // Discovery material only. Broker policy and grants come from its trusted operator.
+  const targets = Object.fromEntries(Object.entries(config.targets as Record<string, { environment: string; path: string }>).filter(([target]) => preset.id !== "rust-server" || target === "local").map(([target, scope]) => [target, {
+    environment: scope.environment, secretPath: scope.path,
+    ...(target !== "local" ? {
+      cloudflare: { connectionName: `kit-${name}-${target}`, workerName: `${name}-${target}`, syncName: `kit-${name}-${target}`, autoSync: true },
+      ...(git.host === "github" && git.repo ? { github: {
+        repository: git.repo, environment: target, ref: "refs/heads/main", workflow: ".github/workflows/deploy.yml",
+        roleSlug: `kit-${name}-${target}`, identityName: `kit-${name}-${target}`,
+      } } : {}),
+    } : {}),
+  }]));
+  await writeFile(path.join(stage, ".kitbash/secrets-broker.request.json"), `${JSON.stringify({
+    version: 1, proposalOnly: true, project: name,
+    policy: { projectId: config.projectId, projectSlug: "", domain: config.domain, targets, secrets: config.secrets },
+  }, null, 2)}\n`);
 }
 
 async function addBlocks(stage: string, catalog: string, preset: Preset, chosen: Selection[], a: Parsed, io: Io) {
@@ -183,7 +198,7 @@ export async function bootstrap(io: Io, a: Parsed): Promise<number> {
     const lock = await addBlocks(stage, catalog, preset, chosen, a, io);
     blockIds = Object.keys(lock.blocks);
     pending = blockIds.map(id => ({ block: id, items: Object.entries(lock.blocks[id]!.adapt).filter(([, status]) => status === "pending").map(([item]) => item) })).filter(item => item.items.length);
-    await configureSecrets(stage, blockIds, catalog, a, preset, name);
+    await configureSecrets(stage, blockIds, catalog, a, preset, name, git);
     const packagePath = path.join(stage, "package.json");
     const pkg = JSON.parse(await readFile(packagePath, "utf8"));
     for (const task of ["create", "import", "generate", "rotate", "doctor", "run"]) pkg.scripts[`secrets:${task}`] = `node scripts/secrets.mjs ${task}`;
@@ -214,7 +229,7 @@ export async function bootstrap(io: Io, a: Parsed): Promise<number> {
   }
   if (bool(a, "install")) await command(io, destination, "pnpm", ["install", "--no-frozen-lockfile"]);
   const repository = await setupRepository(io, destination, git);
-  const next = ["pnpm install (if dependencies were not installed)", "pnpm check", "pnpm dev", "Configure .kitbash/secrets.json, then use pnpm secrets:local", ...(pending.length ? ["Complete installed blocks' adaptation checklists with kit status"] : [])];
+  const next = ["pnpm install (if dependencies were not installed)", "pnpm check", "pnpm dev", `Use kitbash_secrets setup for broker alias ${name}; .kitbash/secrets-broker.request.json proposes destinations and names for operator registration`, ...(pending.length ? ["Complete installed blocks' adaptation checklists with kit status"] : [])];
   const result = { directory: destination, preset: preset.id, blocks: blockIds, pending_adapt: pending, git: repository, next_steps: next };
   if (bool(a, "json")) json(io, result);
   else {

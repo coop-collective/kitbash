@@ -41,9 +41,10 @@ jobs:
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
-          env-slug: ${{ inputs.target }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || inputs.target }}
           secret-path: /ci
           include-imports: 'false'
           recursive: 'false'
@@ -52,10 +53,11 @@ jobs:
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
-          env-slug: ${{ inputs.target }}
-          secret-path: /app
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || inputs.target }}
+          secret-path: ${{ vars.INFISICAL_SECRET_PATH || '/app' }}
           include-imports: 'false'
           recursive: 'false'
       - name: Deploy code and allowlisted Worker secrets together

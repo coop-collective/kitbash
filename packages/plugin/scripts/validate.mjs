@@ -27,12 +27,12 @@ const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
 export const MARKETPLACE = "kitbash";
-export const SKILLS = ["kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-use"];
-export const COMMANDS = ["bootstrap", "harvest", "install", "search"];
+export const SKILLS = ["kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-secrets", "kitbash-use"];
+export const COMMANDS = ["bootstrap", "harvest", "install", "search", "secrets"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",
   "registry_diff", "registry_harvest", "registry_publish", "registry_propose", "registry_whoami",
-  "kitbash_bootstrap",
+  "kitbash_bootstrap", "kitbash_secrets",
 ];
 
 const REQUIRED = [
@@ -48,6 +48,8 @@ const REQUIRED = [
   `${P}/scripts/load-kit.mjs`,
   `${P}/scripts/bootstrap.mjs`,
   `${P}/scripts/bootstrap-tool.mjs`,
+  `${P}/scripts/secrets.mjs`,
+  `${P}/scripts/secrets-tool.mjs`,
 ];
 for (const rel of REQUIRED) check(exists(rel), `missing ${rel}`);
 
@@ -135,7 +137,7 @@ for (const name of commands) {
   const rel = `${P}/commands/${name}.md`;
   const fm = frontmatter(rel);
   check(fm?.fields.description, `command ${name} needs a description`);
-  const skill = name === "bootstrap" ? "kitbash-bootstrap" : name === "harvest" ? "kitbash-harvest" : "kitbash-use";
+  const skill = name === "bootstrap" ? "kitbash-bootstrap" : name === "secrets" ? "kitbash-secrets" : name === "harvest" ? "kitbash-harvest" : "kitbash-use";
   check(new RegExp(skill).test(fm?.body ?? ""), `command ${name} must load the ${skill} skill`);
   if (fm) scanTools(rel, fm.body);
 }
@@ -188,4 +190,4 @@ if (errors.length) {
   console.error(`kitbash plugin validation failed with ${errors.length} problem(s):\n- ${errors.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, stdio MCP kitbash.`);
+console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, 1 secrets broker tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, stdio MCP kitbash.`);

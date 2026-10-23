@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "projects": {
+    "my-app": {
+      "projectId": "11111111-1111-4111-8111-111111111111",
+      "projectSlug": "my-app",
+      "domain": "https://app.infisical.com",
+      "secrets": {
+        "JWT_SESSION_SECRET": { "required": true, "generate": true, "bytes": 32, "rotation": "migration-required" }
+      },
+      "targets": {
+        "local": { "environment": "dev", "secretPath": "/app" },
+        "staging": {
+          "environment": "staging",
+          "secretPath": "/app",
+          "github": {
+            "repository": "your-org/my-app",
+            "environment": "staging",
+            "ref": "refs/heads/main",
+            "workflow": ".github/workflows/deploy.yml",
+            "roleSlug": "kit-my-app-staging",
+            "identityName": "kit-my-app-staging"
+          },
+          "cloudflare": {
+            "connectionName": "kit-my-app-staging",
+            "workerName": "my-app-staging",
+            "syncName": "kit-my-app-staging",
+            "autoSync": true
+          }
+        }
+      }
+    }
+  },
+  "principals": [
+    {
+      "id": "build-agent",
+      "tokenSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "grants": [{ "project": "my-app", "targets": ["local", "staging"], "operations": ["setup", "status", "generate", "provision-github", "provision-worker-sync"] }]
+    }
+  ]
+}

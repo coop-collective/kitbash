@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Kitbash plugin for Claude Code and Codex: bootstrap projects, install feature blocks, and verify the result through a local MCP server",
+  "description": "Kitbash plugin: bootstrap projects, install feature blocks, and provision secrets through a metadata-only broker",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/*.test.mjs",

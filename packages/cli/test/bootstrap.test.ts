@@ -34,6 +34,11 @@ describe("project bootstrap", () => {
     expect(JSON.parse(result.out).pending_adapt.length).toBeGreaterThan(0);
     const secrets = await readJson(path.join(root, ".kitbash/secrets.json"));
     expect(secrets.secrets.TOKEN_PEPPER.rotation).toBe("migration-required");
+    const broker = await readJson(path.join(root, ".kitbash/secrets-broker.request.json"));
+    expect(broker.proposalOnly).toBe(true);
+    expect(broker.policy.secrets.TOKEN_PEPPER.generate).toBe(true);
+    expect(broker.policy.targets.staging.cloudflare.workerName).toBe("my-api-staging");
+    expect(broker.principals).toBeUndefined();
     const files = await snapshot(root);
     expect(Object.keys(files).some(p => p.endsWith(".dev.vars"))).toBe(false);
     expect(files["package.json"]).toContain("secrets:local");
@@ -85,6 +90,7 @@ describe("project bootstrap", () => {
     expect(await readFile(path.join(root, "src/main.rs"), "utf8")).toContain("9191");
     expect((await readJson(path.join(root, "package.json"))).scripts.build).toContain("cargo build");
     expect((await readJson(path.join(root, ".kitbash/secrets.json"))).targets.local.localFile).toBe(".env.local");
+    expect(Object.keys((await readJson(path.join(root, ".kitbash/secrets-broker.request.json"))).policy.targets)).toEqual(["local"]);
     expect(JSON.parse(result.out).blocks).toEqual([]);
   });
 
