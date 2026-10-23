@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: manage service accounts"
+  short_description: "Onboard accounts with scoped vault access and secret delivery"
+  default_prompt: "Use $kitbash-accounts to check readiness for a company service signup and OAuth application setup."
