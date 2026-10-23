@@ -1,120 +1,212 @@
-# Kitbash (working name: feature-registry)
+# Kitbash
 
-**Project bootstrapping and explicit maintenance for coding agents.** Create a vinext app, Cloudflare Worker, or local Rust server with compatible feature blocks, Infisical secret helpers, and optional GitHub/Gitstalk repository creation. [Maintenance skills](skills/README.md) cover TypeScript, Rust and page-specific rendering/caching when explicitly assigned, normally after merge. [Pstack composition](docs/PSTACK.md) shows how to implement and verify features with the generated project, then select maintenance work separately. No recurring agent is enabled by bootstrap.
+**An MIT-licensed, open-source toolkit for coding agents building and maintaining applications.** Kitbash combines reusable feature blocks, project bootstraps, tested recipes, and focused maintenance skills, with a plugin for Claude Code and Codex.
+
+The catalog ships in this repository. Install its source into your project, adapt the wiring, and run its checks. You do not need a Kitbash account, subscription, or hosted registry. Your application owns the copied code.
+
+| Part | What it supplies |
+| --- | --- |
+| [17 blocks](#available-blocks) | Feature code, tests, migrations, configuration, and adaptation instructions |
+| [3 project presets](#start-a-project) | A runnable Worker, vinext app, or local Rust server, with compatible blocks selected at bootstrap |
+| [81 UI components](#ui-components) | Styrene-themed React parts for agent and AI products, browsable in Storybook |
+| [7 recipes](#recipes) | Working examples for CI, integration tests, coverage, linting, and build checks |
+| [3 maintenance skills](#maintenance-and-pstack) | Explicit TypeScript, Rust, and page-delivery reviews after merge or before release |
+| [Agent plugin](#use-the-plugin) | Local MCP tools and skills for discovery, installation, verification, and secret setup |
+
+## Get started
+
+Use Node.js 22.18 or later and the repository's pinned pnpm version, currently 12.14.0.
 
 ```sh
+git clone https://github.com/coop-collective/kitbash.git
+cd kitbash
+pnpm install
 pnpm --filter @kitbash/cli build
-node packages/cli/dist/kit.js bootstrap --list --preset worker
-node packages/cli/dist/kit.js bootstrap ../my-api --preset worker --blocks jwt-session-cookie,r2-private-uploads --yes
-node packages/cli/dist/kit.js bootstrap ../my-web --preset vinext --blocks public-edge-cache --yes
-node packages/cli/dist/kit.js bootstrap ../my-server --preset rust-server --host 127.0.0.1 --port 8080 --yes
+pnpm --filter @kitbash/plugin build
+export KITBASH_ROOT="$PWD"
 ```
 
-Use `kit bootstrap` interactively to choose a preset and blocks. The plugin exposes the same operation through `kitbash_bootstrap` and `/kit:bootstrap`. See [bootstrap usage, hosting, source layout, and secrets](docs/BOOTSTRAP.md). Presets supply the project shell; feature code remains in versioned blocks with tests and adaptation checklists. Generated projects retain source snapshots for later verification. The registry design and earlier experiments remain documented below.
+Build before loading the plugin: it bundles its runtime and local catalog so an installed copy can work without this checkout's dependencies. After updating the checkout, rebuild and reload or reinstall the plugin. Native container development also needs the relevant Bun, Go, Rust, and Docker tooling; see [workspace setup](docs/WORKSPACE.md).
 
-For automated secret setup, `/kit:secrets setup my-app staging` generates all declared missing application keys, registers GitHub OIDC access, and configures Infisical's Worker sync through an [isolated secrets broker](docs/SECRETS-BROKER.md). The agent receives names and status; provider credentials and generated values stay outside its workspace. Bootstrap emits a policy proposal for registration with that broker.
+## Use the plugin
+
+The plugin is named `kit`; its local MCP server is named `kitbash`.
 
 For company signups and OAuth app setup, use the [Grok Bot account-manager starter](docs/GROK-BOT.md) or the plugin skill `$kitbash-accounts`. Grok manages provider accounts through Agent Vault; Claude Code and other coding tools handle application changes and Infisical credentials. Browser password filling and provider-secret capture require separately verified integrations.
 
-**A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
-rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,
-config patches, tests and a one-page agent guide. An agent searches in ~100 tokens, judges in ~1,000, installs without
-reading the code, adapts the wiring from a checklist, and proves it with the block's own tests. shadcn's registry for
-the whole stack, built for agents first.
+### Claude Code
 
-**Benchmark status (2026-10-19): feature-source reuse has not demonstrated a model-cost saving.** The [small kitchen-sink study](docs/research/kitchen-sink-discovery.md) cost more with reuse. A [larger existing-app study with three integration-plus-maintenance pairs](docs/research/lifecycle-reuse.md) was nearly tied: reuse cost 0.8% more and used 4.6% less agent time. All twelve stages passed automated checks, but source review found one defect in each arm at different stages. These limited studies compare additional feature-source reuse; all arms already shared framework dependencies. CLI estimates exclude coordinating-agent and infrastructure costs.
-
-## Why
-
-The owner runs ~30 small apps on Cloudflare (Workers, Hono, D1, R2, Next.js, Tauri). Three scans of `~/Workspace`
-found the same features rewritten by hand again and again: six bearer-token schemes, three email-code sign-ins with
-identical limits and zero shared lines, four OAuth-for-MCP providers, eight stateless MCP servers, seven plugin
-scaffolds whose `validate.mjs` files differ by 200–330 lines. Each rebuild costs an agent session 20–60k tokens and the
-owner a day of review, and produces one more slightly different version. Ideator's autopilot is about to multiply the
-number of apps. The first customer is the owner's own agents.
-
-Nothing on the market covers this unit. Component registries (shadcn: 462 namespaces, an MCP server, paid namespaces
-behind header auth) model files, not features: no migrations, tests, versions, upgrades or stack variants. Whole-app
-boilerplates (ShipFast, Supastarter, Makerkit) are one-shot copies whose own docs warn about upgrading, and their
-revenue is falling as agents write scaffolding. Feature-level installers exist for one framework at a time (Makerkit's
-plugins, Rails engines, AdonisJS `configure`). The blocker that killed earlier attempts, fragile codemods across many
-stacks, is exactly what a coding agent with a test suite absorbs. **Tests included is the moat**: tests are the
-acceptance check for installs, upgrades and royalties.
-
-## What it is
-
-- **Blocks** (`block.json`, a superset of shadcn `registry-item.json`): files with `{{kit.param}}` placeholders, typed
-  params, stack variants (`hono-d1`, `nextjs-d1`), migrations renumbered on copy, declared bindings/env/secrets (names
-  only), routes and tables as an interface for conflict checks, allowlisted `verify` commands, an Agent Skills
-  `SKILL.md`, provenance and signatures, lineage. Three sizes: card ≤ 100 tokens, summary ≤ 1,500, bundle on disk.
-- **The flow**: `registry_search` → `registry_get` → `registry_install` (dry run with a diff; deterministic copy +
-  substitution + migration renumbering + config merge; lock file) → adapt checklist → `registry_verify` → later
-  `registry_upgrade` (Copier-style 3-way re-apply) and `registry_propose` (send improvements upstream with params
-  un-rendered).
-- **Delivery**: a `kit` CLI; a Claude Code / Codex / Grok plugin whose local stdio MCP server exposes the `registry_*`
-  tools (so Ideator's Planner/Builder/Harvester call them directly); a remote `/mcp` for cloud agents; a
-  shadcn-compatible `/r/` endpoint.
-- **Tiers**: private blocks per org (Free 5, Pro unlimited, Team per seat); public blocks free or paid (one-time per
-  org, 15% fee); forks with immutable lineage; royalties to authors **and upstream forkers** (75% / 15% / 7% / 3%),
-  metered on *verified active project-months*, not downloads, with a user-centric pool from 30% of subscriptions.
-- **Security**: no install hooks; explicitly invoked tasks in validated private container subprojects; publisher + registry signatures over content hashes; static scan for secrets,
-  dangerous code, dependency advisories and prompt injection in docs; sandboxed test runs; review tiers with rug-pull
-  detection and a 72-hour `latest` cooldown; "instructions are data" rules enforced by the tools; dry-run diffs.
-- **Stack**: Cloudflare Workers (Hono) + D1 (FTS5) + R2 (content-addressed blobs) + Queues + Cron, Vectorize and
-  Sandbox in v1; Email Service; Stripe (and USDC via xinf's existing seller payouts). Auth is Ideator's: email codes,
-  hashed bearer tokens, OAuth 2.1 with "My CLI on this computer". The registry installs its own auth from its own blocks.
-
-## Development
-
-Use pnpm 12.14.0 with Node 22.18 or later and Go 1.26.4. The root workspace maps the registry packages, native runtime block payloads, recipes, contract examples and installer fixtures. pnpm installs the pinned Bun runtime and Cargo dependencies/toolchain; Go modules remain managed by Go.
+From the project you want to work on, launch Claude with the built plugin:
 
 ```sh
-pnpm bootstrap                 # install workspace + Cargo dependencies, then Go modules
-pnpm workspace:map             # names and paths for every workspace package
-pnpm check                     # lint, typecheck, unit/runtime tests, schema/plugin validation
-pnpm build                     # local bundles and native binaries; Worker builds are dry runs
-pnpm test:e2e                  # browser flow + clean-host block installation
+claude --plugin-dir "$KITBASH_ROOT/packages/plugin/plugins/kitbash"
 ```
 
-Browser tests need Chromium installed once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install`. See [workspace commands and native dependency resolution](docs/WORKSPACE.md) for filters, Docker checks and installing the runtime blocks. Bun, Go and Rust are variants of the [Cloudflare container block](blocks/cloudflare-container/docs/README.md); real-time rooms use the [WebSocket block](blocks/hibernating-websocket/docs/README.md).
+Then use a command or describe the task:
 
-## Documents
+```text
+/kit:bootstrap Create a Worker in ../my-api with jwt-session-cookie and r2-private-uploads.
+/kit:search Find a block for tenant-scoped WebSocket rooms.
+/kit:install /absolute/path/to/kitbash/blocks/hibernating-websocket
+/kit:secrets setup my-api staging
+```
 
-| File | What |
-|---|---|
-| [`docs/DESIGN.md`](docs/DESIGN.md) | Positioning, landscape, block format decisions, agent flow and MCP contract, tiers/forks/royalties, security, architecture, roadmap, open questions |
-| [`docs/BLOCK-SPEC.md`](docs/BLOCK-SPEC.md) | The manifest schema, install semantics, lock file, signing, scanner rules, and a worked `email-code-auth` block for Hono + D1 |
-| [`docs/WORKSPACE-REVIEW-2026-10.md`](docs/WORKSPACE-REVIEW-2026-10.md) | October workspace review: independent pattern PRs, evidence, validation and adoption boundaries |
-| [`docs/HARVEST.md`](docs/HARVEST.md) | 37 candidate blocks found in the owner's repos, with golden sources, rebuild counts, quality notes and effort |
-| [`docs/PLAN.md`](docs/PLAN.md) | Work packages (MVP, v1, v2) sized for one agent session each, with ownership, dependencies, acceptance and tests |
+`--plugin-dir` loads the plugin for that session. See [Claude Code's plugin guide](https://code.claude.com/docs/en/plugins/create) for its installation options.
 
-## Roadmap in one line each
+### Codex
 
-- **MVP** (~1 week of agent sessions): private registry for the owner on `wrangler dev`, core + CLI + plugin with the
-  MCP tools, reference test fixtures, five harvested blocks (`email-code-auth`, `cf-email-sender`, `cli-oauth-login`,
-  `orgs-roles-invites`, `api-keys`), Ideator contract. Exit: Claude Code and Codex each install three blocks into a
-  fresh template in one session with ≤ 3 manual edits and all block tests green.
-- **v1**: accounts (from our own blocks), public/private, licenses, scanner, sandbox, review tiers, Stripe
-  subscriptions and paid blocks, web UI, remote MCP, semantic search, telemetry, 20 more public blocks, deploy.
-- **v2**: forks + lineage + similarity, proposals UI, royalty engine and payouts (Stripe Connect, USDC), x402
-  per-install, Gitstalk mirror and pre-land gate, curated tier via an Ideator review loop.
+Register the built local plugin catalog, install `kit`, and start a new session in your application:
 
-## Name options
+```sh
+codex plugin marketplace add "$KITBASH_ROOT/packages/plugin"
+codex plugin add kit@kitbash
+```
 
-Kitbash (recommended: building new models from parts of other kits; CLI `kit`), Prefab, Quarry, Blockwork, Spolia.
-Open question: Nullshot already calls its registry items "blocks"; Kitbash's unit could be a "kit" instead.
+Here, “marketplace” is the CLI's name for the local plugin catalog. These commands do not connect to a Kitbash service. See [OpenAI's plugin documentation](https://learn.chatgpt.com/docs/plugins) for plugin discovery and management.
 
-## Status
+```text
+Use $kitbash-bootstrap to create a vinext app in ../my-web with public-edge-cache.
+Use $kitbash-use to install /absolute/path/to/kitbash/blocks/member-profiles into this Worker, adapt it, and verify it.
+Use $kitbash-secrets to set up staging secrets for the registered my-api project.
+Use $kitbash-accounts to check readiness for company account and OAuth app setup.
+Use $kitbash-ui to build the run-approval screen from the Styrene components.
+```
 
-- 2026-10-18: founding design written.
-- 2026-10-18: **MVP built and its exit met for Claude Code** (WP-01…WP-08; details and evidence in
-  [`docs/PLAN.md`](docs/PLAN.md#status)). core + API (`wrangler dev` only) + `kit` CLI + plugin + 8 blocks
-  (`crypto-utils`, `cf-email-sender`, `email-code-auth`, `cli-oauth-login`, `orgs-roles-invites`, `api-keys`,
-  `d1-rate-limit`, `vitest-workerd-harness`). Tests: core 171, api 86, cli 71, plugin 19, contract examples 15, e2e
-  harness 28/28 (every block, conflict resolutions, the three-block MVP chain). `scripts/e2e-mvp.sh`: a headless Claude
-  Code session installed email-code-auth + cli-oauth-login + orgs-roles-invites from the local registry into a fresh
-  `test-e2e/fixtures/hono-d1`, with 1 file edited outside block files, all block tests passing, in 203 s for $0.93.
-  The Codex repeat installed and verified the same blocks but edited 6 files (sandbox workarounds and extras), so its
-  ≤ 3 edits criterion is open. kit-api's own bearer tokens now come from `email-code-auth`, installed from the registry.
-- 2026-10-19: block `cf-analytics` (hono-d1): first-party analytics SDK for Canvalytics (signed `track`/`fact`/`log`/`identify`, relay, 1 KB snippet).
-- No registry deployment or publication yet. The [October workspace review](docs/WORKSPACE-REVIEW-2026-10.md) tracks independent pattern contributions as PRs. Next product phase: v1 (WP-10…WP-19).
+For a harness that only supports MCP, configure a stdio server running `node /absolute/path/to/kitbash/packages/plugin/plugins/kitbash/scripts/kit-mcp.mjs`. MCP-only setup exposes tools; it does not install the plugin's skills or commands.
+
+### How block installation works
+
+The agent finds a block in this README, the local `blocks/` directory, or the installed plugin's `runtime/catalog/blocks/`. The `kitbash_bootstrap` tool with `list: true` lists presets; add `preset: "worker"` or `"vinext"` to list compatible blocks.
+
+For an existing project, inspect and install using the block's **absolute local directory** and the application's `project_root`. Use the installed block ID returned by the installer for subsequent verification and maintenance:
+
+| Step | Tool | Result |
+| --- | --- | --- |
+| Inspect | `registry_get` | Parameters, dependencies, bindings, migrations, and adaptation checklist |
+| Preview | `registry_install` with `dry_run: true` | Planned files, configuration changes, conflicts, and a `plan_id` |
+| Apply | `registry_install` with `dry_run: false` and that `plan_id` | The reviewed source changes installed into the project |
+| Adapt | Agent edits guided by the checklist | Routes mounted, authentication connected, bindings and application behavior wired |
+| Verify | `registry_verify` | Block checks run and results recorded in `.kit/lock.json` |
+| Maintain | `registry_diff`, `registry_upgrade` | Review local changes and plan upgrades |
+
+The `registry_*` names are retained from the earlier implementation; local inspection, installation, and verification need no registry login. `registry_search` and remote publishing tools still belong to the legacy registry workflow and are not needed for this toolkit.
+
+Source modules land under `src/lib/<block-name>/` and routes under `src/routes/<block-name>/`, using the project's configured paths. Tests and migrations remain in their normal top-level folders. Container service code lives under `containers/<serviceName>/`. Installation records pending adaptation work; copied files alone do not mean the feature is integrated.
+
+## Available blocks
+
+All 17 block manifests currently declare MIT. Most target **TypeScript on Cloudflare Workers with Hono/D1**. Check a block's manifest and guide for its actual bindings, dependencies, and verification commands.
+
+| Block | What you get |
+| --- | --- |
+| [crypto-utils](blocks/crypto-utils/docs/README.md) | WebCrypto helpers for HMAC, purpose-specific keys, constant-time comparison, and random codes |
+| [cf-email-sender](blocks/cf-email-sender/docs/README.md) | Cloudflare Email Service sending, development output, and test overrides |
+| [email-code-auth](blocks/email-code-auth/docs/README.md) | Email-code sign-in and peppered bearer tokens |
+| [session-cookie](blocks/session-cookie/docs/README.md) | Revocable opaque browser sessions, host cookies, and mutation-origin checks |
+| [jwt-session-cookie](blocks/jwt-session-cookie/docs/README.md) | JWT browser session cookies with D1 revocation |
+| [cli-oauth-login](blocks/cli-oauth-login/docs/README.md) | OAuth authorization and sign-in for a person's own CLI |
+| [api-keys](blocks/api-keys/docs/README.md) | Prefixed API keys, HMAC storage, owner routes, and optional KV verification caching |
+| [orgs-roles-invites](blocks/orgs-roles-invites/docs/README.md) | Organizations, memberships, roles, and email invitations |
+| [member-profiles](blocks/member-profiles/docs/README.md) | Owner-editable profiles, unique handles, and revision-safe updates |
+| [d1-rate-limit](blocks/d1-rate-limit/docs/README.md) | Fixed-window D1 rate limiting that fails closed in production |
+| [r2-private-uploads](blocks/r2-private-uploads/docs/README.md) | Bounded private uploads with tenant-scoped R2 keys |
+| [public-edge-cache](blocks/public-edge-cache/docs/README.md) | Explicit public GET response caching at the Worker gateway |
+| [tiered-result-cache](blocks/tiered-result-cache/docs/README.md) | Validated result caching through edge cache, optional KV, and an authoritative loader |
+| [hibernating-websocket](blocks/hibernating-websocket/docs/README.md) | Tenant-scoped Durable Object WebSocket rooms with hibernation, replay, and client examples |
+| [cloudflare-container](blocks/cloudflare-container/docs/README.md) | Authenticated container gateway and **Bun, Go, or Rust** service variants with Docker smoke checks |
+| [cf-analytics](blocks/cf-analytics/docs/README.md) | Signed first-party events, facts, logs, identification, and a browser relay for a compatible Canvalytics ingest |
+| [vitest-workerd-harness](blocks/vitest-workerd-harness/docs/README.md) | Workerd integration tests, applied D1 migrations, and production migration-history replay |
+
+The result-cache loader can read **D1, Durable Objects, R2, Analytics Engine query results, or another store**. The helper caches validated JSON results; authentication decisions, secrets, event writes, and binary streams stay outside that cache. See its [store adapters and consistency guidance](blocks/tiered-result-cache/docs/README.md).
+
+## Start a project
+
+Presets provide the application shell; blocks provide reusable features.
+
+| Preset | Starting point | Block compatibility |
+| --- | --- | --- |
+| `worker` | Hono Worker, D1 migrations, workerd tests, health endpoint, Wrangler environments | Runtime Worker blocks; the testing harness is already supplied |
+| `vinext` | React App Router under `src/app`, Vite/vinext, Worker deployment, health tests | `crypto-utils`, `public-edge-cache`, `tiered-result-cache` |
+| `rust-server` | Local Axum/Tokio server, tracing, graceful shutdown, Cargo checks through root pnpm scripts | Rust project shell; TypeScript blocks are not installed into it |
+
+The CLI works without an agent:
+
+```sh
+node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap --list --preset worker
+node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-api \
+  --preset worker --blocks jwt-session-cookie,r2-private-uploads --install --yes
+node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-web \
+  --preset vinext --blocks public-edge-cache --yes
+node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-server \
+  --preset rust-server --host 127.0.0.1 --port 8080 --yes
+```
+
+Run `bootstrap` interactively to choose a preset and blocks. Select a container variant with `--blocks cloudflare-container:go` (or `:bun`, `:rust`). Add `--git-host github --repo owner/name --create-repo` to create a GitHub repository; Gitstalk is also supported. Remote creation and dependency installation are explicit options.
+
+For an existing application, the CLI supports `init`, local-path `get` and `install`, then `status` and `verify`. Use `--root /absolute/path/to/app` to select the target. See [bootstrap and installation details](docs/BOOTSTRAP.md) and `node "$KITBASH_ROOT/packages/cli/dist/kit.js" --help`.
+
+## UI components
+
+[`packages/ui`](packages/ui/README.md) is a Storybook of 81 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, multiplayer presence, analytics, users and profiles, inputs and charts. The newer data components (and the context window, agent lanes, trace waterfall and KPI chart) ship skeleton, empty, error and freshness states, with a stale-while-revalidate cache hook and lazy mounting to drive them. They share Styrene, Kitbash's own visual language: flat panels, molded keys only where you press, one meaning per color, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React, importable on its own as `@kitbash/ui/<name>` and safe to render from React Server Components.
+
+```sh
+pnpm storybook   # http://localhost:6006, light and dark from the toolbar
+```
+
+The plugin's `kitbash-ui` skill points agents at this catalog before they build UI, and the plugin bundles the component sources under `runtime/catalog/ui/`. The component list follows [affectUI](https://www.affectui.com/components)'s public catalog as a brief; every implementation here is written independently.
+
+## Recipes
+
+Recipes are runnable reference projects and scripts. Read their guides and copy the relevant pieces; they are not additional installable blocks.
+
+| Recipe | What it demonstrates |
+| --- | --- |
+| [cloudflare-ci](recipes/cloudflare-ci/README.md) | Credential-free checks, Infisical-backed CI, migrations, and environment-specific Worker deployment |
+| [playwright-worker-e2e](recipes/playwright-worker-e2e/README.md) | Browser journeys against a local Worker and migrated D1 |
+| [tiered-result-cache-do](recipes/tiered-result-cache-do/README.md) | Full Worker/DO integration tests for the installed result-cache block |
+| [workerd-coverage](recipes/workerd-coverage/README.md) | Workerd/D1 test coverage with an enforced floor |
+| [typescript-lint](recipes/typescript-lint/README.md) | Shared TypeScript ESLint configuration |
+| [typescript-native-checks](recipes/typescript-native-checks/README.md) | TypeScript 7 checks with bounded parallelism and changed-project selection |
+| [vinext-guardrails](recipes/vinext-guardrails/README.md) | Configuration, artifact, and build-budget checks for vinext on Workers |
+
+## Secrets and CI access
+
+With an isolated broker and an authorized project policy configured, `/kit:secrets setup my-api staging` generates missing application keys with at least 256 bits of randomness, preserves existing values, registers GitHub OIDC access, and configures Infisical's Worker secret sync. Agents receive names and status only. Provider-issued credentials come from authorized provider connections, not random substitute strings.
+
+The broker is an optional service you operate separately from the agent's filesystem and process access. It is not a hosted Kitbash account. Bootstrap emits a policy proposal; it does not provision live accounts or deploy the application. See [secret setup, trust boundaries, and rotation limits](docs/SECRETS-BROKER.md).
+
+For company signups and OAuth app setup, the [Grok Bot account-manager starter](docs/GROK-BOT.md) keeps automation access in Agent Vault and application credentials in Infisical. It includes a reusable skill and a readiness check; browser password filling and provider-secret capture require separately verified integrations.
+
+## Maintenance and pstack
+
+Maintenance skills are explicitly invoked after merge or at a requested production-readiness checkpoint. They do not add arbitrary function-length ceilings or require cosmetic refactors.
+
+| Skill | Focus |
+| --- | --- |
+| [clean-code-typescript](skills/clean-code-typescript/SKILL.md) | TypeScript correctness, agent navigation, and measured performance problems |
+| [clean-code-rust](skills/clean-code-rust/SKILL.md) | Rust behavior, ownership, task lifecycle, and measured costs |
+| [page-delivery](skills/page-delivery/SKILL.md) | Per-route static generation, SSR, data refresh, and caching decisions |
+
+Copy selected skills or vendor the `skills/` tree into a project; generated projects keep a copy under `.kit/skills/`. [Installation and invocation](skills/README.md) explain how to expose them to your harness. No scheduler or recurring agent is enabled automatically.
+
+[Pstack](docs/PSTACK.md) is an optional, separately installed engineering workflow. Use it to plan, implement, debug, and verify a feature; use Kitbash for the stack-specific blocks, recipes, and maintenance checks. Verification should exercise real user journeys and backend assertions, with recordings where useful.
+
+## Develop and contribute
+
+```sh
+pnpm bootstrap                 # workspace install, including Go module setup
+pnpm workspace:map             # package and native-project task map
+pnpm check                     # lint, type checks, tests, and validation
+pnpm build                     # bundles and builds; Worker builds are dry runs
+pnpm test:e2e                  # browser journeys and block installation matrix
+```
+
+See [workspace commands](docs/WORKSPACE.md) for browser installation, native toolchains, Docker checks, and focused package commands. On constrained machines, run workspace tests serially with `pnpm -r --workspace-concurrency=1 --if-present run test`.
+
+To contribute a block, follow the [block format](docs/BLOCK-SPEC.md), include its tests and adaptation checklist, preserve source provenance and license notices, and open a pull request. `/kit:harvest` can prepare a local block draft from existing code. Recipes and maintenance skills can be contributed directly in their respective directories.
+
+Earlier hosted-registry designs and economic experiments remain in [DESIGN](docs/DESIGN.md), [PLAN](docs/PLAN.md), and [research](docs/research/). They are historical context, not the toolkit's product roadmap. The reuse experiments have not established a model-cost saving; see the [lifecycle study](docs/research/lifecycle-reuse.md) for its evidence and limits.
+
+## License
+
+[MIT](LICENSE). Preserve the license and attribution notices included with vendored code, including the [D1 rate-limit block's upstream notice](blocks/d1-rate-limit/LICENSE). Third-party dependencies retain their own licenses.

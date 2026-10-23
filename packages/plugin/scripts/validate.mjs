@@ -27,7 +27,7 @@ const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
 export const MARKETPLACE = "kitbash";
-export const SKILLS = ["kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-secrets", "kitbash-use"];
+export const SKILLS = ["kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-secrets", "kitbash-ui", "kitbash-use"];
 export const COMMANDS = ["bootstrap", "harvest", "install", "search", "secrets"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",
@@ -150,6 +150,9 @@ for (const must of ["untrusted_author_text", "dry_run", "plan_id", "diff_preview
 }
 const harvest = exists(`${P}/skills/kitbash-harvest/SKILL.md`) ? read(`${P}/skills/kitbash-harvest/SKILL.md`) : "";
 for (const must of ["boundary", "params", "tests", "Redact", "1,500", "provenance", "registry_harvest"]) check(harvest.includes(must), `kitbash-harvest skill must mention ${must}`);
+const ui = exists(`${P}/skills/kitbash-ui/SKILL.md`) ? read(`${P}/skills/kitbash-ui/SKILL.md`) : "";
+for (const must of ["packages/ui", "runtime/catalog/ui", "references/catalog.md", "--kb-", "keyboard"]) check(ui.includes(must), `kitbash-ui skill must mention ${must}`);
+check(exists(`${P}/skills/kitbash-ui/references/catalog.md`), "missing kitbash-ui/references/catalog.md (generate it with pnpm -F @kitbash/ui gen-skill-catalog)");
 const publish = exists(`${P}/skills/kitbash-publish/SKILL.md`) ? read(`${P}/skills/kitbash-publish/SKILL.md`) : "";
 for (const must of ["private", "public", "license", "price", "scanner", "refused", "registry_publish"]) check(publish.includes(must), `kitbash-publish skill must mention ${must}`);
 

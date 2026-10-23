@@ -1,0 +1,31 @@
+/* Empty state: an empty socket in a kit tray, and the one action that fills it */
+.kb-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--kb-s3);
+  max-width: 360px;
+  padding: var(--kb-s6) var(--kb-s4);
+  text-align: center;
+}
+.kb-empty-socket {
+  width: 64px;
+  height: 48px;
+  fill: none;
+  stroke: var(--kb-line-strong);
+  stroke-width: 1.5;
+}
+.kb-empty-socket rect:nth-child(2) { stroke-dasharray: 3 3; stroke: var(--kb-ink-3); }
+.kb-empty-text h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-empty-text p {
+  margin: 4px 0 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+  text-wrap: balance;
+}
+.kb-empty[data-size="sm"] { gap: var(--kb-s2); padding: var(--kb-s4) var(--kb-s3); }
+.kb-empty[data-size="sm"] .kb-empty-socket { width: 44px; height: 33px; }
+.kb-empty[data-size="sm"] .kb-empty-text h3 { font-size: var(--kb-text-md); }

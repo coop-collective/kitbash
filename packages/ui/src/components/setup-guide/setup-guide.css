@@ -1,0 +1,224 @@
+.kb-sg {
+  width: 460px;
+  max-width: 100%;
+  padding: var(--kb-s5);
+  border-radius: var(--kb-r-frame);
+}
+
+.kb-sg-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--kb-s3);
+}
+.kb-sg-title {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-sg-sub {
+  margin: 2px 0 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-sg-pct {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: var(--kb-text-xl);
+  font-weight: var(--kb-w-strong);
+  line-height: 1;
+}
+
+/* Overall progress: a recessed groove with a raised strip sliding along it */
+.kb-sg-groove {
+  height: 10px;
+  margin: var(--kb-s3) 0 var(--kb-s4);
+  padding: 2px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-sg-fill {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-select);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -1px 0 rgb(0 0 0 / 0.2);
+  transition: width var(--kb-slow) var(--kb-snap), background var(--kb-med);
+}
+.kb-sg-fill[data-done] { background: var(--kb-ok); }
+
+.kb-sg-groups {
+  display: grid;
+  gap: var(--kb-s2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Steps are rows split by seams, not cards inside the card */
+.kb-sg-group {
+  border-top: 1px solid var(--kb-line);
+}
+.kb-sg-gh { margin: 0; font: inherit; }
+.kb-sg-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s3);
+  width: 100%;
+  padding: var(--kb-s3);
+  border: 0;
+  border-radius: var(--kb-r-card);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.kb-sg-toggle:hover { background: color-mix(in oklab, var(--kb-panel-2) 60%, transparent); }
+
+/* Step badge: a kit-instruction step number in a molded disc; cures green when the group is done */
+.kb-sg-step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--kb-ink);
+  color: var(--kb-panel);
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-display);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), inset 0 -2px 0 rgb(0 0 0 / 0.25);
+  transition: background var(--kb-med);
+}
+.kb-sg-group[data-done] .kb-sg-step {
+  background: var(--kb-ok);
+  animation: kb-sg-cure var(--kb-slow) var(--kb-snap);
+}
+@keyframes kb-sg-cure {
+  0% { transform: scale(0.7); }
+}
+.kb-sg-gtitle {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--kb-w-strong);
+}
+.kb-sg-group[data-done] .kb-sg-gtitle { color: var(--kb-ink-2); }
+.kb-sg-gcount {
+  color: var(--kb-ink-3);
+  font-size: var(--kb-text-sm);
+}
+.kb-sg-chev {
+  flex: none;
+  color: var(--kb-ink-3);
+  transition: transform var(--kb-med) var(--kb-glide);
+}
+.kb-sg-group[data-open] .kb-sg-chev { transform: rotate(180deg); }
+
+/* Collapse by animating the grid track */
+.kb-sg-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--kb-med) var(--kb-glide);
+}
+.kb-sg-group[data-open] .kb-sg-panel { grid-template-rows: 1fr; }
+.kb-sg-tasks {
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 var(--kb-s2);
+  list-style: none;
+}
+.kb-sg-group[data-open] .kb-sg-tasks {
+  padding-bottom: var(--kb-s2);
+}
+/* Part seam between the header and its tasks */
+.kb-sg-tasks::before {
+  content: "";
+  display: block;
+  height: 1px;
+  margin: 0 var(--kb-s1) var(--kb-s1);
+  background: var(--kb-line);
+  box-shadow: 0 1px 0 var(--kb-bevel-hi);
+}
+
+.kb-sg-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kb-s3);
+  padding: var(--kb-s2) var(--kb-s2) var(--kb-s2) 9px;
+  border-radius: var(--kb-r-control);
+  cursor: pointer;
+}
+.kb-sg-row:hover { background: var(--kb-panel-2); }
+.kb-sg-check {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.kb-sg-box {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: transparent;
+  box-shadow: var(--kb-recessed);
+  transition: background var(--kb-fast), border-color var(--kb-fast), color var(--kb-fast), transform var(--kb-fast) var(--kb-snap);
+}
+.kb-sg-check:focus-visible + .kb-sg-box {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 2px;
+}
+.kb-sg-row:active .kb-sg-box { transform: scale(0.9); }
+.kb-sg-task[data-done] .kb-sg-box {
+  background: var(--kb-ok);
+  border-color: var(--kb-ok);
+  color: var(--kb-panel);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+.kb-sg-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+/* Score line: drawn left to right through the label instead of a plain text-decoration */
+.kb-sg-label {
+  position: relative;
+  justify-self: start;
+  font-weight: var(--kb-w-medium);
+  transition: color var(--kb-med);
+}
+.kb-sg-label::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 52%;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--kb-med) var(--kb-glide);
+}
+.kb-sg-task[data-done] .kb-sg-label { color: var(--kb-ink-3); }
+.kb-sg-task[data-done] .kb-sg-label { color: var(--kb-ink-3); }
+.kb-sg-detail {
+  color: var(--kb-ink-3);
+  font-size: var(--kb-text-sm);
+}
+.kb-sg-task[data-done] .kb-sg-detail { opacity: 0.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-sg-group[data-done] .kb-sg-step { animation: none; }
+}

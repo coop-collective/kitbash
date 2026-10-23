@@ -51,6 +51,8 @@ For a shell-only harness, run the plugin's `scripts/bootstrap.mjs` with CLI argu
 node /path/to/kit-plugin/scripts/bootstrap.mjs ../scoreboard --preset vinext --blocks public-edge-cache,tiered-result-cache --yes
 ```
 
+For a vinext app's interface, use `kitbash-ui` to build screens from the Styrene component catalog.
+
 Pstack is optional and separately installed. Read [pstack composition](references/pstack.md) only when using it for
 the app's implementation or verification. Bootstrap does not install pstack, start recurring automations, or load
 maintenance skills into every feature task.

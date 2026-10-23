@@ -1,6 +1,7 @@
 {
   "name": "kit-recipe-typescript-native-checks",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "typecheck": "node scripts/typecheck.mjs",

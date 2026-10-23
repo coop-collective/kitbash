@@ -1,0 +1,215 @@
+/* Live cursors: people sharing one surface, each pointer a decal in its owner's paint */
+.kb-lc {
+  width: 760px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-lc-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s2);
+  min-height: 44px;
+  padding: var(--kb-s2) var(--kb-s4);
+  border-bottom: 1px solid var(--kb-line);
+  color: var(--kb-ink-2);
+}
+.kb-lc-bar h3 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--kb-text-md);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink);
+}
+.kb-lc-count { font-size: var(--kb-text-sm); white-space: nowrap; }
+
+/* The shared surface */
+.kb-lc-surface {
+  position: relative;
+  padding: var(--kb-s5) var(--kb-s8) var(--kb-s6);
+  line-height: 1.65;
+  overflow: hidden;
+}
+.kb-lc-surface p { margin: 0 0 var(--kb-s3); max-width: 62ch; color: var(--kb-ink); }
+.kb-lc-title {
+  margin: 0 0 var(--kb-s3);
+  font-size: var(--kb-text-xl);
+  font-weight: var(--kb-w-display);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.kb-lc-h {
+  margin: var(--kb-s4) 0 var(--kb-s1);
+  font-size: var(--kb-text-md);
+  font-weight: var(--kb-w-strong);
+}
+.kb-lc-skel { display: grid; gap: var(--kb-s3); }
+
+/* A selection: a wash of the owner's paint */
+.kb-lc-sel {
+  padding: 2px 0;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--c) 24%, transparent);
+  color: inherit;
+  transition: background var(--kb-med);
+}
+.kb-lc-sel[data-idle] { background: color-mix(in oklab, var(--c) 10%, transparent); }
+.kb-lc-end {
+  display: inline-block;
+  width: 0;
+  height: 1.3em;
+  vertical-align: -0.25em;
+}
+
+/* A cursor: positioned by transform so updates glide; with reduced motion it jumps */
+.kb-lc-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition: transform 900ms var(--kb-glide), opacity var(--kb-slow);
+}
+.kb-lc[data-reduced] .kb-lc-cursor { transition: opacity var(--kb-slow); }
+.kb-lc-pointer {
+  display: block;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.25));
+}
+.kb-lc-pointer path {
+  fill: var(--c);
+  stroke: var(--kb-panel);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.kb-lc-caret {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 2px;
+  height: var(--h);
+  border-radius: 1px;
+  background: var(--c);
+}
+.kb-lc-flag {
+  position: absolute;
+  top: 16px;
+  left: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 0 var(--kb-r-part) var(--kb-r-part) var(--kb-r-part);
+  background: var(--c);
+  color: var(--kb-panel);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  white-space: nowrap;
+  transition: opacity var(--kb-slow), transform var(--kb-med) var(--kb-glide);
+}
+/* At a caret the flag hangs from the top of the line, like a tab on a part */
+.kb-lc-cursor[data-mode="caret"] .kb-lc-flag {
+  top: -20px;
+  left: -1px;
+  border-radius: var(--kb-r-part) var(--kb-r-part) var(--kb-r-part) 0;
+}
+.kb-lc-cursor[data-kind="agent"] .kb-lc-flag { color: var(--kb-agent-ink); }
+/* Idle: the cursor fades to a ghost and its flag folds away */
+.kb-lc-cursor[data-idle] { opacity: 0.4; }
+.kb-lc-cursor[data-idle] .kb-lc-flag { opacity: 0; transform: translateY(-3px); }
+/* Ping: a ring around the cursor tip when someone asks where this person is */
+.kb-lc-cursor[data-ping]::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--c);
+  border-radius: 50%;
+  animation: kb-lc-ping 700ms var(--kb-glide) 2;
+}
+.kb-lc-cursor[data-ping] { opacity: 1; }
+.kb-lc-cursor[data-ping] .kb-lc-flag { opacity: 1; transform: none; }
+@keyframes kb-lc-ping {
+  from { transform: scale(0.4); opacity: 1; }
+  to { transform: scale(1.5); opacity: 0; }
+}
+
+/* Legend: who is here and where, and the keyboard way to find each cursor */
+.kb-lc-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s3);
+  min-height: 52px;
+  padding: var(--kb-s2) var(--kb-s3);
+  border-top: 1px solid var(--kb-line);
+}
+.kb-lc-legend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kb-s1);
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-lc-legend li { min-width: 0; max-width: 100%; }
+.kb-lc-legend .kb-empty,
+.kb-lc-legend .kb-err { flex: 1; max-width: none; }
+.kb-lc-legend .kb-empty { grid-template-columns: auto 1fr auto; justify-items: start; text-align: left; align-items: center; padding: var(--kb-s2); }
+.kb-lc-fresh { margin-left: auto; padding-right: var(--kb-s1); }
+.kb-lc-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border: 0;
+  border-radius: var(--kb-r-control);
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  cursor: pointer;
+}
+.kb-lc-who:hover { background: var(--kb-panel-2); }
+.kb-lc-who strong { font-weight: var(--kb-w-strong); }
+.kb-lc-who span {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+}
+.kb-lc-who[data-idle] strong { color: var(--kb-ink-2); }
+.kb-lc-swatch {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px 50% 50% 50%;
+  background: var(--c);
+}
+.kb-lc-swatch[data-kind="agent"] {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--kb-r-part);
+  color: var(--kb-agent-ink);
+}
+.kb-lc-who[data-idle] .kb-lc-swatch { opacity: 0.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-lc-cursor { transition: opacity var(--kb-slow); }
+  .kb-lc-cursor[data-ping]::before { animation: none; transform: scale(1.2); }
+}

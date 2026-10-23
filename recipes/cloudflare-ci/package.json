@@ -1,6 +1,7 @@
 {
   "name": "kitbash-recipe-cloudflare-ci",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "node --test test/deploy.test.mjs",

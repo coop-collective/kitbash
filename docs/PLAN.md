@@ -1,5 +1,7 @@
 # Plan
 
+> Historical implementation plan for the earlier hosted-registry design. The current MIT-licensed toolkit, local plugin workflow, and shipped catalog are documented in the [README](../README.md); future platform work listed below is not the current roadmap.
+
 Written 2026-10-18. Work packages sized for **one agent session each**, with disjoint file ownership (a package never
 edits another package's paths while both are in flight), explicit dependencies, acceptance criteria and tests, a model
 suggestion (opus for anything that defines a contract or touches security; sonnet for well-specified build-out), and

@@ -1,0 +1,212 @@
+/* Approval card: a raised part that, once decided, presses in and seats as a recessed row */
+.kb-ap {
+  overflow: hidden;
+  width: 520px;
+  max-width: 100%;
+  display: grid;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  transition:
+    box-shadow var(--kb-med) var(--kb-glide),
+    background var(--kb-med),
+    border-radius var(--kb-med) var(--kb-glide),
+    transform var(--kb-fast) var(--kb-glide);
+}
+.kb-ap:not([data-state="pending"]) {
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  border-radius: var(--kb-r-control);
+  animation: kb-ap-seat var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-ap-seat {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(2px) scale(0.99); }
+  100% { transform: none; }
+}
+
+/* Both layers fold with the grid-rows trick so the height morphs instead of jumping */
+.kb-ap-full,
+.kb-ap-row-wrap {
+  display: grid;
+  transition: grid-template-rows var(--kb-slow) var(--kb-glide), opacity var(--kb-med);
+}
+.kb-ap-full { grid-template-rows: 1fr; }
+.kb-ap-row-wrap { grid-template-rows: 0fr; opacity: 0; }
+.kb-ap:not([data-state="pending"]) .kb-ap-full { grid-template-rows: 0fr; opacity: 0; }
+.kb-ap:not([data-state="pending"]) .kb-ap-row-wrap { grid-template-rows: 1fr; opacity: 1; }
+.kb-ap-clip,
+.kb-ap-row {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The one "waiting on you" signal: a decal line along the top edge, shrinking toward the auto-deny */
+.kb-ap-tape {
+  display: none;
+  height: 3px;
+  background: var(--kb-line);
+}
+.kb-ap-tape > span {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  background: var(--kb-decal);
+  transition: transform 100ms linear;
+}
+
+.kb-ap-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px 16px;
+}
+.kb-ap-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 12px;
+}
+.kb-ap-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-select-soft);
+  color: var(--kb-select-text);
+  box-shadow: inset 0 -1px 0 var(--kb-bevel-lo);
+}
+.kb-ap-heading { min-width: 0; }
+.kb-ap-agent {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-ap-head h3 {
+  margin: 1px 0 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.kb-ap-reason {
+  margin: 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+
+/* Preview: exactly what will go out, set off by seams rather than a nested panel */
+.kb-ap-preview {
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--kb-line);
+  border-bottom: 1px solid var(--kb-line);
+  font-size: var(--kb-text-sm);
+}
+.kb-ap-preview figcaption {
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-3);
+  margin-bottom: 8px;
+}
+.kb-ap-preview dl {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.kb-ap-preview dl > div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 8px;
+}
+.kb-ap-preview dt { color: var(--kb-ink-3); }
+.kb-ap-preview dd {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kb-ap-preview p {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--kb-line-strong);
+  color: var(--kb-ink-2);
+}
+
+.kb-ap-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kb-ap-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-ap-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: var(--kb-r-part);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  background: rgb(0 0 0 / 0.08);
+}
+.kb-btn[data-variant="primary"] .kb-ap-kbd { background: rgb(0 0 0 / 0.12); }
+
+/* Resolved row */
+.kb-ap-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  font-size: var(--kb-text-sm);
+}
+.kb-ap:not([data-state="pending"]) .kb-ap-row { padding: 10px 14px; }
+.kb-ap-row:focus-visible { outline-offset: -2px; border-radius: var(--kb-r-control); }
+.kb-ap-stamp {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--kb-ok);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -1px 0 rgb(0 0 0 / 0.2);
+  animation: kb-ap-stamp var(--kb-med) var(--kb-snap) both;
+  animation-delay: 160ms;
+}
+.kb-ap-stamp[data-outcome="denied"] { background: var(--kb-danger); color: var(--kb-danger-ink); }
+.kb-ap-stamp[data-outcome="expired"] { background: var(--kb-ink-3); color: var(--kb-panel); }
+@keyframes kb-ap-stamp {
+  from { transform: scale(0.3); opacity: 0; }
+}
+.kb-ap-row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+}
+.kb-ap-row-text strong { color: var(--kb-ink); font-weight: var(--kb-w-strong); }
+.kb-ap-row-meta {
+  color: var(--kb-ink-3);
+  font-size: var(--kb-text-xs);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ap:not([data-state="pending"]),
+  .kb-ap-stamp { animation: none; }
+  .kb-ap-tape > span { transition: none; }
+}

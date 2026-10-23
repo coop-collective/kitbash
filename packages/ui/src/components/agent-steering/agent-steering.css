@@ -1,0 +1,235 @@
+.kb-st {
+  width: 560px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-st-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s3);
+  padding: var(--kb-s3) var(--kb-s4);
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-st-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-agent);
+  color: var(--kb-agent-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+.kb-st-title { flex: 1; min-width: 0; }
+.kb-st-title h3 { margin: 0; font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-st-title p { margin: 0; font-size: var(--kb-text-sm); color: var(--kb-ink-3); }
+
+.kb-st-plan {
+  margin: 0;
+  padding: var(--kb-s3) var(--kb-s4);
+  list-style: none;
+}
+.kb-st-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: var(--kb-s3);
+  padding: 7px 0;
+}
+/* The seam between steps */
+.kb-st-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 31px;
+  bottom: -7px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--kb-line);
+}
+.kb-st-step[data-state="done"]::before { background: color-mix(in oklab, var(--kb-ok) 45%, var(--kb-line)); }
+
+.kb-st-mark {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-3);
+  box-shadow: var(--kb-recessed);
+}
+.kb-st-num { font-size: var(--kb-text-xs); font-weight: var(--kb-w-strong); }
+.kb-st-step[data-state="done"] .kb-st-mark { background: var(--kb-ok-soft); color: var(--kb-ok); box-shadow: none; }
+.kb-st-step[data-state="running"] .kb-st-mark {
+  background: var(--kb-panel);
+  color: var(--kb-agent);
+  box-shadow: 0 0 0 1.5px var(--kb-agent), var(--kb-cast);
+}
+.kb-st-step[data-state="stopped"] .kb-st-mark { background: var(--kb-danger-soft); color: var(--kb-danger); box-shadow: none; }
+
+.kb-st-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding-top: 2px;
+}
+.kb-st-text {
+  font-size: var(--kb-text-md);
+  color: var(--kb-ink);
+}
+.kb-st-step[data-state="done"] .kb-st-text { color: var(--kb-ink-2); }
+.kb-st-step[data-state="todo"] .kb-st-text { color: var(--kb-ink-2); }
+.kb-st-step[data-state="stopped"] .kb-st-text { color: var(--kb-ink-3); text-decoration: line-through; text-decoration-color: var(--kb-ink-3); }
+.kb-st-step[data-state="running"] .kb-st-text { font-weight: var(--kb-w-strong); }
+.kb-st-from {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 7px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-agent-soft);
+  color: var(--kb-agent);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  line-height: 18px;
+  vertical-align: 1px;
+}
+.kb-st-step[data-kind="resume"] .kb-st-from { background: var(--kb-panel-2); color: var(--kb-ink-2); }
+.kb-st-sub { font-size: var(--kb-text-xs); color: var(--kb-danger); }
+.kb-st-bar {
+  display: block;
+  height: 4px;
+  max-width: 260px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  overflow: hidden;
+}
+.kb-st-bar span {
+  display: block;
+  height: 100%;
+  background: var(--kb-agent);
+  border-radius: inherit;
+  transition: width 100ms linear;
+}
+.kb-st-log {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+/* A note that was just picked up snaps into its slot in the plan */
+.kb-st-step[data-fresh] .kb-st-body {
+  animation: kb-st-snap var(--kb-slow) var(--kb-snap);
+}
+.kb-st-step[data-fresh] .kb-st-mark {
+  animation: kb-st-pop var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-st-snap {
+  from { transform: translate(18px, -14px) rotate(-1.5deg); opacity: 0.3; }
+}
+@keyframes kb-st-pop {
+  from { transform: scale(0.4); }
+}
+
+/* Queued notes: clips docked on the seam after the running step */
+.kb-st-clips {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-st-clip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 4px 5px 9px;
+  border: 1px dashed color-mix(in oklab, var(--kb-agent) 55%, var(--kb-line));
+  border-radius: var(--kb-r-control);
+  background: color-mix(in oklab, var(--kb-agent-soft) 55%, var(--kb-panel));
+  color: var(--kb-ink);
+  font-size: var(--kb-text-sm);
+  animation: kb-st-clip var(--kb-med) var(--kb-snap);
+}
+/* The tab that hooks the clip onto the seam */
+.kb-st-clip::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 50%;
+  width: 24px;
+  height: 2px;
+  margin-top: -1px;
+  background: color-mix(in oklab, var(--kb-agent) 55%, var(--kb-line));
+}
+.kb-st-clip svg { flex: none; color: var(--kb-agent); }
+.kb-st-clip span { flex: 1; min-width: 0; }
+.kb-st-clip button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kb-r-control);
+  background: transparent;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+}
+.kb-st-clip button:hover { background: var(--kb-panel); color: var(--kb-ink); }
+@keyframes kb-st-clip {
+  from { transform: translateY(10px) scale(0.96); opacity: 0; }
+}
+
+.kb-st-compose {
+  margin: 0 var(--kb-s3) var(--kb-s3);
+  padding: var(--kb-s2);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-st-compose textarea {
+  display: block;
+  width: 100%;
+  resize: none;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-md);
+  line-height: 1.45;
+}
+.kb-st-compose textarea::placeholder { color: var(--kb-ink-3); }
+.kb-st-compose textarea:focus-visible { outline: none; }
+.kb-st-compose:focus-within { box-shadow: var(--kb-recessed), 0 0 0 2px var(--kb-select); }
+.kb-st-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.kb-st-hint {
+  flex: 1;
+  padding-left: 8px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-st-step[data-fresh] .kb-st-body,
+  .kb-st-step[data-fresh] .kb-st-mark,
+  .kb-st-clip { animation: none; }
+  .kb-st-bar span { transition: none; }
+}

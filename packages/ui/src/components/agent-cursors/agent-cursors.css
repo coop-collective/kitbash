@@ -1,0 +1,278 @@
+.kb-ac {
+  width: 820px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+  overflow: hidden;
+}
+
+.kb-ac-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s2);
+  padding: var(--kb-s2) var(--kb-s3) var(--kb-s2) var(--kb-s4);
+  border-bottom: 1px solid var(--kb-line);
+  color: var(--kb-ink-2);
+}
+.kb-ac-docname {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink);
+}
+.kb-ac-presence {
+  display: inline-flex;
+  padding-right: 4px;
+}
+.kb-ac-presence .kb-ac-face {
+  margin-right: -5px;
+  box-shadow: 0 0 0 2px var(--kb-panel);
+}
+.kb-ac-face {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+}
+
+.kb-ac-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  background: var(--kb-styrene);
+  box-shadow: var(--kb-recessed);
+}
+
+/* The page: a sheet set into the well, with room on the right for cursors to park */
+.kb-ac-page {
+  position: relative;
+  margin: var(--kb-s4) 0 var(--kb-s4) var(--kb-s4);
+  padding: var(--kb-s5) var(--kb-s6) var(--kb-s6);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-raised);
+  font-size: var(--kb-text-md);
+  line-height: 1.6;
+  color: var(--kb-ink);
+}
+.kb-ac-page p {
+  margin: 0 0 var(--kb-s3);
+}
+.kb-ac-h {
+  margin: 0 0 var(--kb-s2);
+  font-size: var(--kb-text-xl);
+  font-weight: var(--kb-w-strong);
+  letter-spacing: -0.01em;
+}
+.kb-ac-anchor {
+  display: inline-block;
+  width: 0;
+  height: 1em;
+  vertical-align: text-bottom;
+}
+
+/* Agent edits are unglued parts: a dashed seam in the agent's color until someone accepts them */
+.kb-ac-insert[data-state="pending"] {
+  color: var(--kb-ink);
+  background: color-mix(in oklab, var(--who) 12%, transparent);
+  border-bottom: 1.5px dashed var(--who);
+  border-radius: 3px 3px 0 0;
+}
+.kb-ac-insert[data-state="accepted"] {
+  animation: kb-ac-glue var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-ac-glue {
+  from { background: color-mix(in oklab, var(--kb-ok) 25%, transparent); }
+}
+
+.kb-ac-fig {
+  position: relative;
+  margin: 0 0 var(--kb-s4);
+  padding: var(--kb-s2);
+  border-radius: var(--kb-r-part);
+  border: 1.5px solid transparent;
+  transition: width var(--kb-fast) linear;
+}
+.kb-ac-fig[data-state="pending"] {
+  border: 1.5px dashed var(--who);
+}
+.kb-ac-fig[data-state="accepted"],
+.kb-ac-fig[data-state="rejected"] {
+  transition: width var(--kb-med) var(--kb-snap);
+}
+.kb-ac-fig figcaption {
+  margin-top: 2px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-ac-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--kb-panel-2);
+  border-radius: var(--kb-r-part);
+  box-shadow: var(--kb-recessed);
+}
+.kb-ac-chart text {
+  font-size: var(--kb-text-xs);
+  fill: var(--kb-ink-3);
+}
+.kb-ac-grid { stroke: var(--kb-line); stroke-width: 0.75; }
+.kb-ac-mark { stroke: var(--kb-ink-3); stroke-dasharray: 2 3; }
+.kb-ac-area { fill: color-mix(in oklab, var(--kb-agent) 14%, transparent); }
+.kb-ac-line { fill: none; stroke: var(--kb-agent); stroke-width: 2; stroke-linejoin: round; }
+
+.kb-ac-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--kb-panel);
+  border: 1.5px solid var(--who);
+  border-radius: 2px;
+}
+.kb-ac-handle[data-corner="br"]:not([data-show]) { visibility: hidden; }
+.kb-ac-handle[data-corner="tl"] { left: -5px; top: -5px; }
+.kb-ac-handle[data-corner="tr"] { right: -5px; top: -5px; }
+.kb-ac-handle[data-corner="bl"] { left: -5px; bottom: -5px; }
+.kb-ac-handle[data-corner="br"] { right: -5px; bottom: -5px; }
+
+.kb-ac-code {
+  margin: 0;
+  padding: var(--kb-s3) 0;
+  background: var(--kb-panel-2);
+  border-radius: var(--kb-r-part);
+  box-shadow: var(--kb-recessed);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  line-height: 1.7;
+  overflow: hidden;
+}
+.kb-ac-code code {
+  display: block;
+}
+.kb-ac-ln {
+  display: block;
+  padding: 0 var(--kb-s3);
+  white-space: pre;
+}
+.kb-ac-ln[data-diff="del"] {
+  background: var(--kb-danger-soft);
+  color: var(--kb-danger);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.kb-ac-ln[data-diff="add"] {
+  background: var(--kb-ok-soft);
+  color: var(--kb-ink);
+  box-shadow: inset 2px 0 0 var(--who);
+}
+
+/* Cursors: an arrow plus a name flag that says what the agent is doing */
+.kb-ac-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+  transition: transform 700ms var(--kb-glide);
+}
+.kb-ac-cursor[data-fast] {
+  transition-duration: 110ms;
+  transition-timing-function: linear;
+}
+.kb-ac-cursor svg {
+  margin: -2px 0 0 -2px;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.25));
+}
+.kb-ac-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 12px 0 0 -2px;
+  padding: 1px 7px 2px;
+  border-radius: 4px 9px 9px 9px;
+  background: var(--who);
+  color: #fff;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+}
+.kb-ac-doing {
+  font-weight: var(--kb-w-regular);
+  opacity: 0.85;
+}
+
+/* Margin notes. Pending ones carry the decal edge: they wait on a person */
+.kb-ac-margin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kb-s2);
+  padding: var(--kb-s4);
+}
+.kb-ac-empty {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-ac-note {
+  padding: var(--kb-s2) var(--kb-s3) var(--kb-s3);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-raised);
+  animation: kb-ac-note-in var(--kb-med) var(--kb-snap);
+}
+.kb-ac-note[data-state="pending"] {
+  box-shadow: inset 3px 0 0 var(--kb-decal), var(--kb-raised);
+}
+.kb-ac-note[data-state="rejected"] {
+  opacity: 0.7;
+}
+.kb-ac-note header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--kb-text-sm);
+}
+.kb-ac-note header strong {
+  flex: 1;
+  font-weight: var(--kb-w-strong);
+}
+.kb-ac-note p {
+  margin: 6px 0 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-ac-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--kb-s2);
+}
+@keyframes kb-ac-note-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+}
+
+@media (max-width: 720px) {
+  .kb-ac-body { grid-template-columns: 1fr; }
+  .kb-ac-page { margin-right: var(--kb-s4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ac-cursor,
+  .kb-ac-fig { transition: none; }
+  .kb-ac-note,
+  .kb-ac-insert[data-state="accepted"] { animation: none; }
+}

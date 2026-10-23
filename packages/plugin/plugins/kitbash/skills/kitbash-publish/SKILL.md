@@ -1,9 +1,12 @@
 ---
 name: kitbash-publish
-description: How to publish a finished Kitbash block - choose visibility (private by default, public only after review), license and price, understand what the scanner rejects, sign in, publish, and read the result. Use when the user asks to publish, release, share or version a block, or to make a private block public.
+description: Publish a finished block to a separately configured legacy Kitbash registry, including visibility, license, scanner findings, and authentication. Use when the user explicitly requests that remote registry workflow; ordinary open-source toolkit contributions use Git pull requests.
 ---
 
 # Publish a block
+
+This is a legacy registry integration, not the toolkit's normal sharing path. For a block contribution to the
+open-source toolkit, prepare a Git pull request with source, tests, provenance, and license notices instead.
 
 Publishing is outward: it uploads a signed copy of the block to the registry. Do it only when the user asked for it in
 this conversation, and say what will be published (name, version, visibility, license, file count) before you call the tool.

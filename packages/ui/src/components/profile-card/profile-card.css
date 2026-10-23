@@ -1,0 +1,151 @@
+/* Profile card: a floating part over a name. The hour rail shows their day; the tick is their now */
+.kb-pc {
+  display: block;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-raised);
+  text-align: left;
+  font-size: var(--kb-text-md);
+  font-weight: var(--kb-w-regular);
+  line-height: 1.45;
+  color: var(--kb-ink);
+  white-space: normal;
+}
+
+.kb-pc-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kb-s3);
+  padding: var(--kb-s4) var(--kb-s4) var(--kb-s3);
+}
+.kb-pc-avatar { position: relative; flex: none; display: inline-flex; }
+.kb-pc-presence {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--kb-panel);
+  background: var(--kb-ok);
+}
+.kb-pc-presence[data-presence="away"] { background: var(--kb-panel); box-shadow: inset 0 0 0 2px var(--kb-ink-3); border-width: 2px; }
+.kb-pc-presence[data-presence="focus"] {
+  background: linear-gradient(var(--kb-ink-2), var(--kb-ink-2)) center / 6px 2px no-repeat, var(--kb-panel);
+  box-shadow: inset 0 0 0 2px var(--kb-ink-2);
+  border-width: 2px;
+}
+.kb-pc-id {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+.kb-pc-name { font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-pc-handle { display: flex; gap: var(--kb-s2); font-size: var(--kb-text-sm); color: var(--kb-ink-3); }
+.kb-pc-off { color: var(--kb-ink-2); }
+.kb-pc-role { margin-top: 4px; font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+
+.kb-pc-body {
+  display: grid;
+  gap: var(--kb-s2);
+  padding: 0 var(--kb-s4) var(--kb-s3);
+}
+.kb-pc-body p { margin: 0; }
+.kb-pc-status {
+  padding: 7px 10px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-pc-focus { font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+.kb-pc-time {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kb-s2);
+  margin-top: 4px;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-pc-time code { font-family: var(--kb-font-code); font-size: var(--kb-text-sm); color: var(--kb-ink); }
+.kb-pc-rel { font-size: var(--kb-text-xs); color: var(--kb-ink-3); white-space: nowrap; }
+
+/* Hour rail: 24 hours, working hours molded solid, now as a gunmetal tick */
+.kb-pc-rail {
+  position: relative;
+  height: 6px;
+  border-radius: var(--kb-r-part);
+  background: repeating-linear-gradient(90deg, var(--kb-line) 0 1px, transparent 1px calc(100% / 24)), var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-pc-rail-work {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 2px;
+  background: var(--kb-line-strong);
+}
+.kb-pc-rail-now {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--kb-select);
+}
+
+.kb-pc-actions {
+  display: flex;
+  gap: var(--kb-s2);
+  padding: var(--kb-s3) var(--kb-s4);
+  border-top: 1px solid var(--kb-line);
+}
+
+/* Trigger and popover */
+.kb-pc-anchor { position: relative; display: inline-block; }
+.kb-pc-trigger {
+  padding: 0 1px;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: var(--kb-ink);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  text-decoration: underline;
+  text-decoration-color: var(--kb-line-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.kb-pc-trigger:hover,
+.kb-pc-trigger[aria-expanded="true"] { text-decoration-color: currentColor; }
+.kb-pc-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -8px;
+  z-index: 20;
+  display: block;
+  animation: kb-pc-in var(--kb-med) var(--kb-snap);
+  transform-origin: 24px 0;
+}
+.kb-pc-pop[data-align="end"] { left: auto; right: -8px; transform-origin: calc(100% - 24px) 0; }
+/* The bridge keeps hover alive across the gap between name and card */
+.kb-pc-pop::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 10px; }
+.kb-pc-pop > .kb-pc { box-shadow: var(--kb-raised), var(--kb-cast-lg); }
+@keyframes kb-pc-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-pc-pop { animation: none; }
+}
+
+/* The card renders as phrasing elements so a ProfileLink can sit inside a paragraph; these parts are blocks */
+:where(.kb-pc, .kb-pc-actions, .kb-pc-body, .kb-pc-focus, .kb-pc-id, .kb-pc-rail, .kb-pc-status, .kb-pc-time, .kb-pc-top) {
+  display: block;
+}

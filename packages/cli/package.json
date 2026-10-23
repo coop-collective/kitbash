@@ -2,6 +2,7 @@
   "name": "@kitbash/cli",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "kit: the Kitbash CLI (bootstrap, login, init, search, get, install, apply, verify, upgrade, diff, harvest, validate, publish, propose, status, heartbeat).",
   "bin": { "kit": "./dist/kit.js" },

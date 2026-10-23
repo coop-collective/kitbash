@@ -1,0 +1,40 @@
+/* Error state: what failed, how to fix it, the detail to report, and a retry key */
+.kb-err {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--kb-s3) var(--kb-s3);
+  max-width: 440px;
+  padding: var(--kb-s4);
+}
+.kb-err > .kb-btn { grid-column: 2; justify-self: start; }
+.kb-err-mark {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 1px;
+  background: var(--kb-danger);
+}
+.kb-err-text h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-err-text p {
+  margin: 4px 0 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-err-text code {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 6px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+  user-select: all;
+}
+.kb-err[data-size="sm"] { padding: var(--kb-s3); }
+.kb-err[data-size="sm"] .kb-err-text h3 { font-size: var(--kb-text-md); }

@@ -1,6 +1,7 @@
 {
   "name": "kitbash-recipe-workerd-coverage",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "vitest run --coverage",

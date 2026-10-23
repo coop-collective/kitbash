@@ -1,0 +1,257 @@
+.kb-fm {
+  position: relative;
+  width: 760px;
+  max-width: 100%;
+}
+.kb-fm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.kb-fm-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 10px 0 11px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo);
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-fm-trigger:active,
+.kb-fm-trigger[aria-expanded="true"] {
+  transform: translateY(1px);
+  box-shadow: var(--kb-pressed);
+}
+.kb-fm-count {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-select);
+  color: var(--kb-select-ink);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+}
+
+.kb-fm-chips {
+  display: contents;
+  list-style: none;
+}
+/* One molded part per group: a key cap, then each value as a piece separated by a seam */
+.kb-fm-assembly {
+  display: inline-flex;
+  align-items: stretch;
+  height: 30px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  overflow: hidden;
+  font-size: var(--kb-text-sm);
+  animation: kb-fm-snap var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-fm-snap {
+  from { transform: scale(0.9); opacity: 0; }
+}
+.kb-fm-assembly-key {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px 0 12px;
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-2);
+  box-shadow: inset -1px 0 0 var(--kb-line-strong);
+}
+.kb-fm-piece {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  animation: kb-fm-snap var(--kb-med) var(--kb-snap);
+}
+.kb-fm-piece + .kb-fm-piece {
+  box-shadow: inset 1px 0 0 var(--kb-line), inset 2px 0 0 var(--kb-bevel-hi);
+}
+.kb-fm-piece svg {
+  color: var(--kb-ink-3);
+}
+.kb-fm-piece:hover {
+  background: var(--kb-danger-soft);
+}
+.kb-fm-piece:hover svg {
+  color: var(--kb-danger);
+}
+.kb-fm-piece:active {
+  box-shadow: var(--kb-pressed);
+}
+.kb-fm-piece:focus-visible {
+  outline-offset: -2px;
+}
+.kb-fm-decal {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 2px;
+  background: var(--kb-decal);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.2);
+}
+
+.kb-fm-clear {
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-fm-clear:hover:not(:disabled) {
+  color: var(--kb-ink);
+  background: var(--kb-panel-2);
+}
+.kb-fm-clear:disabled {
+  color: var(--kb-ink-3);
+  cursor: default;
+}
+.kb-fm-total {
+  margin-left: auto;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+
+/* Menu */
+.kb-fm-menu {
+  position: absolute;
+  z-index: 10;
+  top: 40px;
+  left: 0;
+  width: 280px;
+  padding: 6px;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), var(--kb-cast-lg);
+  animation: kb-fm-in var(--kb-fast) var(--kb-glide);
+  transform-origin: top left;
+}
+@keyframes kb-fm-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+.kb-fm-head,
+.kb-fm-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--kb-r-part);
+  cursor: pointer;
+  outline: none;
+}
+.kb-fm-head {
+  font-weight: var(--kb-w-strong);
+  font-size: var(--kb-text-sm);
+}
+.kb-fm-head:not(:first-child) {
+  margin-top: 4px;
+  border-top: 1px solid var(--kb-line);
+  border-radius: 0 0 var(--kb-r-part) var(--kb-r-part);
+}
+.kb-fm-caret {
+  color: var(--kb-ink-3);
+  transition: transform var(--kb-med) var(--kb-snap);
+}
+.kb-fm-head[aria-expanded="true"] .kb-fm-caret {
+  transform: rotate(90deg);
+}
+.kb-fm-head-on {
+  margin-left: auto;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-select-text);
+}
+.kb-fm-option {
+  padding-left: 30px;
+  font-size: var(--kb-text-sm);
+}
+.kb-fm-head:focus-visible,
+.kb-fm-option:focus-visible,
+.kb-fm-head:hover,
+.kb-fm-option:hover {
+  background: var(--kb-panel-2);
+}
+.kb-fm-head:focus-visible,
+.kb-fm-option:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--kb-select);
+}
+.kb-fm-option[data-empty] .kb-fm-option-label,
+.kb-fm-option[data-empty] .kb-fm-n {
+  color: var(--kb-ink-3);
+}
+.kb-fm-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Checkbox: a recessed socket; checking drops an ultramarine key into it */
+.kb-fm-box {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-select-ink);
+}
+.kb-fm-option[aria-checked="true"] .kb-fm-box {
+  background: var(--kb-select);
+  border-color: color-mix(in oklab, var(--kb-select) 70%, black);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+  animation: kb-fm-snap var(--kb-fast) var(--kb-snap);
+}
+.kb-fm-n {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-fm-menu-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 6px 2px 0 8px;
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-fm-assembly,
+  .kb-fm-piece,
+  .kb-fm-menu,
+  .kb-fm-option[aria-checked="true"] .kb-fm-box {
+    animation: none;
+  }
+}

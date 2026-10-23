@@ -1,0 +1,335 @@
+.kb-rc {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  width: 880px;
+  max-width: 100%;
+  min-height: 420px;
+  border-radius: var(--kb-r-frame);
+  overflow: hidden;
+}
+.kb-rc:focus-visible { outline-offset: 3px; }
+@media (max-width: 720px) {
+  .kb-rc { grid-template-columns: 1fr; }
+}
+
+/* Queue: a recessed side well, sorted by risk */
+.kb-rc-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 10px;
+  background: var(--kb-panel-2);
+  border-right: 1px solid var(--kb-line);
+  box-shadow: inset -1px 0 0 var(--kb-bevel-hi);
+}
+.kb-rc-queue header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 6px;
+  font-weight: var(--kb-w-strong);
+}
+.kb-rc-left {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-regular);
+  color: var(--kb-ink-2);
+}
+.kb-rc-queue ol,
+.kb-rc-done ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-rc-q {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.kb-rc-q:hover { background: color-mix(in oklab, var(--kb-panel-2) 85%, var(--kb-ink)); color: var(--kb-ink); }
+.kb-rc-q[aria-current] {
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-medium);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), 0 1px 3px rgb(0 0 0 / 0.1);
+}
+.kb-rc-q-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+}
+.kb-rc-q-risk {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-line-strong);
+}
+.kb-rc-q[data-risk="high"] .kb-rc-q-risk { background: var(--kb-danger); }
+.kb-rc-q[data-risk="medium"] .kb-rc-q-risk { background: var(--kb-decal); }
+
+.kb-rc-done {
+  margin-top: auto;
+  padding: 10px 6px 0;
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-rc-done > span { font-weight: var(--kb-w-strong); }
+.kb-rc-done ul { margin-top: 6px; }
+.kb-rc-done li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  animation: kb-rc-drop var(--kb-med) var(--kb-snap);
+}
+.kb-rc-done li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kb-rc-done li[data-verdict="approved"] svg,
+.kb-rc-done li[data-verdict="edited"] svg { color: var(--kb-ok); }
+.kb-rc-done li[data-verdict="rejected"] svg { color: var(--kb-danger); }
+@keyframes kb-rc-drop {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Stage: one item at a time */
+.kb-rc-stage {
+  position: relative;
+  display: grid;
+  padding: 20px;
+  overflow: hidden;
+}
+.kb-rc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  animation: kb-rc-rise var(--kb-slow) var(--kb-snap);
+}
+@keyframes kb-rc-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); }
+}
+/* Deciding presses the card in, the stamp lands, then the card slides away */
+.kb-rc-card[data-leaving] {
+  box-shadow: var(--kb-pressed);
+  animation: kb-rc-leave 620ms var(--kb-glide) forwards;
+}
+@keyframes kb-rc-leave {
+  0% { transform: none; }
+  18% { transform: translateY(2px) scale(0.995); opacity: 1; }
+  55% { transform: translateY(2px) scale(0.995); opacity: 1; }
+  100% { transform: translateX(-40px) translateY(2px); opacity: 0; }
+}
+.kb-rc-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+.kb-rc-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-2);
+}
+.kb-rc-agent { font-size: var(--kb-text-xs); color: var(--kb-ink-2); }
+.kb-rc-card h3 {
+  margin: 1px 0 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+}
+.kb-rc-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-rc-body {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  font-size: var(--kb-text-md);
+  line-height: 1.7;
+}
+
+/* Shaky spans: the agent is unsure, so a person should look. Decal underline with the reason on hover or focus */
+.kb-rc-shaky {
+  position: relative;
+  padding: 1px 2px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-decal-soft);
+  color: inherit;
+  text-decoration: underline wavy var(--kb-decal);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  cursor: help;
+}
+.kb-rc-shaky:focus-visible { outline-offset: 1px; }
+.kb-rc-note {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: calc(100% + 8px);
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-ink);
+  color: var(--kb-panel);
+  font-size: var(--kb-text-xs);
+  line-height: 1.4;
+  box-shadow: var(--kb-cast);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition: opacity var(--kb-fast), transform var(--kb-fast) var(--kb-glide);
+}
+.kb-rc-shaky:hover .kb-rc-note,
+.kb-rc-shaky:focus .kb-rc-note { opacity: 1; transform: none; }
+.kb-rc-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-rc-swatch {
+  flex: none;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--kb-decal-soft);
+  box-shadow: inset 0 -2px 0 var(--kb-decal);
+}
+.kb-rc-edit {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--kb-select);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink);
+  font: inherit;
+  line-height: 1.6;
+  resize: vertical;
+}
+.kb-rc-edit:focus { outline: none; box-shadow: var(--kb-recessed), 0 0 0 3px var(--kb-select-soft); }
+
+.kb-rc-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+.kb-rc-actions .kb-btn:first-child { margin-right: auto; }
+.kb-rc-actions kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: var(--kb-r-part);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  background: rgb(0 0 0 / 0.08);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+.kb-btn[data-variant="primary"] kbd { background: rgb(255 255 255 / 0.18); }
+.kb-rc-keys {
+  margin-right: auto;
+  align-self: center;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+/* The stamp: debossed into the card, landing with a snap */
+.kb-rc-stamp {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 3px solid currentColor;
+  border-radius: var(--kb-r-control);
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-display);
+  color: var(--kb-ok);
+  background: color-mix(in oklab, var(--kb-panel) 82%, transparent);
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.18), inset 0 -1px 0 var(--kb-bevel-hi);
+  text-shadow: 0 1px 0 var(--kb-bevel-hi);
+  transform: translate(-50%, -50%) rotate(-8deg);
+  animation: kb-rc-stamp 220ms var(--kb-snap) both;
+  pointer-events: none;
+}
+.kb-rc-stamp[data-verdict="rejected"] { color: var(--kb-danger); }
+.kb-rc-stamp[data-verdict="edited"] { color: var(--kb-select-text); }
+@keyframes kb-rc-stamp {
+  from { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(1.6); }
+}
+
+.kb-rc-clear {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  animation: kb-rc-rise var(--kb-slow) var(--kb-snap);
+}
+.kb-rc-clear-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--kb-ok);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -2px 0 rgb(0 0 0 / 0.2), var(--kb-cast);
+}
+.kb-rc-clear h3 { margin: 6px 0 0; font-size: var(--kb-text-lg); }
+.kb-rc-clear p { margin: 0; color: var(--kb-ink-2); font-size: var(--kb-text-sm); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-rc-card,
+  .kb-rc-card[data-leaving],
+  .kb-rc-stamp,
+  .kb-rc-clear,
+  .kb-rc-done li { animation: none; }
+}

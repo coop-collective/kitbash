@@ -2,6 +2,7 @@
   "name": "@kitbash/secrets-broker",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Isolated, metadata-only secret generation and access provisioning for Kitbash agents",
   "engines": { "node": ">=22.18" },

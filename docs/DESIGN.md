@@ -1,5 +1,7 @@
 # Kitbash (working name "feature-registry"): founding design
 
+> Historical hosted-registry proposal. Kitbash now ships as an MIT-licensed open-source toolkit; see the [README](../README.md) for its catalog and supported local workflow. Marketplace tiers, payments, and hosted-platform plans below are not the current product roadmap.
+
 Written 2026-10-18. Status: proposal for the owner. Companion documents: `BLOCK-SPEC.md` (the manifest and install
 semantics), `HARVEST.md` (what to extract from the owner's repos), `PLAN.md` (work packages).
 

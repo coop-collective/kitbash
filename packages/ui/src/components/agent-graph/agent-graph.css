@@ -1,0 +1,242 @@
+.kb-ag {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  width: 860px;
+  max-width: 100%;
+  align-items: start;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+  overflow: hidden;
+}
+
+/* The drawing sits in a recessed well, like parts still on their frame */
+.kb-ag-canvas {
+  margin: var(--kb-s3);
+  background: var(--kb-styrene);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-recessed);
+}
+.kb-ag-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--kb-font);
+}
+
+/* Links are runners: they thicken with traffic */
+.kb-ag-link line {
+  stroke: var(--kb-line-strong);
+  stroke-linecap: round;
+  transition: stroke-width var(--kb-slow) var(--kb-glide), opacity var(--kb-fast);
+}
+.kb-ag-link[data-kind="delegate"] line {
+  stroke-dasharray: 1 7;
+  stroke: var(--kb-ink-3);
+}
+.kb-ag-link[data-dim] line { opacity: 0.25; }
+
+.kb-ag-pellet {
+  fill: var(--kb-agent);
+  stroke: var(--kb-panel);
+  stroke-width: 1.5;
+}
+.kb-ag-pellet[data-dir="answer"] {
+  fill: var(--kb-ok);
+}
+
+.kb-ag-node {
+  cursor: pointer;
+  outline: none;
+  transition: opacity var(--kb-fast);
+}
+.kb-ag-node[data-dim] { opacity: 0.35; }
+.kb-ag-node text {
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Agents: molded discs with a catch-light ring */
+.kb-ag-disc {
+  fill: var(--kb-panel);
+  stroke: var(--kb-line-strong);
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.14));
+}
+.kb-ag-halo {
+  fill: var(--kb-agent);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.kb-ag-initial {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  fill: var(--kb-ink);
+}
+.kb-ag-name {
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  fill: var(--kb-ink-2);
+}
+.kb-ag-node[data-busy] .kb-ag-disc { stroke: var(--kb-agent); stroke-width: 2; }
+.kb-ag-node[data-busy] .kb-ag-halo {
+  animation: kb-ag-breathe 1.2s ease-in-out infinite;
+}
+.kb-ag-node[data-waiting] .kb-ag-disc {
+  fill: var(--kb-decal);
+  stroke: color-mix(in oklab, var(--kb-decal) 60%, black);
+  stroke-width: 1.5;
+}
+.kb-ag-node[data-waiting] .kb-ag-initial { fill: #3a2b00; }
+.kb-ag-node[data-waiting] .kb-ag-halo {
+  fill: var(--kb-decal);
+  opacity: 0.3;
+}
+.kb-ag-badge { fill: var(--kb-ink); }
+.kb-ag-badge-mark { fill: var(--kb-panel); font-size: var(--kb-text-xs); font-weight: var(--kb-w-display); }
+.kb-ag-node[data-selected] .kb-ag-disc,
+.kb-ag-node[data-selected] .kb-ag-socket,
+.kb-ag-node:focus-visible .kb-ag-disc,
+.kb-ag-node:focus-visible .kb-ag-socket {
+  stroke: var(--kb-agent);
+  stroke-width: 2.5;
+}
+@keyframes kb-ag-breathe {
+  0%, 100% { opacity: 0.08; transform: scale(0.85); }
+  50% { opacity: 0.22; transform: scale(1.05); }
+}
+
+/* Tools: a recessed socket with a plug that presses in when a call lands */
+.kb-ag-socket {
+  fill: var(--kb-panel-2);
+  stroke: var(--kb-line);
+}
+.kb-ag-plug {
+  fill: var(--kb-panel);
+  stroke: var(--kb-line-strong);
+  stroke-width: 0.75;
+  filter: drop-shadow(0 1.5px 0 var(--kb-bevel-lo));
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--kb-fast) var(--kb-snap), filter var(--kb-fast);
+}
+.kb-ag-node[data-hit] .kb-ag-plug {
+  transform: translateY(1px) scale(0.97);
+  filter: none;
+  stroke: var(--kb-agent);
+}
+.kb-ag-tool {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  fill: var(--kb-ink);
+}
+
+/* Side panel */
+.kb-ag-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kb-s3);
+  padding: var(--kb-s4) var(--kb-s4) var(--kb-s4) var(--kb-s1);
+}
+.kb-ag-total {
+  display: flex;
+  flex-direction: column;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-ag-total-n {
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.1;
+  color: var(--kb-ink);
+}
+
+.kb-ag-ask {
+  padding: var(--kb-s3);
+  background: var(--kb-decal-soft);
+  border: 1px solid color-mix(in oklab, var(--kb-decal) 55%, transparent);
+  border-radius: var(--kb-r-card);
+  color: var(--kb-decal-ink);
+  font-size: var(--kb-text-sm);
+  animation: kb-ag-in var(--kb-med) var(--kb-snap);
+}
+.kb-ag-ask p { margin: 0 0 6px; }
+.kb-ag-ask code {
+  display: block;
+  padding: 6px 8px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  word-break: break-word;
+  box-shadow: var(--kb-recessed);
+}
+.kb-ag-ask-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--kb-s2);
+}
+@keyframes kb-ag-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+
+.kb-ag-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kb-ag-row {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s2);
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--kb-s2);
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.kb-ag-row:hover { background: var(--kb-panel-2); }
+.kb-ag-row[aria-pressed="true"] {
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-pressed);
+}
+.kb-ag-row-name { flex: 1; }
+.kb-ag-row-n { color: var(--kb-ink-3); }
+.kb-ag-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kb-line-strong);
+}
+.kb-ag-row-dot[data-state="Working"] { background: var(--kb-agent); }
+.kb-ag-row-dot[data-state="Needs you"] { background: var(--kb-decal); box-shadow: 0 0 0 3px var(--kb-decal-soft); }
+.kb-ag-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+@media (max-width: 720px) {
+  .kb-ag { grid-template-columns: 1fr; }
+  .kb-ag-side { padding: 0 var(--kb-s4) var(--kb-s4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ag-node[data-busy] .kb-ag-halo,
+  .kb-ag-ask { animation: none; }
+}
