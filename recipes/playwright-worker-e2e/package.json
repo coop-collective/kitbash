@@ -1,6 +1,7 @@
 {
   "name": "kitbash-recipe-playwright-worker-e2e",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "node --test test/launcher.test.mjs",

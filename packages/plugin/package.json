@@ -2,6 +2,7 @@
   "name": "@kitbash/plugin",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Kitbash plugin: bootstrap projects, install feature blocks, and provision secrets through a metadata-only broker",
   "scripts": {

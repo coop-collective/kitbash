@@ -1,6 +1,7 @@
 {
   "name": "@kitbash/discovery-eval",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": { "test": "node --test test/*.test.mjs", "benchmark": "node run.mjs" },
   "dependencies": {

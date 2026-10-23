@@ -5,7 +5,7 @@
   "author": {
     "name": "Xava Labs"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": [
     "kitbash",
     "xava",
@@ -39,7 +39,7 @@
       "Use $kitbash-use to add email sign-in to this project.",
       "Use $kitbash-use to find a block for rate limiting and install it.",
       "Use $kitbash-harvest to turn this feature into a block.",
-      "Use $kitbash-publish to publish this block privately.",
+      "Use $kitbash-harvest to prepare a reusable block contribution.",
       "Use $kitbash-secrets to generate staging secrets through the configured broker."
     ],
     "brandColor": "#F5A524"

@@ -1,6 +1,7 @@
 {
   "name": "kitbash-recipe-typescript-lint",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.13.0"

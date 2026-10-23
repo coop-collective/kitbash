@@ -1,4 +1,4 @@
 interface:
-  display_name: "Kitbash: publish a block"
-  short_description: "Publish a finished block: visibility, license, what the scanner rejects, reading the result"
-  default_prompt: "Use $kitbash-publish to publish the block in ./blocks/email-code-auth privately."
+  display_name: "Kitbash: legacy registry publishing"
+  short_description: "Publish to an explicitly configured legacy registry"
+  default_prompt: "Use $kitbash-publish to publish ./blocks/email-code-auth to my configured legacy registry."
