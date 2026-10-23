@@ -1,3 +1,13 @@
+# Changelog
+
+## 2.0.0
+
+Source payloads mirror installation paths.
+
+### Upgrade
+
+Use `src/lib/cli-oauth-login/` and the declared route paths; update imports and catalog checkouts. HTTP URLs and database migrations are unchanged.
+
 ## 1.1.1
 
 - Reject foreign, missing and opaque Origin on browser sign-in POSTs before credentials, email-code effects or session creation.

@@ -20,7 +20,7 @@ describe("kit install: registryDependencies from local block directories", () =>
     const before = await snapshot(d);
     const r = await kit(["install", ECA], { cwd: d });
     expect(r.code, r.err).toBe(0);
-    expect(r.out).toMatch(/needs 2 block\(s\) installed first: @local\/crypto-utils@1\.\d+\.\d+ .*, @local\/cf-email-sender@/);
+    expect(r.out).toMatch(/needs 2 block\(s\) installed first: @local\/crypto-utils@2\.0\.0 .*, @local\/cf-email-sender@/);
     // the block's own migration is numbered after nothing else (its dependencies ship no migrations) and the
     // second dependency's plan sees the first one's files
     expect(r.out.indexOf("Plan plan_")).toBeLessThan(r.out.indexOf("@local/email-code-auth@"));
@@ -78,8 +78,8 @@ describe("kit install: registryDependencies from local block directories", () =>
   it("a dependency with conflicts stops everything; nothing is written", async () => {
     const d = await templateCopy();
     const { writeFile, mkdir } = await import("node:fs/promises");
-    await mkdir(path.join(d, "src", "lib"), { recursive: true });
-    await writeFile(path.join(d, "src", "lib", "crypto.ts"), "export const mine = 1;\n");
+    await mkdir(path.join(d, "src", "lib", "crypto-utils"), { recursive: true });
+    await writeFile(path.join(d, "src", "lib", "crypto-utils", "crypto.ts"), "export const mine = 1;\n");
     const before = await snapshot(d);
     const r = await kit(["install", ECA, "--apply"], { cwd: d });
     expect(r.code).toBe(1);

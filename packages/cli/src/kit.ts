@@ -1,5 +1,6 @@
 /** The `kit` executable: wires the real process environment into `run()`. */
 import os from "node:os";
+import { createInterface } from "node:readline/promises";
 import { run } from "./cli.ts";
 import { execRunner } from "./verify.ts";
 
@@ -31,6 +32,10 @@ const code = await run(process.argv.slice(2), {
   out: (s) => process.stdout.write(s),
   err: (s) => process.stderr.write(s),
   readStdin,
+  ...(process.stdin.isTTY && process.stdout.isTTY ? { prompt: async (question: string) => {
+    const terminal = createInterface({ input: process.stdin, output: process.stdout });
+    try { return await terminal.question(question); } finally { terminal.close(); }
+  } } : {}),
   now: () => new Date().toISOString(),
   runner: execRunner,
   platform: process.platform,

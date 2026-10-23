@@ -5,7 +5,7 @@
   "title": "Fixed-window rate limits in D1 that fail closed in production",
   "description": "One atomic UPSERT ... RETURNING per call counts hits per name and key (IP, API key, member) in a D1 table shared by every isolate. In production a missing table or unreachable D1 counts as limited. A Hono middleware answers 429 with Retry-After, and purgeExpired cleans old windows from a cron.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "security",
@@ -65,9 +65,9 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/rate-limit.ts",
+      "path": "src/lib/d1-rate-limit/rate-limit.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/rate-limit.ts",
+      "target": "{{paths.lib}}/d1-rate-limit/rate-limit.ts",
       "role": "service",
       "variant": "hono-d1"
     },
@@ -137,27 +137,27 @@
   "exports": [
     {
       "symbol": "rateLimit",
-      "from": "src/rate-limit.ts",
+      "from": "src/lib/d1-rate-limit/rate-limit.ts",
       "kind": "hono-middleware"
     },
     {
       "symbol": "isRateLimited",
-      "from": "src/rate-limit.ts",
+      "from": "src/lib/d1-rate-limit/rate-limit.ts",
       "kind": "function"
     },
     {
       "symbol": "consumeRateLimit",
-      "from": "src/rate-limit.ts",
+      "from": "src/lib/d1-rate-limit/rate-limit.ts",
       "kind": "function"
     },
     {
       "symbol": "purgeExpired",
-      "from": "src/rate-limit.ts",
+      "from": "src/lib/d1-rate-limit/rate-limit.ts",
       "kind": "function"
     },
     {
       "symbol": "getClientIp",
-      "from": "src/rate-limit.ts",
+      "from": "src/lib/d1-rate-limit/rate-limit.ts",
       "kind": "function"
     }
   ],
@@ -207,7 +207,7 @@
         "required": true,
         "title": "Put rateLimit in front of the routes to protect",
         "where": "{{paths.app}}/index.ts or the route file",
-        "do": "import { rateLimit } from './lib/rate-limit'; app.use('/auth/*', rateLimit({ name: 'auth', limit: 10, window: '15 m' }));",
+        "do": "import { rateLimit } from './lib/d1-rate-limit/rate-limit'; app.use('/auth/*', rateLimit({ name: 'auth', limit: 10, window: '15 m' }));",
         "check": "The 11th request in 15 minutes from one IP gets 429 with Retry-After."
       },
       {

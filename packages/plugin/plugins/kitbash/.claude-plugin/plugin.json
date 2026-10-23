@@ -1,10 +1,17 @@
 {
   "name": "kit",
-  "description": "Kitbash for your coding agent: search a registry of whole, tested features (blocks), install one with a dry-run diff first, adapt it, verify it with its own tests, and harvest or publish your own. A local MCP server runs the 11 registry_* tools on your machine.",
+  "description": "Bootstrap Worker, vinext and Rust projects with selected blocks, then install, adapt and verify reusable features. Includes a local MCP server, CLI launcher and optional pstack composition.",
   "version": "0.1.0",
   "author": {
     "name": "Xava Labs"
   },
   "license": "UNLICENSED",
-  "keywords": ["kitbash", "xava", "mcp", "blocks", "registry", "features"]
+  "keywords": [
+    "kitbash",
+    "xava",
+    "mcp",
+    "blocks",
+    "registry",
+    "features"
+  ]
 }

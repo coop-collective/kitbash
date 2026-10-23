@@ -9,6 +9,7 @@ import { apply, install, installOptions } from "./commands/install.ts";
 import { adapt, adaptOptions, diff, diffOptions, propose, proposeOptions, status, upgrade, upgradeOptions, verify, verifyOptions } from "./commands/installed.ts";
 import { harvest, harvestOptions, init, initOptions, validate, validateOptions } from "./commands/local.ts";
 import { get, getOptions, heartbeat, heartbeatOptions, login, loginOptions, publish, publishOptions, search, searchOptions, whoami } from "./commands/registry.ts";
+import { bootstrap, bootstrapOptions } from "./commands/bootstrap.ts";
 
 interface Command {
   options: Options;
@@ -17,6 +18,7 @@ interface Command {
 }
 
 const COMMANDS: Record<string, Command> = {
+  bootstrap: { options: bootstrapOptions, run: bootstrap, usage: "kit bootstrap [directory] --preset worker|vinext|rust-server [--blocks name[:variant],…] [--git-host local|github|gitstalk --repo owner/name --create-repo] [--host address --port n] [--hostname domain] [--infisical-project id] [--install] [--yes] [--list]" },
   login: { options: loginOptions, run: login, usage: "kit login [--token <t> | paste on stdin] [--api <url>] [--registry-key ed25519:…] [--no-verify]" },
   whoami: { options: {}, run: whoami, usage: "kit whoami" },
   init: { options: initOptions, run: init, usage: "kit init [--telemetry] [--force]" },

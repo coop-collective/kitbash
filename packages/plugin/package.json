@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "kitbash: the Kitbash plugin for Claude Code and Codex (local stdio MCP server with the 11 registry_* tools, skills, commands, a heartbeat hook)",
+  "description": "Kitbash plugin for Claude Code and Codex: bootstrap projects, install feature blocks, and verify the result through a local MCP server",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/*.test.mjs",

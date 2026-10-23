@@ -1,3 +1,13 @@
+# Changelog
+
+## 2.0.0
+
+Source payloads mirror installation paths.
+
+### Upgrade
+
+Use `src/lib/d1-rate-limit/` and the declared route paths; update imports and catalog checkouts. HTTP URLs and database migrations are unchanged.
+
 ## 1.0.1
 
 - `e2e.json` is no longer declared in `files[]` (it was copied into projects as a doc/fixture); core allows it undeclared and the e2e harness reads it from the block directory.

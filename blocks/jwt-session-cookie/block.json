@@ -2,10 +2,10 @@
   "$schema": "https://kitbash.dev/schema/block.v1.json",
   "name": "jwt-session-cookie",
   "type": "registry:block",
-  "title": "HKDF-derived JWT browser sessions with authoritative version revocation",
+  "title": "JWT session cookies with D1 revocation",
   "description": "Adds purpose-separated HS256 JWT cookies, mandatory issuer/audience/type/expiry checks, uncached D1 owner versions and logout revocations, hardened host cookies, and strict mutation origins.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -79,14 +79,14 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/session.ts",
+      "path": "src/lib/jwt-session-cookie/session.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/jwt-session-cookie/session.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes.ts",
+      "path": "src/lib/jwt-session-cookie/routes.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/jwt-session-cookie/routes.ts",
       "role": "route",
@@ -181,37 +181,37 @@
   "exports": [
     {
       "symbol": "createJwtSession",
-      "from": "src/session.ts",
+      "from": "src/lib/jwt-session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "readJwtSession",
-      "from": "src/session.ts",
+      "from": "src/lib/jwt-session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "revokeOwnerJwtSessions",
-      "from": "src/session.ts",
+      "from": "src/lib/jwt-session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "setJwtSessionOwnerEnabled",
-      "from": "src/session.ts",
+      "from": "src/lib/jwt-session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "cleanupJwtSessionRevocations",
-      "from": "src/session.ts",
+      "from": "src/lib/jwt-session-cookie/session.ts",
       "kind": "function"
     },
     {
       "symbol": "requireJwtSession",
-      "from": "src/routes.ts",
+      "from": "src/lib/jwt-session-cookie/routes.ts",
       "kind": "function"
     },
     {
       "symbol": "jwtSessionRoutes",
-      "from": "src/routes.ts",
+      "from": "src/lib/jwt-session-cookie/routes.ts",
       "kind": "function"
     }
   ],
@@ -241,19 +241,19 @@
   "docs": "docs/README.md",
   "skill": "SKILL.md",
   "agent": {
-    "summary": "Adds purpose-separated HS256 JWT cookies, mandatory issuer/audience/type/expiry checks, uncached D1 owner versions and logout revocations, hardened host cookies, and strict mutation origins.",
+    "summary": "HS256 JWT cookies with strict claims, D1 revocation, and origin checks.",
     "when_to_use": [
-      "Browser sessions that use the house HKDF/HS256/version pattern and need immediate logout or account-wide revocation."
+      "Browser sessions needing immediate logout and account-wide revocation."
     ],
     "when_not_to_use": [
-      "Stateless authorization, cross-site cookies, public-key token verification, OAuth access tokens, or existing opaque sessions that already meet the product requirements."
+      "Stateless auth, cross-site cookies, public-key or OAuth tokens."
     ],
     "adapt": [
       {
         "id": "configure",
         "required": true,
         "title": "Configure bindings",
-        "do": "Set JWT_SESSION_ORIGIN to the canonical HTTPS origin without trailing slash; set JWT_SESSION_SECRET from at least 32 random bytes. Supply DB.",
+        "do": "Set JWT_SESSION_ORIGIN to the canonical HTTPS origin, JWT_SESSION_SECRET to 32+ random bytes, and DB.",
         "check": "HTTPS issues a hardened __Host- cookie."
       },
       {
@@ -261,33 +261,33 @@
         "required": true,
         "title": "Issue after verified sign-in",
         "where": "{{paths.app}}/index.ts",
-        "do": "After login proof, active-account and CSRF/OAuth-state checks, call createJwtSession with the trusted account id. Append setCookie to a private, no-store response.",
-        "check": "Invalid sign-in creates no session."
+        "do": "After verified login, account and CSRF/OAuth-state checks, call createJwtSession with a trusted account id; append setCookie to a private no-store response.",
+        "check": "Invalid login creates no session."
       },
       {
         "id": "mount",
         "required": true,
         "title": "Mount and protect browser APIs",
         "where": "{{paths.app}}/index.ts",
-        "do": "Mount jwtSessionRoutes() at {{kit.routePrefix}}; apply requireJwtSession to other browser APIs.",
+        "do": "Mount jwtSessionRoutes() at {{kit.routePrefix}}; protect other browser APIs with requireJwtSession.",
         "check": "Invalid sessions return 401; unsafe requests without exact Origin return 403."
       },
       {
         "id": "lifecycle",
         "required": true,
         "title": "Integrate account lifecycle",
-        "do": "Await revokeOwnerJwtSessions after credential/identity recovery. Await setJwtSessionOwnerEnabled(false) on suspension/deletion; true only on authorized re-enable. Keep hooks consistent with account changes.",
+        "do": "Await revokeOwnerJwtSessions after recovery. Await setJwtSessionOwnerEnabled(false) on suspension/deletion, true on authorized re-enable; keep account changes consistent.",
         "check": "Old tokens fail after reset/disable and remain invalid after re-enable."
       },
       {
         "id": "cleanup",
         "required": true,
         "title": "Maintain revocations",
-        "do": "Await cleanupJwtSessionRevocations from scheduled maintenance. Never cache readJwtSession or its D1 authority checks.",
+        "do": "Schedule cleanupJwtSessionRevocations. Never cache readJwtSession or its D1 authority checks.",
         "check": "Unexpired revocations survive; expired rows are removed in batches of 500."
       }
     ],
-    "author_notes": "JWT claims are visible, not encrypted. This is a cookie session profile, not an OAuth token or refresh flow. Every valid request reads D1 primary state. Host lifecycle hooks must disable owners and rotate versions after credential/identity changes; no password, account schema, browser UI or rate limiting is included."
+    "author_notes": "Claims are readable. Each valid request reads D1 primary state. Account schema, login UI, and rate limiting belong to the host."
   },
   "provenance": {
     "source": {

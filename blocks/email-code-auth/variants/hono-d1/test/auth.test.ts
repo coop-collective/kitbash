@@ -3,13 +3,13 @@
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { peppered, sha256Hex } from "{{paths.lib|rel}}/crypto";
-import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/mail";
-import { consumeCode, GLOBAL_PER_10_MIN, MAX_ATTEMPTS, PER_ADDRESS_PER_HOUR, startCode, verifyCode } from "{{paths.lib|rel}}/auth/codes";
-import { requireBearer } from "{{paths.lib|rel}}/auth/middleware";
-import { authenticate, revokeToken, TOKEN_PREFIX, TOKEN_RE, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
-import { AuthError, type AuthEnv } from "{{paths.lib|rel}}/auth/types";
-import { authRoutes, meRoutes } from "{{paths.routes|rel}}/auth";
+import { peppered, sha256Hex } from "{{paths.lib|rel}}/crypto-utils/crypto";
+import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/cf-email-sender/mail";
+import { consumeCode, GLOBAL_PER_10_MIN, MAX_ATTEMPTS, PER_ADDRESS_PER_HOUR, startCode, verifyCode } from "{{paths.lib|rel}}/email-code-auth/codes";
+import { requireBearer } from "{{paths.lib|rel}}/email-code-auth/middleware";
+import { authenticate, revokeToken, TOKEN_PREFIX, TOKEN_RE, upsertMember } from "{{paths.lib|rel}}/email-code-auth/tokens";
+import { AuthError, type AuthEnv } from "{{paths.lib|rel}}/email-code-auth/types";
+import { authRoutes, meRoutes } from "{{paths.routes|rel}}/email-code-auth/auth";
 
 // Test-only pepper (not a secret): production reads TOKEN_PEPPER from a Worker secret.
 const PEPPER = "test-pepper-for-the-vitest-suite-only-0000";

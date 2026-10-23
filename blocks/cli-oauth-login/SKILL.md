@@ -3,7 +3,7 @@ name: cli-oauth-login
 description: Use when a Hono + D1 Worker should let a person's own CLI or MCP client sign in with their account over OAuth 2.1 (browser, PKCE) instead of a pasted token, with revocable per-CLI grants.
 license: MIT
 metadata:
-  kitbash: "@coop/cli-oauth-login@1.1.1"
+  kitbash: "@coop/cli-oauth-login@2.0.0"
 ---
 
 # cli-oauth-login
@@ -14,7 +14,7 @@ An OAuth 2.1 authorization server on `@cloudflare/workers-oauth-provider` (RFC 8
 registration, client metadata documents, PKCE S256, refresh tokens) in front of your Hono app, plus:
 
 - `/authorize`: sign in (paste a bearer token, or an email code when `emailSignIn`), then a consent page
-  "Sign in <client> on your computer?". The pages are HTML template files (`lib/oauth/templates/*.html`) with
+  "Sign in <client> on your computer?". The pages are HTML template files (`lib/cli-oauth-login/templates/*.html`) with
   `brandName` and `brandColor`.
 - `cli_logins`: one row per approval. The grant's userId is the row id; every call on the API route re-checks the row,
   so `DELETE /api/cli-logins/:id` signs that CLI out at once and kills its refresh token.
@@ -29,7 +29,7 @@ registration, client metadata documents, PKCE S256, refresh tokens) in front of 
   `/oauth/token`, `/.well-known/oauth-authorization-server`, `/.well-known/oauth-protected-resource<apiRoute>`, the
   protected `<apiRoute>` (default `/mcp`), `GET /api/cli-logins`, `DELETE /api/cli-logins/:id`.
 - Exports: `oauthWorker`, `requirePerson`, `oauthRoutes`, `cliLoginRoutes`, `revokeCliGrants`, `cliMember`.
-- Needs: `@coop/email-code-auth` >= 1.1 installed first (`authenticate`, `requireBearer`, `startCode`,
+- Needs: `@coop/email-code-auth` >= 2.0 installed first (`authenticate`, `requireBearer`, `startCode`,
   `consumeCode`, its members table); D1 `DB`; KV `OAUTH_KV`; optional var `PUBLIC_ORIGIN`.
 - Params: `tokenPrefix` and `authTablePrefix` must equal email-code-auth's `tokenPrefix` and `tablePrefix`.
 
@@ -47,7 +47,7 @@ All in `src/index.ts`:
 3. `export default oauthWorker(app);` instead of `export default app`.
 4. Production: `wrangler kv namespace create OAUTH_KV`, put the id in `wrangler.jsonc`, set `PUBLIC_ORIGIN`.
 
-`lib/oauth/identity.ts` is the only file that imports the auth block; change it if yours names things differently.
+`lib/cli-oauth-login/identity.ts` is the only file that imports the auth block; change it if yours names things differently.
 
 ## Verify
 

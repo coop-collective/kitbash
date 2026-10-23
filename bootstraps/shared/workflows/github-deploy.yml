@@ -1,0 +1,64 @@
+name: Deploy Worker
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy
+        required: true
+        type: choice
+        options: [staging, production]
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.target }}
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: worker-deploy-${{ inputs.target }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Build the selected environment before fetching secrets
+        env:
+          TARGET: ${{ inputs.target }}
+        run: pnpm "build:$TARGET"
+      - name: Fetch deployment credentials via GitHub OIDC
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ inputs.target }}
+          secret-path: /ci
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Fetch runtime secrets after build
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ inputs.target }}
+          secret-path: /app
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Deploy code and allowlisted Worker secrets together
+        env:
+          TARGET: ${{ inputs.target }}
+        run: pnpm run deploy --env "$TARGET" --from-env

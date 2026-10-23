@@ -3,7 +3,7 @@ name: email-code-auth
 description: Use when a Hono + D1 Worker needs passwordless email-code sign-in (sign-up included) and opaque, revocable bearer tokens for apps, CLIs or MCP clients.
 license: MIT
 metadata:
-  kitbash: "@coop/email-code-auth@1.1.0"
+  kitbash: "@coop/email-code-auth@2.0.0"
 ---
 
 # email-code-auth

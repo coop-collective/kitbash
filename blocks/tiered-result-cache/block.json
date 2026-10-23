@@ -5,7 +5,7 @@
   "title": "Typed result caching through edge, KV and an authoritative loader",
   "description": "Request-scoped typed JSON result cache: named Cache API, optional KV, and loaders for R2, D1, Durable Objects, Analytics Engine or other sources. Absolute freshness and stale bounds, versioned tenant keys, promotion and strict bypass.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "cache",
@@ -71,9 +71,9 @@
   ],
   "files": [
     {
-      "path": "src/result-cache.ts",
+      "path": "src/lib/tiered-result-cache/result-cache.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/result-cache.ts",
+      "target": "{{paths.lib}}/tiered-result-cache/result-cache.ts",
       "role": "service",
       "variant": "hono-d1"
     },
@@ -119,7 +119,7 @@
   "exports": [
     {
       "symbol": "createResultCache",
-      "from": "src/result-cache.ts",
+      "from": "src/lib/tiered-result-cache/result-cache.ts",
       "kind": "function"
     }
   ],

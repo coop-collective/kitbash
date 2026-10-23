@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: ${{ inputs.target }}
+    permissions:
+      contents: read
+      id-token: write
     concurrency:
       group: worker-deploy-${{ inputs.target }}
       cancel-in-progress: false
@@ -33,9 +36,29 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Fetch deployment credentials with OIDC
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ inputs.target }}
+          secret-path: /ci
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Fetch application secrets
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ inputs.target }}
+          secret-path: /app
+          include-imports: 'false'
+          recursive: 'false'
       - name: Apply migrations then deploy the checked commit
         env:
           TARGET: ${{ inputs.target }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/deploy.mjs "$TARGET" --execute

@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "__PROJECT_NAME__",
+  "main": "src/index.ts",
+  "compatibility_date": "__COMPATIBILITY_DATE__",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "dev": {
+    "ip": "__HOST__",
+    "port": __PORT__
+  },
+  "vars": {
+    "ENVIRONMENT": "local"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "__PROJECT_NAME__-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "__PROJECT_NAME__-staging",
+      "vars": {
+        "ENVIRONMENT": "staging"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "__PROJECT_NAME__-staging",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "name": "__PROJECT_NAME__-production",
+      "vars": {
+        "ENVIRONMENT": "production"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "__PROJECT_NAME__-production",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

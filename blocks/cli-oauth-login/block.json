@@ -5,7 +5,7 @@
   "title": "OAuth sign-in for a person's own CLI (My CLI on this computer)",
   "description": "OAuth 2.1 sign-in for a person's own CLI or MCP client (PKCE, dynamic registration) on @cloudflare/workers-oauth-provider, a branded consent page, and revocable cli_logins grants.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -118,100 +118,100 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/types.ts",
+      "path": "src/lib/cli-oauth-login/types.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/types.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/types.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/identity.ts",
+      "path": "src/lib/cli-oauth-login/identity.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/identity.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/identity.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/cli-logins.ts",
+      "path": "src/lib/cli-oauth-login/cli-logins.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/cli-logins.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/cli-logins.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/pages.ts",
+      "path": "src/lib/cli-oauth-login/pages.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/pages.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/pages.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/html.d.ts",
+      "path": "src/lib/cli-oauth-login/html.d.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/html.d.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/html.d.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/templates/layout.html",
+      "path": "src/lib/cli-oauth-login/templates/layout.html",
       "type": "registry:file",
-      "target": "{{paths.lib}}/oauth/templates/layout.html",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/layout.html",
       "role": "ui",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/templates/signin.html",
+      "path": "src/lib/cli-oauth-login/templates/signin.html",
       "type": "registry:file",
-      "target": "{{paths.lib}}/oauth/templates/signin.html",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/signin.html",
       "role": "ui",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/templates/code.html",
+      "path": "src/lib/cli-oauth-login/templates/code.html",
       "type": "registry:file",
-      "target": "{{paths.lib}}/oauth/templates/code.html",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/code.html",
       "role": "ui",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/templates/consent.html",
+      "path": "src/lib/cli-oauth-login/templates/consent.html",
       "type": "registry:file",
-      "target": "{{paths.lib}}/oauth/templates/consent.html",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/consent.html",
       "role": "ui",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/templates/error.html",
+      "path": "src/lib/cli-oauth-login/templates/error.html",
       "type": "registry:file",
-      "target": "{{paths.lib}}/oauth/templates/error.html",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/error.html",
       "role": "ui",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/provider.ts",
+      "path": "src/lib/cli-oauth-login/provider.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/provider.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/provider.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/authorize.ts",
+      "path": "src/lib/cli-oauth-login/authorize.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/authorize.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/authorize.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/oauth/middleware.ts",
+      "path": "src/lib/cli-oauth-login/middleware.ts",
       "type": "registry:lib",
-      "target": "{{paths.lib}}/oauth/middleware.ts",
+      "target": "{{paths.lib}}/cli-oauth-login/middleware.ts",
       "role": "lib",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes/oauth.ts",
+      "path": "src/routes/cli-oauth-login/oauth.ts",
       "type": "registry:lib",
-      "target": "{{paths.routes}}/oauth.ts",
+      "target": "{{paths.routes}}/cli-oauth-login/oauth.ts",
       "role": "route",
       "variant": "hono-d1"
     },
@@ -252,7 +252,7 @@
     "@cloudflare/vitest-pool-workers@>=0.8"
   ],
   "registryDependencies": [
-    "@coop/email-code-auth@^1.1"
+    "@coop/email-code-auth@^2"
   ],
   "env": [
     {
@@ -348,29 +348,29 @@
   "exports": [
     {
       "symbol": "oauthWorker",
-      "from": "src/oauth/provider.ts"
+      "from": "src/lib/cli-oauth-login/provider.ts"
     },
     {
       "symbol": "requirePerson",
-      "from": "src/oauth/middleware.ts"
+      "from": "src/lib/cli-oauth-login/middleware.ts"
     },
     {
       "symbol": "oauthRoutes",
-      "from": "src/routes/oauth.ts"
+      "from": "src/routes/cli-oauth-login/oauth.ts"
     },
     {
       "symbol": "cliLoginRoutes",
-      "from": "src/routes/oauth.ts"
+      "from": "src/routes/cli-oauth-login/oauth.ts"
     },
     {
       "symbol": "revokeCliGrants",
-      "from": "src/oauth/provider.ts"
+      "from": "src/lib/cli-oauth-login/provider.ts"
     }
   ],
   "ui": [
     {
       "name": "consent-page",
-      "path": "src/oauth/templates/consent.html",
+      "path": "src/lib/cli-oauth-login/templates/consent.html",
       "kind": "html-template",
       "description": "Sign-in and consent pages; brand params brandName and brandColor."
     }

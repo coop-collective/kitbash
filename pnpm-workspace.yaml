@@ -1,6 +1,7 @@
 # One install and task map for the registry, runtime block payloads, fixtures, and recipes.
 packages:
   - packages/*
+  - bootstraps
   - blocks/*/variants/*/container
   - test-e2e/fixtures/*
   - recipes/*

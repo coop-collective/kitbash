@@ -3,7 +3,7 @@ name: cf-email-sender
 description: Use when a Worker must send its own transactional mail (codes, invitations) through Cloudflare Email Service, printed in dev and refused in production when unconfigured.
 license: MIT
 metadata:
-  kitbash: "@coop/cf-email-sender@1.0.1"
+  kitbash: "@coop/cf-email-sender@2.0.0"
 ---
 
 # cf-email-sender

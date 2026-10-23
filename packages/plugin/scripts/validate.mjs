@@ -1,6 +1,6 @@
 // Validate the kitbash plugin: manifests agree with each other and package.json, the MCP config is the stdio server, the
 // skills and commands have frontmatter ("Use when ..."), hooks point at scripts that exist, the tool names the plugin
-// mentions are exactly core's REGISTRY_TOOLS, and nothing committed carries a secret. Exits 1 listing every problem.
+// mentions match the core registry contract and plugin bootstrap tool, and nothing committed carries a secret.
 // Run: pnpm -F @kitbash/plugin validate (then `claude plugin validate plugins/kitbash` for Claude Code's own check).
 import fs from "node:fs";
 import path from "node:path";
@@ -27,11 +27,12 @@ const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
 export const MARKETPLACE = "kitbash";
-export const SKILLS = ["kitbash-harvest", "kitbash-publish", "kitbash-use"];
-export const COMMANDS = ["harvest", "install", "search"];
+export const SKILLS = ["kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-use"];
+export const COMMANDS = ["bootstrap", "harvest", "install", "search"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",
   "registry_diff", "registry_harvest", "registry_publish", "registry_propose", "registry_whoami",
+  "kitbash_bootstrap",
 ];
 
 const REQUIRED = [
@@ -45,15 +46,17 @@ const REQUIRED = [
   `${P}/scripts/kit-mcp.mjs`,
   `${P}/scripts/server.mjs`,
   `${P}/scripts/load-kit.mjs`,
+  `${P}/scripts/bootstrap.mjs`,
+  `${P}/scripts/bootstrap-tool.mjs`,
 ];
 for (const rel of REQUIRED) check(exists(rel), `missing ${rel}`);
 
 // ---- the tool list matches the contract
 const contract = REGISTRY_TOOLS.map((t) => t.name).sort();
-check(JSON.stringify(contract) === JSON.stringify([...TOOLS].sort()), `core's REGISTRY_TOOLS are ${contract.join(", ")}; the plugin expects ${TOOLS.join(", ")}`);
+check(JSON.stringify(contract) === JSON.stringify(TOOLS.filter((name) => name.startsWith("registry_")).sort()), `core's REGISTRY_TOOLS are ${contract.join(", ")}; registry tool names drifted`);
 check(contract.length === 11, `expected 11 registry tools, core has ${contract.length}`);
 const server = exists(`${P}/scripts/server.mjs`) ? read(`${P}/scripts/server.mjs`) : "";
-check(/for \(const t of REGISTRY_TOOLS\)/.test(server) && /registerTool\(t\.name, \{ description: t\.description, inputSchema: t\.input, annotations: t\.annotations \}/.test(server), "server.mjs must register exactly core's REGISTRY_TOOLS with their static description, input schema and annotations");
+check(/for \(const t of PLUGIN_TOOLS\)/.test(server) && /registerTool\(t\.name, \{ description: t\.description, inputSchema: t\.input, annotations: t\.annotations \}/.test(server), "server.mjs must register PLUGIN_TOOLS with their static description, input schema and annotations");
 check(!/registerTool\(\s*["'`]/.test(server), "server.mjs must not register a tool by a literal name");
 check(!/child_process|execSync|spawnSync|\bexec\(|shell:\s*true/.test(server), "server.mjs must not execute anything itself (the CLI runs allowlisted verify commands, without a shell)");
 
@@ -103,7 +106,7 @@ const skills = exists(`${P}/skills`) ? dirs(`${P}/skills`).filter((d) => d.isDir
 check(JSON.stringify(skills) === JSON.stringify(SKILLS), `skills are ${skills.join(", ")}; expected ${SKILLS.join(", ")}`);
 const mentioned = new Set();
 const scanTools = (rel, text) => {
-  for (const m of text.matchAll(/\bregistry_[a-z_]+\b/g)) {
+  for (const m of text.matchAll(/\b(?:registry|kitbash)_[a-z_]+\b/g)) {
     mentioned.add(m[0]);
     check(TOOLS.includes(m[0]), `${rel} names unknown tool ${m[0]}`);
   }
@@ -132,7 +135,7 @@ for (const name of commands) {
   const rel = `${P}/commands/${name}.md`;
   const fm = frontmatter(rel);
   check(fm?.fields.description, `command ${name} needs a description`);
-  const skill = name === "harvest" ? "kitbash-harvest" : "kitbash-use";
+  const skill = name === "bootstrap" ? "kitbash-bootstrap" : name === "harvest" ? "kitbash-harvest" : "kitbash-use";
   check(new RegExp(skill).test(fm?.body ?? ""), `command ${name} must load the ${skill} skill`);
   if (fm) scanTools(rel, fm.body);
 }
@@ -185,4 +188,4 @@ if (errors.length) {
   console.error(`kitbash plugin validation failed with ${errors.length} problem(s):\n- ${errors.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated kitbash plugin ${pkg.version}: ${TOOLS.length} registry tools, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, stdio MCP kitbash.`);
+console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, stdio MCP kitbash.`);

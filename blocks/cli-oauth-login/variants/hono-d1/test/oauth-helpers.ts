@@ -4,11 +4,11 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { env } from "cloudflare:workers";
 import { Hono } from "hono";
 import { expect } from "vitest";
-import { issueToken, upsertMember } from "{{paths.lib|rel}}/auth/tokens";
-import { requirePerson, type PersonVars } from "{{paths.lib|rel}}/oauth/middleware";
-import { oauthWorker } from "{{paths.lib|rel}}/oauth/provider";
-import type { OAuthEnv } from "{{paths.lib|rel}}/oauth/types";
-import { cliLoginRoutes, oauthRoutes } from "{{paths.routes|rel}}/oauth";
+import { issueToken, upsertMember } from "{{paths.lib|rel}}/email-code-auth/tokens";
+import { requirePerson, type PersonVars } from "{{paths.lib|rel}}/cli-oauth-login/middleware";
+import { oauthWorker } from "{{paths.lib|rel}}/cli-oauth-login/provider";
+import type { OAuthEnv } from "{{paths.lib|rel}}/cli-oauth-login/types";
+import { cliLoginRoutes, oauthRoutes } from "{{paths.routes|rel}}/cli-oauth-login/oauth";
 
 export const AS = "https://app.test";
 export const LOOPBACK = "http://127.0.0.1:43123/callback";

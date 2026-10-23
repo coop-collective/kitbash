@@ -14,15 +14,15 @@ import {
   ulid,
   uuid5,
   type AnalyticsEnv,
-} from "{{paths.lib|rel}}/analytics/client";
-import { analytics, type AnalyticsVariables } from "{{paths.lib|rel}}/analytics/middleware";
-import { handleRelay, RELAY_MAX_BYTES } from "{{paths.lib|rel}}/analytics/relay";
-import { CLIENT_SNIPPET, RELAY_PATH } from "{{paths.lib|rel}}/analytics/snippet";
-import { isDeniedKey, scrub, scrubBody, scrubProps, scrubString } from "{{paths.lib|rel}}/analytics/scrub";
+} from "{{paths.lib|rel}}/cf-analytics/client";
+import { analytics, type AnalyticsVariables } from "{{paths.lib|rel}}/cf-analytics/middleware";
+import { handleRelay, RELAY_MAX_BYTES } from "{{paths.lib|rel}}/cf-analytics/relay";
+import { CLIENT_SNIPPET, RELAY_PATH } from "{{paths.lib|rel}}/cf-analytics/snippet";
+import { isDeniedKey, scrub, scrubBody, scrubProps, scrubString } from "{{paths.lib|rel}}/cf-analytics/scrub";
 import idVectors from "./vectors/ids.json";
 import scrubVectors from "./vectors/scrub.json";
 import sigVectors from "./vectors/signature.json";
-import { fact, flush, identify, log, track } from "{{paths.lib|rel}}/analytics/track";
+import { fact, flush, identify, log, track } from "{{paths.lib|rel}}/cf-analytics/track";
 
 // Fake values: nothing here is a real key.
 const SECRET = "test_secret_0123456789abcdef";

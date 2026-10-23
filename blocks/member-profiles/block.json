@@ -5,7 +5,7 @@
   "title": "Owner-editable profiles with unique handles and revision-safe updates",
   "description": "Adds a private-by-default profile record with a unique normalized handle, display name, bio and local avatar id. Owner-authenticated Hono routes validate bounded JSON, reject stale updates and expose only opted-in public fields.",
   "author": "Coop <coop@xavalabs.com>",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "categories": [
     "auth",
@@ -72,14 +72,14 @@
       "variant": "hono-d1"
     },
     {
-      "path": "src/profiles.ts",
+      "path": "src/lib/member-profiles/profiles.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/member-profiles/profiles.ts",
       "role": "service",
       "variant": "hono-d1"
     },
     {
-      "path": "src/routes.ts",
+      "path": "src/lib/member-profiles/routes.ts",
       "type": "registry:file",
       "target": "{{paths.lib}}/member-profiles/routes.ts",
       "role": "route",
@@ -151,22 +151,22 @@
   "exports": [
     {
       "symbol": "getProfile",
-      "from": "src/profiles.ts",
+      "from": "src/lib/member-profiles/profiles.ts",
       "kind": "function"
     },
     {
       "symbol": "saveProfile",
-      "from": "src/profiles.ts",
+      "from": "src/lib/member-profiles/profiles.ts",
       "kind": "function"
     },
     {
       "symbol": "getPublicProfile",
-      "from": "src/profiles.ts",
+      "from": "src/lib/member-profiles/profiles.ts",
       "kind": "function"
     },
     {
       "symbol": "profileRoutes",
-      "from": "src/routes.ts",
+      "from": "src/lib/member-profiles/routes.ts",
       "kind": "function"
     }
   ],

@@ -42,7 +42,7 @@ test("reference-only real stdio server has no installer and can checkout/discard
         "catalog_checkout",
         {
           id: "block:session-cookie",
-          paths: ["variants/hono-d1/src/session.ts"],
+          paths: ["variants/hono-d1/src/lib/session-cookie/session.ts"],
         },
       ],
       ["catalog_discard", { id: "block:session-cookie" }],

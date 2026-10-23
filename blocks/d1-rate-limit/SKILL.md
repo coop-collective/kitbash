@@ -3,14 +3,14 @@ name: d1-rate-limit
 description: Use when a Hono + D1 Worker needs shared rate limits (login, code sending, API keys) that fail closed in production.
 license: MIT
 metadata:
-  kitbash: "@coop/d1-rate-limit@1.0.1"
+  kitbash: "@coop/d1-rate-limit@2.0.0"
 ---
 
 # d1-rate-limit
 
 ## What it adds
 
-One table and `src/lib/rate-limit.ts`: an atomic fixed-window counter in D1, a `rateLimit` Hono middleware (429 +
+One table and `src/lib/d1-rate-limit/rate-limit.ts`: an atomic fixed-window counter in D1, a `rateLimit` Hono middleware (429 +
 `Retry-After`), `isRateLimited`, `consumeRateLimit`, `getClientIp`, `purgeExpired`. Ported from mailcheap (MIT, Marc Lou).
 
 ## Interface

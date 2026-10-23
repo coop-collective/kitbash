@@ -25,6 +25,8 @@ Analytics Engine's `writeDataPoint` binding records events; cache the output of 
 ## Durable Object example
 
 ```ts
+import { createResultCache } from './lib/tiered-result-cache/result-cache';
+
 // Authentication and current access checks have already completed.
 const store = env.CATALOGS.getByName(JSON.stringify([member.organizationId, catalogId]));
 const revision = await store.revision(); // authoritative generation, not a KV-cached pointer

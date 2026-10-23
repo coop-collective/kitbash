@@ -3,9 +3,9 @@
 // browser flow runs against the Worker in workerd (test/oauth-helpers.ts), no network.
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { fill } from "{{paths.lib|rel}}/oauth/pages";
+import { fill } from "{{paths.lib|rel}}/cli-oauth-login/pages";
 {{#kit.if emailSignIn}}
-import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/mail";
+import { setMailerOverride, type Mail } from "{{paths.lib|rel}}/cf-email-sender/mail";
 {{/kit.if}}
 import { AS, LOOPBACK, REMOTE, cliConnect, form, member, raw, rpc, testEnv, toConsent, worker } from "./oauth-helpers";
 

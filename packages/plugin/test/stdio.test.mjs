@@ -4,10 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
-import { REGISTRY_TOOLS } from "@kitbash/core";
+import { PLUGIN_TOOLS } from "../plugins/kitbash/scripts/server.mjs";
 import { FIXTURE_BLOCK, pluginRoot, tmpDir } from "./helpers.mjs";
 
-test("scripts/kit-mcp.mjs speaks MCP over stdio in the project directory: lists 11 tools and answers a local get offline", async () => {
+test("scripts/kit-mcp.mjs speaks MCP over stdio in the project directory: lists registry and bootstrap tools and answers a local get offline", async () => {
   const cwd = await tmpDir("kit-plugin-stdio-");
   const home = await tmpDir("kit-plugin-stdio-home-");
   const transport = new StdioClientTransport({
@@ -21,7 +21,7 @@ test("scripts/kit-mcp.mjs speaks MCP over stdio in the project directory: lists 
   await client.connect(transport);
   try {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((t) => t.name).sort(), REGISTRY_TOOLS.map((t) => t.name).sort());
+    assert.deepEqual(tools.map((t) => t.name).sort(), PLUGIN_TOOLS.map((t) => t.name).sort());
     const r = await client.callTool({ name: "registry_get", arguments: { block: FIXTURE_BLOCK } });
     assert.ok(!r.isError, r.content?.[0]?.text);
     assert.equal(JSON.parse(r.content[0].text).id, "@local/email-code-auth-fixture");

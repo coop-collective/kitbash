@@ -3,7 +3,7 @@ name: crypto-utils
 description: Use when Worker code must keyed-hash a secret (codes, tokens, API keys) with a pepper, compare secrets in constant time, or mint unbiased codes, tokens and ids.
 license: MIT
 metadata:
-  kitbash: "@coop/crypto-utils@1.0.0"
+  kitbash: "@coop/crypto-utils@2.0.0"
 ---
 
 # crypto-utils

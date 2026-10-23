@@ -15,7 +15,7 @@ import {
   timingSafeEqual,
   toHex,
   utf8,
-} from "{{paths.lib|rel}}/crypto";
+} from "{{paths.lib|rel}}/crypto-utils/crypto";
 
 describe("encodings", () => {
   it("hex round-trips and rejects junk", () => {
