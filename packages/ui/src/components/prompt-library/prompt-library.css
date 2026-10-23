@@ -1,0 +1,238 @@
+.kb-pl {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  width: 820px;
+  max-width: 100%;
+  border-radius: var(--kb-r-frame);
+  overflow: hidden;
+}
+
+/* Side list: a recessed rack the templates sit in */
+.kb-pl-side {
+  padding: 14px 10px;
+  background: var(--kb-panel-2);
+  border-right: 1px solid var(--kb-line);
+  box-shadow: inset -1px 0 0 var(--kb-bevel-hi);
+}
+.kb-pl-side-title {
+  margin: 0 6px 8px;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+}
+.kb-pl-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-pl-item {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--kb-r-control);
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--kb-fast) var(--kb-glide);
+}
+.kb-pl-item:hover {
+  background: color-mix(in oklab, var(--kb-panel) 60%, transparent);
+}
+.kb-pl-item:active {
+  transform: translateY(1px);
+}
+.kb-pl-item[aria-current="true"] {
+  background: var(--kb-panel);
+  border-color: var(--kb-line);
+  box-shadow: var(--kb-raised);
+}
+.kb-pl-item-title {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-pl-item-meta {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+.kb-pl-main {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px 20px 16px;
+  min-width: 0;
+}
+.kb-pl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kb-pl-head h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-pl-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+}
+.kb-pl-pips {
+  display: inline-flex;
+  gap: 3px;
+}
+.kb-pl-pips i {
+  width: 10px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--kb-decal);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.15);
+  transition: background var(--kb-med);
+}
+.kb-pl-pips i[data-on] {
+  background: var(--kb-ok);
+}
+
+/* The sentence you type into */
+.kb-pl-sentence {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  line-height: 2.3;
+  color: var(--kb-ink);
+}
+.kb-pl-slot {
+  display: inline-grid;
+  vertical-align: middle;
+  line-height: 30px;
+  max-width: 100%;
+  margin: 3px 0;
+}
+.kb-pl-sizer,
+.kb-pl-input {
+  grid-area: 1 / 1;
+}
+.kb-pl-sizer {
+  visibility: hidden;
+  min-width: 4ch;
+  padding: 0 10px;
+  font-size: var(--kb-text-md);
+  font-weight: var(--kb-w-medium);
+  white-space: pre;
+  overflow: hidden;
+}
+/* Empty slot: decal yellow, because it is waiting on a person */
+.kb-pl-input {
+  width: 0;
+  min-width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1.5px dashed color-mix(in oklab, var(--kb-decal) 75%, var(--kb-decal-ink));
+  border-radius: var(--kb-r-part);
+  background: var(--kb-decal-soft);
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-md);
+  font-weight: var(--kb-w-medium);
+  box-shadow: var(--kb-recessed);
+  transition: background var(--kb-fast), border-color var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-pl-input::placeholder {
+  color: var(--kb-decal-ink);
+  opacity: 0.75;
+  font-weight: var(--kb-w-regular);
+}
+.kb-pl-input:focus {
+  outline: none;
+  border-style: solid;
+  border-color: var(--kb-select);
+  box-shadow: var(--kb-recessed), 0 0 0 3px color-mix(in oklab, var(--kb-select) 22%, transparent);
+}
+/* Filled: it snaps in as a raised ultramarine part */
+.kb-pl-slot[data-filled] .kb-pl-input {
+  border-style: solid;
+  border-color: color-mix(in oklab, var(--kb-select) 35%, var(--kb-line));
+  background: var(--kb-select-soft);
+  color: var(--kb-select-text);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.kb-pl-slot[data-filled] {
+  animation: kb-pl-snap var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-pl-snap {
+  0% { transform: translateY(-2px) scale(1.04); }
+}
+
+/* Preview well */
+.kb-pl-preview {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-pl-preview-label {
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-3);
+}
+.kb-pl-preview-text {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  line-height: 1.6;
+}
+.kb-pl-set {
+  background: none;
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-strong);
+}
+.kb-pl-gap {
+  padding: 1px 6px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-decal-soft);
+  color: var(--kb-decal-ink);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+}
+
+.kb-pl-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kb-pl-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-pl-foot .kb-btn[aria-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-pl-slot[data-filled] {
+    animation: none;
+  }
+}
+
+/* Chrome draws a datalist arrow inside inputs with suggestions; the slot sizes to its text, so hide it */
+.kb-pl-input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}

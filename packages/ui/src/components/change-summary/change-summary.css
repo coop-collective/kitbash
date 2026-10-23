@@ -1,0 +1,162 @@
+.kb-chg {
+  width: min(440px, 100%);
+  padding: var(--kb-s4) 0 var(--kb-s2);
+}
+
+.kb-chg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--kb-s3);
+  padding: 0 var(--kb-s4) var(--kb-s3);
+}
+.kb-chg-title {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-chg-sub {
+  margin: 2px 0 0;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+.kb-chg-tabs {
+  display: flex;
+  padding: 2px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  flex: none;
+}
+.kb-chg-tab {
+  height: 24px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--kb-fast), color var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-chg-tab[aria-checked="true"] {
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.kb-chg-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Rows are separated by part seams: a dark line with a light catch under it */
+.kb-chg-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 132px;
+  align-items: center;
+  column-gap: var(--kb-s4);
+  row-gap: var(--kb-s2);
+  padding: 10px var(--kb-s4);
+  border-top: 1px solid var(--kb-line);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi);
+  transition: background var(--kb-med);
+}
+.kb-chg-row[data-alert] {
+  background: color-mix(in oklab, var(--kb-decal-soft) 70%, transparent);
+}
+/* The decal: a yellow stripe stuck to the left edge of anything waiting on a person */
+.kb-chg-row[data-alert]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  border-radius: 0 3px 3px 0;
+  background: var(--kb-decal);
+  animation: kb-chg-stick var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-chg-stick {
+  from { transform: scaleY(0.2); opacity: 0; }
+}
+.kb-chg-label {
+  display: grid;
+  min-width: 0;
+  font-size: var(--kb-text-md);
+}
+.kb-chg-was {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-chg-now {
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  justify-self: end;
+}
+
+.kb-chg-delta {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  align-items: center;
+  column-gap: 5px;
+  row-gap: 3px;
+  justify-self: stretch;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-3);
+}
+.kb-chg-delta[data-tone="good"] { color: var(--kb-ok); }
+.kb-chg-delta[data-tone="bad"] { color: var(--kb-danger); }
+.kb-chg-delta-text { white-space: nowrap; }
+/* Detent notches: one to four clicks for how far it moved */
+.kb-chg-notches {
+  grid-column: 2;
+  display: flex;
+  gap: 3px;
+}
+.kb-chg-notches i {
+  width: 12px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  transition: background var(--kb-med) var(--kb-snap);
+}
+.kb-chg-notches i[data-on] {
+  background: currentColor;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.kb-chg-notches i:nth-child(2)[data-on] { transition-delay: 40ms; }
+.kb-chg-notches i:nth-child(3)[data-on] { transition-delay: 80ms; }
+.kb-chg-notches i:nth-child(4)[data-on] { transition-delay: 120ms; }
+
+.kb-chg-flag {
+  grid-column: 1 / -1;
+  justify-self: start;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in oklab, var(--kb-decal) 60%, var(--kb-line));
+  border-radius: var(--kb-r-part);
+  background: var(--kb-decal-soft);
+  color: var(--kb-decal-ink);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+  transition: transform var(--kb-fast) var(--kb-glide);
+}
+.kb-chg-flag:active {
+  transform: translateY(1px);
+  box-shadow: var(--kb-pressed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-chg-row[data-alert]::before { animation: none; }
+}

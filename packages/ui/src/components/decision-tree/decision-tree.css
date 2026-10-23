@@ -1,0 +1,257 @@
+.kb-dt {
+  --dt-gap: 12px;
+  --dt-rod: var(--kb-line-strong);
+  width: 900px;
+  max-width: 100%;
+  display: grid;
+}
+
+/* Root: the decision the agent is stuck on */
+.kb-dt-root {
+  justify-self: center;
+  width: min(620px, 100%);
+  padding: 16px 18px;
+  border-radius: var(--kb-r-card);
+  border-top: 3px solid var(--kb-decal);
+  transition: border-color var(--kb-med);
+}
+.kb-dt[data-decided] .kb-dt-root { border-top-color: var(--kb-ok); }
+.kb-dt-root-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kb-dt-agent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-dt-root h3 {
+  margin: 8px 0 4px;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+.kb-dt-root p {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+
+/* The runner: a stem from the root, a crossbar, and one gate down to each branch */
+.kb-dt-runner {
+  position: relative;
+  display: grid;
+  column-gap: var(--dt-gap);
+  padding-top: 16px;
+}
+.kb-dt-runner::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 4px;
+  height: 18px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--dt-rod);
+}
+.kb-dt-gate {
+  position: relative;
+  height: 22px;
+}
+.kb-dt-gate::before {
+  /* crossbar segment; the first and last stop at their column's center */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--dt-gap) / -2);
+  right: calc(var(--dt-gap) / -2);
+  height: 4px;
+  background: var(--dt-rod);
+}
+.kb-dt-gate:first-child::before { left: 50%; border-radius: 2px 0 0 2px; }
+.kb-dt-gate:last-child::before { right: 50%; border-radius: 0 2px 2px 0; }
+.kb-dt-gate::after {
+  /* the gate itself: a short sprue that tapers toward the part */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  margin-left: -2px;
+  background: var(--dt-rod);
+  clip-path: polygon(0 0, 100% 0, 75% 100%, 25% 100%);
+  transition: background var(--kb-fast), clip-path var(--kb-med) var(--kb-snap);
+}
+.kb-dt-gate[data-on]::after { background: var(--kb-select); width: 6px; margin-left: -3px; }
+.kb-dt-gate[data-cut]::after {
+  /* clipped: the gate is snipped halfway, leaving a nub on the runner */
+  clip-path: polygon(0 0, 100% 0, 90% 40%, 10% 40%);
+}
+
+/* Branches */
+.kb-dt-branches {
+  display: grid;
+  column-gap: var(--dt-gap);
+  align-items: stretch;
+}
+.kb-dt-branch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 14px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  cursor: pointer;
+  transition:
+    transform var(--kb-med) var(--kb-snap),
+    opacity var(--kb-med),
+    border-color var(--kb-fast),
+    box-shadow var(--kb-fast),
+    filter var(--kb-med);
+}
+.kb-dt-branch:hover { border-color: var(--kb-line-strong); }
+.kb-dt-branch[data-selected] {
+  border-color: var(--kb-select);
+  box-shadow: var(--kb-raised), 0 0 0 1px var(--kb-select);
+}
+.kb-dt-branch:has(input:focus-visible) {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 2px;
+}
+.kb-dt-branch[data-risky] {
+  background:
+    linear-gradient(var(--kb-panel), var(--kb-panel)) padding-box,
+    repeating-linear-gradient(-45deg, var(--kb-danger) 0 6px, transparent 6px 12px) border-box;
+  border: 1px solid transparent;
+}
+.kb-dt-branch[data-risky][data-selected] {
+  box-shadow: var(--kb-raised), 0 0 0 2px var(--kb-select);
+}
+.kb-dt-branch[data-cut] {
+  opacity: 0.4;
+  filter: saturate(0.2);
+  transform: translateY(8px) rotate(-0.6deg);
+  box-shadow: none;
+  cursor: default;
+}
+.kb-dt-branch[data-chosen] {
+  border-color: var(--kb-select);
+  transform: translateY(-2px);
+}
+
+.kb-dt-branch-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 22px;
+}
+.kb-dt-pick,
+.kb-dt-risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--kb-r-pill);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  background: var(--kb-select);
+  color: var(--kb-select-ink);
+}
+.kb-dt-pick[data-tone="you"] {
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-2);
+  box-shadow: inset 0 0 0 1px var(--kb-line);
+  font-weight: var(--kb-w-medium);
+}
+.kb-dt-risk {
+  background: var(--kb-danger-soft);
+  color: var(--kb-danger);
+}
+.kb-dt-title {
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+}
+
+/* Consequences hang below the title like leaves on short stems */
+.kb-dt-leaves {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0 0 0 10px;
+  list-style: none;
+  border-left: 2px solid var(--kb-line);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-dt-leaves li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 4px;
+  line-height: 1.35;
+}
+.kb-dt-sign {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: var(--kb-r-part);
+  font-weight: var(--kb-w-display);
+  font-size: var(--kb-text-xs);
+}
+.kb-dt-leaves li[data-kind="gain"] .kb-dt-sign { background: var(--kb-ok-soft); color: var(--kb-ok); }
+.kb-dt-leaves li[data-kind="cost"] .kb-dt-sign { background: var(--kb-danger-soft); color: var(--kb-danger); }
+
+.kb-dt-own { background: var(--kb-panel-2); box-shadow: var(--kb-recessed); border-style: dashed; }
+.kb-dt-own[data-selected] { border-style: solid; }
+.kb-dt-text {
+  flex: 1;
+  width: 100%;
+  min-height: 84px;
+  padding: 8px 10px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  resize: none;
+}
+.kb-dt-text:focus { outline: none; border-color: var(--kb-select); }
+.kb-dt-text::placeholder { color: var(--kb-ink-3); }
+
+.kb-dt-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.kb-dt-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-dt[data-decided] .kb-dt-note { color: var(--kb-ok); }
+
+@media (max-width: 760px) {
+  .kb-dt-runner { display: none; }
+  .kb-dt-branches { grid-template-columns: 1fr !important; row-gap: 10px; margin-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-dt-branch[data-cut] { transform: none; }
+}

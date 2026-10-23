@@ -1,0 +1,183 @@
+.kb-ma {
+  position: relative;
+  display: inline-block;
+}
+
+/* One molded strip. Quiet at rest: the plastic only shows when you reach for it. */
+.kb-ma-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: var(--kb-r-control);
+  transition: background var(--kb-fast), border-color var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-ma-strip:hover,
+.kb-ma-strip:focus-within {
+  background: var(--kb-panel);
+  border-color: var(--kb-line);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-ma-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+  transition: color var(--kb-fast), background var(--kb-fast), transform var(--kb-fast) var(--kb-glide);
+}
+.kb-ma-btn:hover:not(:disabled) { color: var(--kb-ink); background: var(--kb-panel-2); }
+.kb-ma-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+.kb-ma-btn:disabled { cursor: default; opacity: 0.35; }
+
+/* Latched: the key stays pushed into the strip, like a toggle that clicked down */
+.kb-ma-btn[data-latched] {
+  color: var(--kb-select-text);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-ma-thumb[data-latched] svg { animation: kb-ma-pop var(--kb-med) var(--kb-snap); }
+
+/* Copy: the two icons share a cell and trade places */
+.kb-ma-swap { display: grid; }
+.kb-ma-swap > svg {
+  grid-area: 1 / 1;
+  transition: transform var(--kb-med) var(--kb-snap), opacity var(--kb-fast);
+}
+.kb-ma-swap .kb-ma-ok { transform: scale(0.4); opacity: 0; color: var(--kb-ok); }
+.kb-ma-swap[data-on] > svg:first-child { transform: scale(0.4); opacity: 0; }
+.kb-ma-swap[data-on] .kb-ma-ok { transform: scale(1); opacity: 1; }
+
+.kb-ma-spin[data-on] { animation: kb-ma-turn 0.7s linear infinite; }
+
+/* Version switcher unfolds out of the strip after the first regenerate */
+.kb-ma-versions {
+  display: inline-flex;
+  align-items: center;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width var(--kb-med) var(--kb-glide), opacity var(--kb-fast);
+}
+.kb-ma-versions[data-open] { max-width: 120px; opacity: 1; }
+.kb-ma-step { width: 22px; }
+.kb-ma-count {
+  min-width: 30px;
+  text-align: center;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-2);
+}
+
+/* Part seam between groups: a groove with a highlight under it */
+.kb-ma-seam {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--kb-line);
+  box-shadow: 1px 0 0 var(--kb-bevel-hi);
+}
+
+/* Read aloud: four bars bounce while speaking */
+.kb-ma-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.kb-ma-eq > i {
+  width: 2.5px;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: kb-ma-eq 0.9s ease-in-out infinite;
+}
+
+.kb-ma-thanks {
+  padding: 0 8px 0 4px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+  animation: kb-ma-in var(--kb-med) var(--kb-snap);
+}
+
+/* Why-panel: a small part that snaps out below the strip */
+.kb-ma-ask {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 300px;
+  padding: 12px;
+  box-shadow: var(--kb-raised), var(--kb-cast-lg);
+  animation: kb-ma-in var(--kb-med) var(--kb-snap);
+  transform-origin: top left;
+}
+.kb-ma-ask-title { margin: 0 0 8px; font-weight: var(--kb-w-medium); }
+.kb-ma-reasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.kb-ma-reason {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+}
+.kb-ma-reason[aria-pressed="true"] {
+  background: var(--kb-select-soft);
+  border-color: color-mix(in oklab, var(--kb-select) 40%, transparent);
+  color: var(--kb-select-text);
+  box-shadow: var(--kb-pressed);
+}
+.kb-ma-ask-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.kb-ma-link,
+.kb-ma-send {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--kb-r-part);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-ma-link { border: 0; background: none; color: var(--kb-ink-2); }
+.kb-ma-send {
+  border: 1px solid color-mix(in oklab, var(--kb-accent) 70%, black);
+  background: var(--kb-accent);
+  color: var(--kb-accent-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+.kb-ma-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.kb-ma-send:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+
+@keyframes kb-ma-pop { 40% { transform: scale(1.35) rotate(-8deg); } }
+@keyframes kb-ma-turn { to { transform: rotate(360deg); } }
+@keyframes kb-ma-eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+@keyframes kb-ma-in { from { opacity: 0; transform: translateY(-4px) scale(0.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ma-thumb[data-latched] svg,
+  .kb-ma-spin[data-on],
+  .kb-ma-thanks,
+  .kb-ma-ask { animation: none; }
+  .kb-ma-eq > i { animation: none; transform: scaleY(0.7); }
+}

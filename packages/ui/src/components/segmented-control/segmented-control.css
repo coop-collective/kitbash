@@ -1,0 +1,204 @@
+/* Track: a recessed channel the slider part rides in */
+.kb-seg {
+  --seg-h: 38px;
+  --seg-pad: 3px;
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+  padding: var(--seg-pad);
+  border-radius: calc(var(--kb-r-control) + 3px);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed), inset 0 0 0 1px var(--kb-line);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.kb-seg[data-size="sm"] {
+  --seg-h: 30px;
+  font-size: var(--kb-text-sm);
+}
+.kb-seg[data-fill] {
+  display: flex;
+  width: 100%;
+}
+.kb-seg[data-fill] .kb-seg-option {
+  flex: 1;
+}
+
+.kb-seg-option {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--seg-h);
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--kb-r-control);
+  background: transparent;
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--kb-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.kb-seg[data-size="sm"] .kb-seg-option {
+  padding: 0 10px;
+  gap: 5px;
+}
+.kb-seg-option:hover {
+  color: var(--kb-ink);
+}
+.kb-seg-option[data-lit] {
+  color: var(--kb-ink);
+}
+.kb-seg-option[aria-checked="true"] {
+  cursor: grab;
+}
+.kb-seg[data-dragging] .kb-seg-option {
+  cursor: grabbing;
+}
+.kb-seg-option:focus-visible {
+  outline: 2px solid var(--kb-select);
+  outline-offset: -1px;
+}
+
+/* Detent seams between options that are not next to the slider */
+.kb-seg-option[data-seam]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 1px;
+  background: var(--kb-line-strong);
+  box-shadow: 1px 0 0 var(--kb-bevel-hi);
+}
+
+.kb-seg-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-styrene);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+}
+.kb-seg-option[data-lit] .kb-seg-count {
+  background: var(--kb-select-soft);
+  color: var(--kb-select-text);
+  box-shadow: none;
+}
+.kb-seg-badge {
+  width: 7px;
+  height: 7px;
+  margin-left: -2px;
+  align-self: flex-start;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: var(--kb-decal);
+  box-shadow: 0 0 0 2px var(--kb-panel-2);
+}
+.kb-seg[data-size="sm"] .kb-seg-badge {
+  margin-top: 6px;
+}
+.kb-seg-badge[data-tone="danger"] { background: var(--kb-danger); }
+.kb-seg-badge[data-tone="accent"] { background: var(--kb-select); }
+.kb-seg-option[data-lit] .kb-seg-badge {
+  box-shadow: 0 0 0 2px var(--kb-panel);
+}
+
+/* The slider part. Leading edge moves first on the snap curve, trailing edge follows: a short stretch. */
+.kb-seg-slider {
+  position: absolute;
+  top: var(--seg-pad);
+  bottom: var(--seg-pad);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line-strong);
+  box-shadow: var(--kb-raised);
+  transition:
+    left var(--kb-med) var(--kb-glide) calc(var(--kb-fast) * 0.35),
+    right var(--kb-med) var(--kb-snap),
+    box-shadow var(--kb-fast),
+    transform var(--kb-fast) var(--kb-glide);
+}
+.kb-seg[data-dir="left"] .kb-seg-slider {
+  transition:
+    left var(--kb-med) var(--kb-snap),
+    right var(--kb-med) var(--kb-glide) calc(var(--kb-fast) * 0.35),
+    box-shadow var(--kb-fast),
+    transform var(--kb-fast) var(--kb-glide);
+}
+.kb-seg-slider::after {
+  /* grip ribs molded into the top of the slider */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 12px;
+  height: 2px;
+  margin-left: -6px;
+  border-radius: 1px;
+  background: var(--kb-line-strong);
+  opacity: 0;
+  transition: opacity var(--kb-fast);
+}
+.kb-seg[data-dragging] .kb-seg-slider {
+  transition: box-shadow var(--kb-fast), transform var(--kb-fast) var(--kb-glide);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), var(--kb-cast-lg);
+}
+.kb-seg[data-dragging] .kb-seg-slider::after,
+.kb-seg:hover .kb-seg-slider::after {
+  opacity: 1;
+}
+
+/* Underline variant: no track, a bar rides under the labels */
+.kb-seg[data-variant="underline"] {
+  --seg-pad: 0px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: inset 0 -1px 0 var(--kb-line);
+}
+.kb-seg[data-variant="underline"] .kb-seg-option {
+  border-radius: var(--kb-r-part);
+}
+.kb-seg[data-variant="underline"] .kb-seg-option[data-seam]::before {
+  display: none;
+}
+.kb-seg[data-variant="underline"] .kb-seg-slider {
+  top: auto;
+  bottom: 0;
+  height: 3px;
+  border: 0;
+  border-radius: 3px 3px 0 0;
+  background: var(--kb-select);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+.kb-seg[data-variant="underline"] .kb-seg-slider::after {
+  display: none;
+}
+.kb-seg[data-variant="underline"][data-dragging] .kb-seg-slider {
+  transform: none;
+  height: 5px;
+}
+.kb-seg[data-variant="underline"] .kb-seg-badge {
+  box-shadow: 0 0 0 2px var(--kb-styrene);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-seg-slider,
+  .kb-seg[data-dir="left"] .kb-seg-slider {
+    transition: none;
+  }
+}

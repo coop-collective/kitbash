@@ -1,0 +1,117 @@
+/* One molded pill; segments are divided by part seams (a dark groove with a light catch beside it) */
+.kb-rx {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 3px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-rx-seg {
+  --seg-ink: var(--kb-ink-2);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  min-width: 64px;
+  padding: 0 14px 0 12px;
+  border: 0;
+  border-radius: var(--kb-r-pill);
+  background: transparent;
+  color: var(--seg-ink);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  transition: background var(--kb-fast), box-shadow var(--kb-fast) var(--kb-glide), transform var(--kb-fast) var(--kb-glide), color var(--kb-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.kb-rx[data-size="sm"] .kb-rx-seg { height: 28px; min-width: 54px; padding: 0 10px 0 9px; font-size: var(--kb-text-sm); }
+
+/* Part seam between segments */
+.kb-rx-seg + .kb-rx-seg::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: var(--kb-line-strong);
+  box-shadow: 1px 0 0 var(--kb-bevel-hi);
+  transition: opacity var(--kb-fast);
+}
+/* A latched segment hides the seams around it: it reads as one sunk socket */
+.kb-rx-seg[aria-pressed="true"]::before,
+.kb-rx-seg[aria-pressed="true"] + .kb-rx-seg::before,
+.kb-rx-seg:active::before,
+.kb-rx-seg:active + .kb-rx-seg::before {
+  opacity: 0;
+}
+
+.kb-rx-seg:hover { color: var(--kb-ink); background: var(--kb-panel-2); }
+.kb-rx-seg:active {
+  transform: translateY(1px);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-pressed);
+}
+
+/* Push-latch: an "on" segment stays pressed into the pill */
+.kb-rx-seg[aria-pressed="true"] {
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-rx-seg[data-tone="like"][aria-pressed="true"] { --seg-ink: var(--kb-danger); color: var(--seg-ink); }
+.kb-rx-seg[data-tone="repost"][aria-pressed="true"] { --seg-ink: var(--kb-ok); color: var(--seg-ink); }
+.kb-rx-seg[data-flash] { color: var(--kb-select-text); }
+
+.kb-rx-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+.kb-rx-icon svg { transition: fill var(--kb-fast); }
+.kb-rx-seg[data-tone="like"][aria-pressed="true"] .kb-rx-icon svg { fill: currentColor; }
+.kb-rx-seg[data-tone="repost"][aria-pressed="true"] .kb-rx-icon svg { stroke-width: 2.4; }
+
+.kb-rx-seg[aria-pressed="true"] .kb-rx-icon[data-pop],
+.kb-rx-seg[data-flash] .kb-rx-icon {
+  animation: kb-rx-pop var(--kb-slow) var(--kb-snap);
+}
+@keyframes kb-rx-pop {
+  0% { transform: scale(0.6); }
+  45% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* A ring that flashes out from the heart when it latches */
+.kb-rx-burst {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+.kb-rx-icon[data-pop] .kb-rx-burst {
+  animation: kb-rx-burst var(--kb-slow) var(--kb-glide);
+}
+@keyframes kb-rx-burst {
+  0% { opacity: 0.7; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(1.5); border-width: 0; }
+}
+
+.kb-rx-count {
+  min-width: 2ch;
+  font-size: var(--kb-text-sm);
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-rx-icon,
+  .kb-rx-burst {
+    animation: none !important;
+  }
+}

@@ -1,0 +1,266 @@
+.kb-is {
+  width: 520px;
+  max-width: 100%;
+  border-radius: var(--kb-r-frame);
+  overflow: hidden;
+}
+
+.kb-is-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-is-logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--kb-r-control);
+  background: #0f8f86;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+.kb-is-title h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-is-title p {
+  margin: 2px 0 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-is-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kb-is-switch-state {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-2);
+  min-width: 2ch;
+  text-align: right;
+}
+
+/* Switch: a recessed track with a molded thumb that clicks across */
+.kb-is-switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  cursor: pointer;
+  transition: background var(--kb-med), border-color var(--kb-med);
+}
+.kb-is-switch[aria-checked="true"] {
+  background: var(--kb-ok);
+  border-color: color-mix(in oklab, var(--kb-ok) 70%, black);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.25);
+}
+.kb-is-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line-strong);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), 0 1px 2px rgb(0 0 0 / 0.25);
+  transition: transform var(--kb-med) var(--kb-snap);
+}
+.kb-is-switch[aria-checked="true"] .kb-is-thumb {
+  transform: translateX(20px);
+  border-color: transparent;
+}
+.kb-is-switch:active .kb-is-thumb {
+  width: 23px;
+}
+.kb-is-switch[aria-checked="true"]:active .kb-is-thumb {
+  transform: translateX(17px);
+}
+
+/* Body: unplugged, it sinks into a recessed, dimmed well */
+.kb-is-body {
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px 20px;
+  transition: background var(--kb-med) var(--kb-glide), box-shadow var(--kb-med) var(--kb-glide);
+}
+.kb-is[data-off] .kb-is-body {
+  background: var(--kb-panel-2);
+  box-shadow: inset 0 3px 6px -3px rgb(0 0 0 / 0.2);
+}
+.kb-is[data-off] .kb-is-field {
+  opacity: 0.5;
+}
+.kb-is-paused {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+
+.kb-is-field {
+  display: grid;
+  gap: 6px;
+  transition: opacity var(--kb-med);
+}
+.kb-is-field label {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-is-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kb-is-well {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px 0 12px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  transition: border-color var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-is-well:focus-within {
+  border-color: var(--kb-select);
+  box-shadow: var(--kb-recessed), 0 0 0 3px color-mix(in oklab, var(--kb-select) 22%, transparent);
+}
+.kb-is-well[data-invalid] {
+  border-color: var(--kb-danger);
+  box-shadow: var(--kb-recessed), 0 0 0 3px color-mix(in oklab, var(--kb-danger) 18%, transparent);
+}
+.kb-is-well-icon {
+  flex: none;
+  color: var(--kb-ink-3);
+}
+.kb-is-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  outline: none;
+}
+.kb-is .kb-is-input:focus-visible {
+  outline: none;
+}
+.kb-is-input:disabled {
+  color: var(--kb-ink-3);
+}
+.kb-is-mono {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-sm);
+}
+.kb-is-select {
+  appearance: none;
+  cursor: pointer;
+}
+.kb-is-select-well {
+  padding-right: 12px;
+}
+.kb-is-affix {
+  flex: none;
+  color: var(--kb-ink-3);
+}
+.kb-is-reach {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  color: var(--kb-ok);
+}
+.kb-is-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-is-inline-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--kb-pressed);
+}
+.kb-is-msg {
+  margin: 0;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-is-msg[data-tone="danger"] { color: var(--kb-danger); }
+.kb-is-msg[data-tone="ok"] { color: var(--kb-ok); }
+
+/* Save bar: docks up into the card's bottom seam while edits wait on a person */
+.kb-is-dock {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--kb-med) var(--kb-snap);
+}
+.kb-is-dock[data-show] {
+  grid-template-rows: 1fr;
+}
+.kb-is-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 14px 0 20px;
+  background: var(--kb-decal-soft);
+  box-shadow: inset 4px 0 0 var(--kb-decal), inset 0 1px 0 var(--kb-bevel-hi);
+}
+.kb-is-dock[data-show] .kb-is-bar {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid color-mix(in oklab, var(--kb-decal) 55%, transparent);
+}
+.kb-is-dock[data-saved] .kb-is-bar {
+  background: var(--kb-ok-soft);
+  border-top-color: color-mix(in oklab, var(--kb-ok) 40%, transparent);
+  box-shadow: inset 4px 0 0 var(--kb-ok);
+}
+.kb-is-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-decal-ink);
+}
+.kb-is-dock[data-saved] .kb-is-bar-text {
+  color: var(--kb-ok);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-is-dock,
+  .kb-is-thumb {
+    transition: none;
+  }
+}

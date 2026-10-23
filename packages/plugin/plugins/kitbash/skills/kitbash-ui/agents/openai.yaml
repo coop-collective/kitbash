@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: Styrene UI"
+  short_description: "Borrow from the Kitbash Storybook before building React UI"
+  default_prompt: "Use $kitbash-ui to build the approval screen for this agent app from the Styrene catalog."

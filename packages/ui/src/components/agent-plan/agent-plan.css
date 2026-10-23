@@ -1,0 +1,234 @@
+.kb-pl {
+  width: 600px;
+  max-width: 100%;
+  border-radius: var(--kb-r-frame);
+}
+
+.kb-pl-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-pl-kicker {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-pl[data-phase="running"] .kb-pl-kicker { color: var(--kb-agent); }
+.kb-pl-head h3 {
+  margin: 2px 0 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-pl-progress {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+}
+
+/* The runner: a channel that connects every step's gate, filled with accent as the plan runs */
+.kb-pl-list {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 14px 14px 8px;
+  list-style: none;
+}
+.kb-pl-list::before,
+.kb-pl-list::after {
+  content: "";
+  position: absolute;
+  left: 34px;
+  top: 34px;
+  bottom: 28px;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: var(--kb-r-part);
+}
+.kb-pl-list::before {
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-pl-list::after {
+  background: var(--kb-agent);
+  transform: scaleY(var(--fill, 0));
+  transform-origin: top;
+  transition: transform var(--kb-slow) var(--kb-glide);
+}
+.kb-pl[data-phase="done"] .kb-pl-list::after { background: var(--kb-ok); }
+
+.kb-pl-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 6px 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--kb-r-control);
+  transition: background var(--kb-fast), border-color var(--kb-fast), opacity var(--kb-fast);
+}
+.kb-pl[data-phase="review"] .kb-pl-step:hover {
+  background: var(--kb-panel-2);
+  border-color: var(--kb-line);
+}
+.kb-pl-step[data-dragging] { opacity: 0.4; }
+.kb-pl-step[data-status="running"] {
+  background: var(--kb-agent-soft);
+  border-color: color-mix(in oklab, var(--kb-agent) 30%, transparent);
+}
+.kb-pl-step[data-status="failed"] {
+  background: var(--kb-danger-soft);
+  border-color: color-mix(in oklab, var(--kb-danger) 35%, transparent);
+}
+
+/* Gate: where a step joins the runner. Numbered like a part on an instruction sheet */
+.kb-pl-gate {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+  background: var(--kb-panel);
+  box-shadow: inset 0 0 0 1.5px var(--kb-line-strong), 0 1px 2px rgb(0 0 0 / 0.1);
+  transition: background var(--kb-med), color var(--kb-med);
+}
+.kb-pl-step[data-status="running"] .kb-pl-gate { color: var(--kb-agent); box-shadow: inset 0 0 0 2px var(--kb-agent); }
+.kb-pl-step[data-status="done"] .kb-pl-gate {
+  color: #fff;
+  background: var(--kb-ok);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -1px 0 rgb(0 0 0 / 0.2);
+  animation: kb-pl-snap var(--kb-med) var(--kb-snap);
+}
+.kb-pl-step[data-status="failed"] .kb-pl-gate {
+  color: var(--kb-danger-ink);
+  background: var(--kb-danger);
+  animation: kb-pl-snap var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-pl-snap {
+  from { transform: scale(0.6); }
+}
+
+.kb-pl-main {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.kb-pl-title {
+  line-height: 1.35;
+}
+.kb-pl-step[data-status="done"] .kb-pl-title { color: var(--kb-ink-2); }
+.kb-pl[data-phase="review"] .kb-pl-title { cursor: text; }
+.kb-pl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--kb-text-xs);
+}
+.kb-pl-meta code {
+  font-family: var(--kb-font-code);
+  color: var(--kb-ink-2);
+  padding: 1px 5px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: inset 0 0 0 1px var(--kb-line);
+}
+.kb-pl-error { color: var(--kb-danger); }
+.kb-pl-input {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--kb-select);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink);
+  font: inherit;
+}
+.kb-pl-input:focus { outline: none; box-shadow: var(--kb-recessed), 0 0 0 3px var(--kb-select-soft); }
+
+.kb-pl-tools {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--kb-fast);
+}
+.kb-pl-step:hover .kb-pl-tools,
+.kb-pl-step:focus-within .kb-pl-tools { opacity: 1; }
+.kb-pl-tool {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-2);
+  cursor: pointer;
+}
+.kb-pl-tool:hover { background: var(--kb-panel); color: var(--kb-ink); box-shadow: inset 0 0 0 1px var(--kb-line); }
+.kb-pl-tool[data-kind="remove"]:hover { color: var(--kb-danger); }
+.kb-pl-grip { cursor: grab; }
+.kb-pl-time {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+  padding-right: 6px;
+}
+.kb-pl-step[data-status="running"] .kb-pl-time { color: var(--kb-agent); }
+.kb-pl-step[data-status="failed"] .kb-pl-time { color: var(--kb-danger); }
+
+/* Add a step */
+.kb-pl-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 14px 4px;
+  padding: 4px 6px 4px 14px;
+  min-height: 42px;
+  border: 1px dashed var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  color: var(--kb-ink-3);
+}
+.kb-pl-add:focus-within { border-style: solid; border-color: var(--kb-select); }
+.kb-pl-add input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border: 0;
+  background: none;
+  color: var(--kb-ink);
+  font: inherit;
+}
+.kb-pl-add input:focus { outline: none; }
+.kb-pl-add input::placeholder { color: var(--kb-ink-3); }
+
+.kb-pl-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px 14px 20px;
+}
+.kb-pl-note {
+  margin-right: auto;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-pl-note[data-tone="danger"] { color: var(--kb-danger); }
+.kb-pl-note[data-tone="ok"] { color: var(--kb-ok); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-pl-list::after { transition: none; }
+  .kb-pl-step .kb-pl-gate { animation: none; }
+}

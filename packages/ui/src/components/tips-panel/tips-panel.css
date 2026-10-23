@@ -1,0 +1,151 @@
+.kb-tips {
+  width: 760px;
+  max-width: 100%;
+  padding: 18px;
+  background: var(--kb-panel-2);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-tips-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 14px;
+}
+.kb-tips-title {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-tips-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+
+.kb-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A tip is a raised part; taking it presses it down into a recessed, cured socket */
+.kb-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 176px;
+  padding: 14px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  transition: background var(--kb-med), box-shadow var(--kb-med) var(--kb-glide), transform var(--kb-med) var(--kb-snap), border-color var(--kb-med);
+}
+.kb-tip[data-done] {
+  background: color-mix(in oklab, var(--kb-panel-2) 82%, var(--kb-ok-soft));
+  border-color: color-mix(in oklab, var(--kb-ok) 30%, var(--kb-line));
+  box-shadow: var(--kb-recessed);
+  transform: translateY(1px);
+}
+.kb-tip[data-just] {
+  animation: kb-tip-press var(--kb-slow) var(--kb-snap);
+}
+@keyframes kb-tip-press {
+  0% { transform: translateY(-1px); }
+  35% { transform: translateY(3px) scale(0.985); }
+  100% { transform: translateY(1px); }
+}
+
+.kb-tip-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-select-soft);
+  color: var(--kb-select-text);
+  transition: background var(--kb-med), color var(--kb-med);
+}
+.kb-tip[data-done] .kb-tip-icon {
+  background: var(--kb-ok);
+  color: var(--kb-ok-soft);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -1px 0 rgb(0 0 0 / 0.2);
+}
+.kb-tip[data-just] .kb-tip-icon {
+  animation: kb-tip-stamp var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-tip-stamp {
+  from { transform: scale(0.6) rotate(-12deg); }
+}
+.kb-tip-title {
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+}
+.kb-tip-body {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-tip[data-done] .kb-tip-title {
+  color: var(--kb-ink-2);
+}
+.kb-tip[data-done] .kb-tip-body {
+  color: var(--kb-ink-3);
+}
+.kb-tip-foot {
+  display: flex;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.kb-tip-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 28px;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ok);
+}
+.kb-tip-done > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kb-tip-undo {
+  flex: none;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-3);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  cursor: pointer;
+}
+.kb-tip-undo:hover {
+  color: var(--kb-ink);
+  background: var(--kb-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-tip,
+  .kb-tip-icon {
+    transition: none;
+  }
+  .kb-tip[data-just],
+  .kb-tip[data-just] .kb-tip-icon {
+    animation: none;
+  }
+}

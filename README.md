@@ -8,6 +8,7 @@ The catalog ships in this repository. Install its source into your project, adap
 | --- | --- |
 | [17 blocks](#available-blocks) | Feature code, tests, migrations, configuration, and adaptation instructions |
 | [3 project presets](#start-a-project) | A runnable Worker, vinext app, or local Rust server, with compatible blocks selected at bootstrap |
+| [60 UI components](#ui-components) | Styrene-themed React parts for agent and AI products, browsable in Storybook |
 | [7 recipes](#recipes) | Working examples for CI, integration tests, coverage, linting, and build checks |
 | [3 maintenance skills](#maintenance-and-pstack) | Explicit TypeScript, Rust, and page-delivery reviews after merge or before release |
 | [Agent plugin](#use-the-plugin) | Local MCP tools and skills for discovery, installation, verification, and secret setup |
@@ -65,6 +66,8 @@ Here, “marketplace” is the CLI's name for the local plugin catalog. These co
 Use $kitbash-bootstrap to create a vinext app in ../my-web with public-edge-cache.
 Use $kitbash-use to install /absolute/path/to/kitbash/blocks/member-profiles into this Worker, adapt it, and verify it.
 Use $kitbash-secrets to set up staging secrets for the registered my-api project.
+Use $kitbash-accounts to check readiness for company account and OAuth app setup.
+Use $kitbash-ui to build the run-approval screen from the Styrene components.
 ```
 
 For a harness that only supports MCP, configure a stdio server running `node /absolute/path/to/kitbash/packages/plugin/plugins/kitbash/scripts/kit-mcp.mjs`. MCP-only setup exposes tools; it does not install the plugin's skills or commands.
@@ -140,6 +143,16 @@ Run `bootstrap` interactively to choose a preset and blocks. Select a container 
 
 For an existing application, the CLI supports `init`, local-path `get` and `install`, then `status` and `verify`. Use `--root /absolute/path/to/app` to select the target. See [bootstrap and installation details](docs/BOOTSTRAP.md) and `node "$KITBASH_ROOT/packages/cli/dist/kit.js" --help`.
 
+## UI components
+
+[`packages/ui`](packages/ui/README.md) is a Storybook of 60 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, model pickers, inputs and charts. They share Styrene, Kitbash's own visual language: molded surfaces, controls that press in, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React.
+
+```sh
+pnpm storybook   # http://localhost:6006, light and dark from the toolbar
+```
+
+The plugin's `kitbash-ui` skill points agents at this catalog before they build UI, and the plugin bundles the component sources under `runtime/catalog/ui/`. The component list follows [affectUI](https://www.affectui.com/components)'s public catalog as a brief; every implementation here is written independently.
+
 ## Recipes
 
 Recipes are runnable reference projects and scripts. Read their guides and copy the relevant pieces; they are not additional installable blocks.
@@ -159,6 +172,8 @@ Recipes are runnable reference projects and scripts. Read their guides and copy 
 With an isolated broker and an authorized project policy configured, `/kit:secrets setup my-api staging` generates missing application keys with at least 256 bits of randomness, preserves existing values, registers GitHub OIDC access, and configures Infisical's Worker secret sync. Agents receive names and status only. Provider-issued credentials come from authorized provider connections, not random substitute strings.
 
 The broker is an optional service you operate separately from the agent's filesystem and process access. It is not a hosted Kitbash account. Bootstrap emits a policy proposal; it does not provision live accounts or deploy the application. See [secret setup, trust boundaries, and rotation limits](docs/SECRETS-BROKER.md).
+
+For company signups and OAuth app setup, the [Grok Bot account-manager starter](docs/GROK-BOT.md) keeps automation access in Agent Vault and application credentials in Infisical. It includes a reusable skill and a readiness check; browser password filling and provider-secret capture require separately verified integrations.
 
 ## Maintenance and pstack
 
