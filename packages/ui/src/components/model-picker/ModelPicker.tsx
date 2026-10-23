@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { cx, Icon, NumberRoll } from "../../shared/index.ts";
 import "./model-picker.css";

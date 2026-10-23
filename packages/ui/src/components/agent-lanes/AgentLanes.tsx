@@ -1,7 +1,10 @@
+"use client";
+
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./agent-lanes.css";
+import { Skeleton, SkeletonRegion } from "../skeleton/Skeleton.tsx";
 
 export interface LaneAgent {
   id: string;
@@ -20,6 +23,8 @@ export interface AgentLanesProps {
   approveAfter?: number | null;
   /** Called when a person approves the merge from the block */
   onApprove?: () => void;
+  /** Draw the layout-matching skeleton while data loads */
+  loading?: boolean;
   className?: string;
 }
 
@@ -88,7 +93,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).p
  * are cobalt and grow into the now line, finished ones carry their duration, hand-offs are directed elbows into the
  * next block, and an approval waits on its own block, still growing, until a person approves it there.
  */
-export function AgentLanes({ autoplay = true, startAt = 34, speed = 3, approveAfter = null, onApprove, className }: AgentLanesProps) {
+function AgentLanesView({ autoplay = true, startAt = 34, speed = 3, approveAfter = null, onApprove, className }: AgentLanesProps) {
   const reduced = useReducedMotion();
   const [clock, setClock] = useState(startAt);
   const [running, setRunning] = useState(autoplay);
@@ -297,6 +302,35 @@ export function AgentLanes({ autoplay = true, startAt = 34, speed = 3, approveAf
       <p className="kb-sr" aria-live="polite">
         {waiting ? "Reviewer is waiting for you to approve the merge to main." : approvedAt !== null ? "Merge approved. Planner is deploying." : ""}
       </p>
+    </section>
+  );
+}
+
+/** Agent lanes: shows the layout-matching skeleton while `loading`, then the live view. */
+export function AgentLanes({ loading = false, ...props }: AgentLanesProps) {
+  if (loading) return <AgentLanesSkeleton className={props.className} />;
+  return <AgentLanesView {...props} />;
+}
+
+function AgentLanesSkeleton({ className }: { className?: string }) {
+  return (
+    <section className={cx("kb-al", className)} aria-label="Agent lanes">
+      <SkeletonRegion label="Loading agent lanes">
+        <div style={{ display: "grid", gap: 8, padding: "18px 20px 14px", borderBottom: "1px solid var(--kb-line)" }}>
+          <Skeleton width={240} height={16} />
+          <Skeleton width={160} height={10} />
+        </div>
+        <div style={{ display: "grid", padding: "34px 20px 20px" }}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "112px minmax(0, 1fr)", alignItems: "center", height: 36, borderBottom: "1px solid var(--kb-line)" }}>
+              <Skeleton width={70} height={10} />
+              <span style={{ position: "relative", height: 20 }}>
+                <Skeleton width={`${[10, 30, 40, 34, 22][i]}%`} height={20} style={{ position: "absolute", left: `${[0, 10, 10, 16, 52][i]}%` }} />
+              </span>
+            </div>
+          ))}
+        </div>
+      </SkeletonRegion>
     </section>
   );
 }

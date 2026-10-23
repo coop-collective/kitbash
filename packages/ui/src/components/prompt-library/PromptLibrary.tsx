@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Button } from "../button/Button.tsx";

@@ -1,7 +1,10 @@
+"use client";
+
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, NumberRoll, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./context-window.css";
+import { Skeleton, SkeletonRegion } from "../skeleton/Skeleton.tsx";
 
 export type ContextPartKind = "system" | "tools" | "memory" | "file" | "conversation";
 
@@ -28,6 +31,8 @@ export interface ContextWindowProps {
   autoCompactAt?: number;
   onRemove?: (part: ContextPart) => void;
   onCompact?: (before: number, after: number) => void;
+  /** Draw the layout-matching skeleton while data loads */
+  loading?: boolean;
   className?: string;
 }
 
@@ -59,7 +64,7 @@ function formatK(tokens: number): string {
  * addressed by the token offset it starts at. Hover or focus a part to light its cells, remove files, or compact
  * the conversation: its cells shimmer and clear, and a small summary takes their place.
  */
-export function ContextWindow({
+function ContextWindowView({
   parts: initialParts = defaultContextParts,
   limit = 200000,
   perCell = 1000,
@@ -266,6 +271,31 @@ export function ContextWindow({
         </Button>
       </footer>
       <p className="kb-sr" aria-live="polite">{say}</p>
+    </section>
+  );
+}
+
+/** Context window: shows the layout-matching skeleton while `loading`, then the live view. */
+export function ContextWindow({ loading = false, ...props }: ContextWindowProps) {
+  if (loading) return <ContextWindowSkeleton className={props.className} />;
+  return <ContextWindowView {...props} />;
+}
+
+function ContextWindowSkeleton({ className }: { className?: string }) {
+  return (
+    <section className={cx("kb-cw", className)} aria-label="Context window">
+      <SkeletonRegion label="Loading context window">
+        <div style={{ display: "grid", gap: 8, padding: "20px 24px 12px" }}>
+          <Skeleton width={160} height={16} />
+          <Skeleton width={190} height={10} />
+        </div>
+        <div style={{ display: "grid", gap: 6, padding: "8px 24px 20px" }}>
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={14} />)}
+          <div style={{ display: "grid", gap: 14, marginTop: 18 }}>
+            {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} width={`${86 - i * 7}%`} height={10} />)}
+          </div>
+        </div>
+      </SkeletonRegion>
     </section>
   );
 }

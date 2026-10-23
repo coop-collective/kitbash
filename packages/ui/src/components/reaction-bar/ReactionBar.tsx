@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { cx, Icon, NumberRoll } from "../../shared/index.ts";
 import type { IconName } from "../../shared/index.ts";

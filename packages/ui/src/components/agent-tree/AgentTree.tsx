@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type KeyboardEvent } from "react";
 import { cx, Icon, Spinner, formatDuration, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./agent-tree.css";

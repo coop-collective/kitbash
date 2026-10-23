@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { cx, Avatar, Icon, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./delegate-board.css";

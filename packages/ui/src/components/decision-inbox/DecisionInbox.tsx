@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { cx, Avatar, Icon, NumberRoll, useReducedMotion } from "../../shared/index.ts";
 import "./decision-inbox.css";

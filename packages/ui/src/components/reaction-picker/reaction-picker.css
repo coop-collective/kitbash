@@ -1,0 +1,274 @@
+/* Reaction picker: count keys that latch when they are yours, and a parts-tray popover that adds one */
+.kb-rp {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.kb-rp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-rp-chip-wrap { position: relative; }
+
+/* A count key: molded at rest, latched in (pressed, gunmetal seam) when you reacted */
+.kb-rp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 9px 0 7px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  box-shadow: var(--kb-key);
+  transition: transform var(--kb-fast) var(--kb-snap), box-shadow var(--kb-fast), background var(--kb-fast), border-color var(--kb-fast);
+}
+.kb-rp-chip:hover { background: color-mix(in oklab, var(--kb-panel) 94%, var(--kb-ink)); }
+.kb-rp-chip:active { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+.kb-rp-chip[aria-pressed="true"] {
+  border-color: var(--kb-select);
+  background: var(--kb-select-soft);
+  color: var(--kb-ink);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-rp-glyph {
+  font-size: 15px;
+  line-height: 1;
+}
+.kb-rp-count { min-width: 1ch; }
+
+.kb-rp-add {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 28px;
+  padding: 0;
+  border: 1px dashed var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: transparent;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+  transition: color var(--kb-fast), border-color var(--kb-fast), background var(--kb-fast);
+}
+.kb-rp-add:hover,
+.kb-rp-add[data-open] {
+  border-style: solid;
+  color: var(--kb-ink);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-key);
+}
+.kb-rp-add:active { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+
+/* Who reacted: a small floating label above the key */
+.kb-rp-tip {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  bottom: calc(100% + 8px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 260px;
+  padding: 7px 10px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-xs);
+  line-height: 1.35;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), var(--kb-cast-lg);
+  pointer-events: none;
+  animation: kb-rp-rise var(--kb-fast) var(--kb-glide);
+}
+.kb-rp-tip[data-place="bottom"] { bottom: calc(100% + 8px); }
+.kb-rp-tip strong { color: var(--kb-ink); font-weight: var(--kb-w-strong); }
+.kb-rp-tip code { font-family: var(--kb-font-code); font-size: var(--kb-text-xs); }
+.kb-rp-tip-glyph { font-size: 22px; line-height: 1; }
+
+/* The tray: a floating part with a seam under the search row */
+.kb-rp-pop {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  top: calc(100% + 8px);
+  display: grid;
+  width: 330px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), var(--kb-cast-lg);
+  animation: kb-rp-pop var(--kb-med) var(--kb-snap);
+  transform-origin: 20px 0;
+}
+.kb-rp-pop[data-place="top"] {
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform-origin: 20px 100%;
+}
+@keyframes kb-rp-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+}
+@keyframes kb-rp-rise {
+  from { opacity: 0; transform: translateY(3px); }
+}
+
+.kb-rp-head {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-rp-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-3);
+}
+.kb-rp-search:focus-within {
+  border-color: var(--kb-select);
+}
+.kb-rp-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-md);
+}
+.kb-rp-search input::placeholder { color: var(--kb-ink-3); }
+.kb-rp .kb-rp-search input:focus-visible { outline: none; }
+
+.kb-rp-tone-key {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--kb-key);
+}
+.kb-rp-tone-key:active,
+.kb-rp-tone-key[aria-expanded="true"] { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+
+/* Paint pots: a row of round swatches, the chosen one seated in a gunmetal ring */
+.kb-rp-tones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--kb-line);
+  background: var(--kb-panel-2);
+  animation: kb-rp-rise var(--kb-fast) var(--kb-glide);
+}
+.kb-rp-pot {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -2px 0 rgb(0 0 0 / 0.15);
+  transition: transform var(--kb-fast) var(--kb-snap);
+}
+.kb-rp-pot:hover { transform: translateY(-1px); }
+.kb-rp-pot[aria-checked="true"] {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 2px;
+}
+.kb-rp-tones-label {
+  margin-left: auto;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+
+.kb-rp-tray {
+  height: 248px;
+  overflow-y: auto;
+  padding: 2px 10px 8px;
+  scrollbar-width: thin;
+}
+.kb-rp-tray .kb-empty { margin: 0 auto; }
+.kb-rp-section-label {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 8px 2px 4px;
+  background: var(--kb-panel);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-3);
+}
+.kb-rp-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+}
+.kb-rp-cell {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border-radius: var(--kb-r-part);
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--kb-fast) var(--kb-snap);
+}
+.kb-rp-cell[data-mine] { background: var(--kb-select-soft); }
+.kb-rp-cell[data-active] {
+  background: var(--kb-panel-2);
+  box-shadow: inset 0 0 0 1.5px var(--kb-select);
+}
+.kb-rp-cell:active { transform: scale(0.9); }
+
+.kb-rp-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-rp-foot-glyph { font-size: 20px; line-height: 1; }
+.kb-rp-foot code { font-family: var(--kb-font-code); color: var(--kb-ink); }
+.kb-rp-hint { margin-left: auto; color: var(--kb-ink-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-rp-pop,
+  .kb-rp-tip,
+  .kb-rp-tones { animation: none; }
+  .kb-rp-chip,
+  .kb-rp-cell,
+  .kb-rp-pot { transition: none; }
+}

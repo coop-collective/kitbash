@@ -20,7 +20,7 @@ for (const c of components) {
     if (!readFileSync(storyPath, "utf8").includes(`title: "${title}"`)) problems.push(`${c.slug}: story title is not "${title}"`);
   }
   if (!c.twist) problems.push(`${c.slug}: catalog twist is empty`);
-  if (!index.includes(`./components/${c.slug}/${c.export}.tsx`)) problems.push(`${c.slug}: not exported from src/index.ts`);
+  if (!index.includes(`./components/${c.slug}/index.ts`)) problems.push(`${c.slug}: not exported from src/index.ts`);
 }
 
 const known = new Set(components.map((c) => c.slug));

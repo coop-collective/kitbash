@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useMemo, useState } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, Spinner, Tag } from "../../shared/index.ts";
@@ -228,7 +230,7 @@ export function IntegrationSettings({
           <label htmlFor={`${id}-tz`}>Time zone</label>
           <div className="kb-is-well kb-is-select-well">
             <Icon name="clock" size={15} className="kb-is-well-icon" />
-            <select id={`${id}-tz`} className="kb-is-input kb-is-select" value={draft.timeZone} disabled={!draft.enabled} onChange={(e) => set("timeZone", e.target.value)} aria-describedby={`${id}-tz-msg`}>
+            <select id={`${id}-tz`} data-own-arrow className="kb-is-input kb-is-select" value={draft.timeZone} disabled={!draft.enabled} onChange={(e) => set("timeZone", e.target.value)} aria-describedby={`${id}-tz-msg`}>
               {timeZones.map((z) => (
                 <option key={z} value={z}>{zoneLabel(z)}</option>
               ))}

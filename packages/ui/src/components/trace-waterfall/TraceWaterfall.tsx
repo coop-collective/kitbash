@@ -1,6 +1,9 @@
+"use client";
+
 import { useState, type CSSProperties } from "react";
 import { cx, Icon, Tag, formatDuration, useInterval, useReducedMotion, type IconName } from "../../shared/index.ts";
 import "./trace-waterfall.css";
+import { Skeleton, SkeletonRegion } from "../skeleton/Skeleton.tsx";
 
 export type SpanKind = "llm" | "tool" | "agent";
 
@@ -30,6 +33,8 @@ export interface TraceWaterfallProps {
   startAt?: number;
   /** Ids folded at first */
   defaultFolded?: string[];
+  /** Draw the layout-matching skeleton while data loads */
+  loading?: boolean;
   className?: string;
 }
 
@@ -96,7 +101,7 @@ const tok = (n: number) => (n === 0 ? "–" : n >= 1000 ? `${(n / 1000).toFixed(
  * timeline with its tokens and cost share; folding a branch presses its children into
  * the parent's bar as seams, so you still see where they ran.
  */
-export function TraceWaterfall({ trace = defaultTrace, autoplay = true, speed = 1.4, startAt = 5600, defaultFolded = [], className }: TraceWaterfallProps) {
+function TraceWaterfallView({ trace = defaultTrace, autoplay = true, speed = 1.4, startAt = 5600, defaultFolded = [], className }: TraceWaterfallProps) {
   const reduced = useReducedMotion();
   const total = trace.end - trace.start;
   const [clock, setClock] = useState(autoplay ? Math.min(startAt, total) : total);
@@ -249,6 +254,37 @@ export function TraceWaterfall({ trace = defaultTrace, autoplay = true, speed = 
           </>
         ) : null}
       </footer>
+    </section>
+  );
+}
+
+/** Trace waterfall: shows the layout-matching skeleton while `loading`, then the live view. */
+export function TraceWaterfall({ loading = false, ...props }: TraceWaterfallProps) {
+  if (loading) return <TraceWaterfallSkeleton className={props.className} />;
+  return <TraceWaterfallView {...props} />;
+}
+
+function TraceWaterfallSkeleton({ className }: { className?: string }) {
+  return (
+    <section className={cx("kb-tw", className)} aria-label="Trace waterfall">
+      <SkeletonRegion label="Loading trace waterfall">
+        <div style={{ display: "grid", gap: 8, padding: "20px 24px 12px" }}>
+          <Skeleton width={220} height={16} />
+          <Skeleton width={150} height={10} />
+        </div>
+        <div style={{ display: "grid", padding: "8px 24px 16px" }}>
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "236px minmax(0, 1fr) 48px 60px", gap: 12, alignItems: "center", height: 30, borderBottom: "1px solid var(--kb-line)" }}>
+              <Skeleton width={`${70 - (i % 3) * 12}%`} height={10} style={{ marginLeft: (i % 3) * 14 }} />
+              <span style={{ position: "relative", height: 10 }}>
+                <Skeleton width={`${[92, 24, 12, 8, 50, 20, 28][i]}%`} height={10} style={{ position: "absolute", left: `${[0, 0, 20, 20, 30, 34, 72][i]}%` }} />
+              </span>
+              <Skeleton width={32} height={9} style={{ justifySelf: "end" }} />
+              <Skeleton width={44} height={9} style={{ justifySelf: "end" }} />
+            </div>
+          ))}
+        </div>
+      </SkeletonRegion>
     </section>
   );
 }

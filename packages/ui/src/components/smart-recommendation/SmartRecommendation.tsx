@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useState } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon } from "../../shared/index.ts";

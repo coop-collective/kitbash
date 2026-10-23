@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useMemo, useState } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, NumberRoll } from "../../shared/index.ts";

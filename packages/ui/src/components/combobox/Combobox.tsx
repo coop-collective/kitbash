@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { Avatar, cx, Icon } from "../../shared/index.ts";

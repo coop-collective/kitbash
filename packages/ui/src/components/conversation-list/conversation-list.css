@@ -1,0 +1,274 @@
+/* Conversation list: a sidebar of hairline rows; weight means unread, a stamped count means mentions */
+.kb-cl {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  max-width: 100%;
+  height: 780px;
+  max-height: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+  overflow: hidden;
+}
+
+.kb-cl-head {
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-cl-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kb-cl-title h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-cl-total {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-cl-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-3);
+}
+.kb-cl-search:focus-within { border-color: var(--kb-select); }
+.kb-cl-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-md);
+}
+.kb-cl-search input::placeholder { color: var(--kb-ink-3); }
+.kb-cl-search input::-webkit-search-cancel-button { display: none; }
+.kb-cl .kb-cl-search input:focus-visible { outline: none; }
+
+.kb-cl-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+  scrollbar-width: thin;
+}
+.kb-cl-scroll > .kb-empty,
+.kb-cl-scroll > .kb-err { margin: 16px auto 0; }
+
+.kb-cl-section + .kb-cl-section { margin-top: 6px; }
+.kb-cl-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 2px 6px;
+}
+.kb-cl-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-cl-fold:disabled { cursor: default; }
+.kb-cl-fold:hover:not(:disabled) { color: var(--kb-ink); }
+.kb-cl-fold svg { transition: transform var(--kb-fast) var(--kb-glide); transform: rotate(90deg); }
+.kb-cl-fold[aria-expanded="false"] svg { transform: none; }
+.kb-cl-new {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+}
+.kb-cl-new:hover {
+  border-color: var(--kb-line-strong);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  box-shadow: var(--kb-key);
+}
+.kb-cl-new:active { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+
+/* A row: mark, name and time, then the last message and a mention count */
+.kb-cl-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0 6px;
+  padding: 7px 8px;
+  border-radius: var(--kb-r-control);
+  cursor: pointer;
+  outline-offset: -2px;
+}
+.kb-cl-row:hover { background: var(--kb-panel-2); }
+.kb-cl-row[aria-selected="true"] {
+  background: var(--kb-select-soft);
+  box-shadow: inset 2px 0 0 var(--kb-select);
+}
+.kb-cl-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--kb-ink-3);
+}
+.kb-cl-hash {
+  font-size: 18px;
+  font-weight: var(--kb-w-medium);
+  line-height: 1;
+}
+.kb-cl-bot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-2);
+}
+
+/* Presence sits on the avatar's corner, cut out of it by a ring of panel color */
+.kb-cl-presence {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--kb-panel);
+  border-radius: 50%;
+  background: var(--kb-ok);
+}
+.kb-cl-row:hover .kb-cl-presence { border-color: var(--kb-panel-2); }
+.kb-cl-row[aria-selected="true"] .kb-cl-presence { border-color: color-mix(in oklab, var(--kb-ink) 8%, var(--kb-panel)); }
+.kb-cl-presence[data-presence="away"],
+.kb-cl-presence[data-presence="idle"] {
+  background: var(--kb-panel);
+  box-shadow: inset 0 0 0 1.5px var(--kb-ink-3);
+}
+.kb-cl-presence[data-presence="offline"] { display: none; }
+.kb-cl-presence[data-presence="working"] {
+  background: var(--kb-agent);
+  animation: kb-cl-breathe 1.4s ease-in-out infinite;
+}
+.kb-cl-presence[data-presence="needs-you"] {
+  right: -3px;
+  bottom: -3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--kb-decal);
+  transform: rotate(45deg) scale(0.85);
+}
+@keyframes kb-cl-breathe {
+  50% { opacity: 0.45; }
+}
+
+.kb-cl-text { display: grid; gap: 1px; min-width: 0; }
+.kb-cl-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.kb-cl-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-2);
+}
+.kb-cl-row[data-unread] .kb-cl-name {
+  font-weight: var(--kb-w-display);
+  color: var(--kb-ink);
+}
+.kb-cl-row[aria-selected="true"] .kb-cl-name { color: var(--kb-ink); }
+.kb-cl-muted { flex: none; color: var(--kb-ink-3); align-self: center; }
+.kb-cl-time {
+  margin-left: auto;
+  flex: none;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-cl-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-cl-preview b { font-weight: var(--kb-w-medium); color: var(--kb-ink-2); }
+.kb-cl-row[data-muted] .kb-cl-name,
+.kb-cl-row[data-muted] .kb-cl-preview,
+.kb-cl-row[data-muted] .kb-cl-preview b { color: var(--kb-ink-3); }
+
+/* Mentions: a count stamped in gunmetal, the only filled mark in the row */
+.kb-cl-count {
+  flex: none;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-select);
+  color: var(--kb-select-ink);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  line-height: 18px;
+  text-align: center;
+}
+.kb-cl-fold .kb-cl-count { margin-left: 4px; }
+
+.kb-cl-skel-label { padding: 12px 14px 6px; }
+.kb-cl-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+}
+.kb-cl-skel-mark { display: grid; place-items: center; flex: none; width: 28px; }
+.kb-cl-skel-text { flex: 1; display: grid; gap: 7px; }
+
+.kb-cl-foot {
+  padding: 6px 14px;
+  border-top: 1px solid var(--kb-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-cl-presence[data-presence="working"] { animation: none; }
+  .kb-cl-fold svg { transition: none; }
+}

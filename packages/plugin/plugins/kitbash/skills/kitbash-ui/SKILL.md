@@ -5,7 +5,7 @@ description: Consult the Kitbash Styrene Storybook (@kitbash/ui) for inspiration
 
 # Build UI from the Styrene catalog
 
-Kitbash ships a Storybook of 60 original React components in its own visual language, Styrene. Before you design a
+Kitbash ships a Storybook of original React components in its own visual language, Styrene. Before you design a
 screen or reach for a generic component kit, look here for a part that already solves the interaction, then adapt it.
 The aim is UI that is recognizably considered and distinct from the default shadcn/Tailwind look.
 
@@ -37,6 +37,21 @@ The aim is UI that is recognizably considered and distinct from the default shad
    hierarchy, Schibsted Grotesk with mono only for machine values.
 5. **Inspiration, not a template.** When no part fits, design the new part by the README's conventions so it reads as
    part of the same kit, and consider contributing it back with a story through a Git pull request.
+
+## Wire it into the app
+
+- Import the tokens once (`import "@kitbash/ui/tokens.css"`), put `kb-root` on the app container, and import each
+  component from its own path: `import { ChatThread } from "@kitbash/ui/chat-thread"`. Copied components keep the same
+  folder layout, so the path maps one to one.
+- Interactive components carry `"use client"`; render them from server components with serializable props and keep
+  event handlers in a client component of the app's own.
+- Components never fetch. Load data in the app, ideally with `useCachedLoader(key, load, { maxAge })` from
+  `@kitbash/ui/shared`, and pass `data`, `loading`, `status` and `updatedAt` through. Seed the cache from server data
+  with `primeCache`; call `invalidate` after a mutation.
+- Every data component has a `loading` skeleton; use `EmptyState` and `ErrorState` (with `onRetry`) for the other
+  states, and `FreshnessBadge` for data that refreshes. Defer heavy components below the fold with `LazyMount` and
+  `React.lazy(() => import("@kitbash/ui/<slug>"))`, using the component's `loading` state as the fallback.
+- The catalog's Foundations/Usage story shows each pattern end to end.
 
 ## Quality bar
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";

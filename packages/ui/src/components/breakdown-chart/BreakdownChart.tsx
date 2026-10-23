@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useMemo, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
 import { cx } from "../../shared/index.ts";

@@ -8,7 +8,7 @@ The catalog ships in this repository. Install its source into your project, adap
 | --- | --- |
 | [17 blocks](#available-blocks) | Feature code, tests, migrations, configuration, and adaptation instructions |
 | [3 project presets](#start-a-project) | A runnable Worker, vinext app, or local Rust server, with compatible blocks selected at bootstrap |
-| [60 UI components](#ui-components) | Styrene-themed React parts for agent and AI products, browsable in Storybook |
+| [81 UI components](#ui-components) | Styrene-themed React parts for agent and AI products, browsable in Storybook |
 | [7 recipes](#recipes) | Working examples for CI, integration tests, coverage, linting, and build checks |
 | [3 maintenance skills](#maintenance-and-pstack) | Explicit TypeScript, Rust, and page-delivery reviews after merge or before release |
 | [Agent plugin](#use-the-plugin) | Local MCP tools and skills for discovery, installation, verification, and secret setup |
@@ -145,7 +145,7 @@ For an existing application, the CLI supports `init`, local-path `get` and `inst
 
 ## UI components
 
-[`packages/ui`](packages/ui/README.md) is a Storybook of 60 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, model pickers, inputs and charts. They share Styrene, Kitbash's own visual language: molded surfaces, controls that press in, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React.
+[`packages/ui`](packages/ui/README.md) is a Storybook of 81 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, multiplayer presence, analytics, users and profiles, inputs and charts. The newer data components (and the context window, agent lanes, trace waterfall and KPI chart) ship skeleton, empty, error and freshness states, with a stale-while-revalidate cache hook and lazy mounting to drive them. They share Styrene, Kitbash's own visual language: flat panels, molded keys only where you press, one meaning per color, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React, importable on its own as `@kitbash/ui/<name>` and safe to render from React Server Components.
 
 ```sh
 pnpm storybook   # http://localhost:6006, light and dark from the toolbar

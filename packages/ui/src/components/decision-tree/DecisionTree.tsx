@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useState } from "react";
 import { cx, Icon, Tag } from "../../shared/index.ts";
 import { Button } from "../button/Button.tsx";

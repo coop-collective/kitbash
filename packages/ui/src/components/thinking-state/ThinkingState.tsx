@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useState, type CSSProperties } from "react";
 import { cx, formatDuration, Icon, NumberRoll, Shimmer, Spinner, useElapsed, useReducedMotion } from "../../shared/index.ts";
 import "./thinking-state.css";

@@ -6,7 +6,8 @@ project browse this catalog for structure, interaction and motion ideas before r
 ```sh
 pnpm --filter @kitbash/ui storybook        # http://localhost:6006
 pnpm --filter @kitbash/ui build-storybook  # static catalog in packages/ui/dist/storybook
-pnpm --filter @kitbash/ui validate         # every catalog entry has a component, stylesheet, story and export
+pnpm --filter @kitbash/ui validate         # catalog, per-component entry points, barrel and skill reference are current
+pnpm --filter @kitbash/ui test             # every component renders with react-dom/server; package imports resolve
 ```
 
 The component set follows the component list of [affectUI](https://www.affectui.com/components) as a brief. Every
@@ -61,6 +62,24 @@ Rules:
   (drag has a keyboard alternative), visible `:focus-visible`.
 - **Both themes.** Check light (Styrene) and dark (Gunmetal) with the toolbar or `node scripts/shot.mjs`.
 - **Copy** is sentence case, plain verbs, from the user's side: "Approve and run", not "Submit".
+
+### React rules
+
+- **Client components.** A component that uses state, effects or event handlers starts with `"use client";`, so it can
+  be imported from a React Server Component (vinext and Next app routers). Pure display components may omit it.
+- **No browser APIs during render.** `window`, `document`, `matchMedia`, `IntersectionObserver` and timers belong in
+  effects or event handlers, so every component renders on the server. `scripts/ssr-check` renders every story's
+  component with `react-dom/server` to prove it.
+- **Data comes in through props.** Components never fetch. Every data component takes its data as props with demo
+  defaults, plus `loading` (draws its own skeleton from `Skeleton`, `SkeletonText` and `SkeletonCircle`, inside a
+  `SkeletonRegion`), and shows `EmptyState` or `ErrorState` (with `onRetry`) where those states exist. Live data that
+  refreshes shows a `FreshnessBadge`.
+- **Caching and lazy loading are the app's choice.** `useCachedLoader(key, load)` gives stale-while-revalidate data
+  with `status` and `updatedAt` to pass straight into a component; `LazyMount` defers heavy components until they near
+  the viewport, with the component's `loading` state as the fallback. Each component is also its own import path
+  (`@kitbash/ui/<slug>`), so `React.lazy(() => import("@kitbash/ui/chat-thread"))` splits it out.
+- **Controlled when it matters.** Selection, open state and values that an app would store accept `value` /
+  `onChange` style props; demo state lives inside the component only when those props are absent.
 
 `node scripts/shot.mjs <story-id> --port <port> --theme dark --out <file.png>` screenshots a story from a running
 dev server, cropped to the component, and fails on page errors.

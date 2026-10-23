@@ -1,0 +1,148 @@
+/* Stat grid: one instrument panel. Cells are hairline-divided parts of a single frame, every reading on one baseline */
+.kb-sg {
+  width: 880px;
+  max-width: 100%;
+  container-type: inline-size;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+  overflow: hidden;
+}
+
+.kb-sg-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s3);
+  padding: var(--kb-s3) var(--kb-s5);
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-sg-title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: var(--kb-s3); }
+.kb-sg-title h3 { margin: 0; font-size: var(--kb-text-md); font-weight: var(--kb-w-strong); }
+.kb-sg-title p { margin: 0; font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+
+/* The seams are the frame showing through 1px gaps, so every cell edge is the same hairline */
+.kb-sg-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  gap: 1px;
+  background: var(--kb-line);
+}
+.kb-sg-grid[data-cols="2"] { --cols: 2; }
+.kb-sg-grid[data-cols="3"] { --cols: 3; }
+.kb-sg-grid[data-cols="4"] { --cols: 4; }
+.kb-sg-grid[data-cols="5"] { --cols: 5; }
+.kb-sg-grid[data-cols="6"] { --cols: 6; }
+@container (max-width: 620px) {
+  .kb-sg-grid[data-cols] { --cols: 2; }
+}
+@container (max-width: 340px) {
+  .kb-sg-grid[data-cols] { --cols: 1; }
+}
+
+/* Each cell spans four shared rows (label, reading, sparkline, comparison) so they line up across the panel */
+.kb-sg-cell,
+.kb-sg-tile {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+}
+.kb-sg-cell { background: var(--kb-panel); }
+.kb-sg-tile {
+  position: relative;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: var(--kb-s4) var(--kb-s5) var(--kb-s4);
+  border: 0;
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font: inherit;
+  text-align: left;
+}
+.kb-sg-tile[data-skeleton] { grid-template-rows: 20px 40px 36px 20px; row-gap: 0; }
+button.kb-sg-tile { cursor: pointer; transition: background var(--kb-fast); }
+button.kb-sg-tile:hover { background: color-mix(in oklab, var(--kb-ink) 3%, var(--kb-panel)); }
+button.kb-sg-tile:focus-visible { outline-offset: -2px; z-index: 1; }
+/* Selected: a gunmetal rail along the top edge of the cell, like the current channel on a mixer */
+.kb-sg-tile[data-selected] { background: var(--kb-select-soft); }
+.kb-sg-tile[data-selected]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--kb-select);
+}
+
+.kb-sg-label {
+  overflow: hidden;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.kb-sg-reading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px var(--kb-s2);
+  min-width: 0;
+  padding-top: 2px;
+}
+.kb-sg-value {
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.kb-sg-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+}
+.kb-sg-delta svg { align-self: center; }
+.kb-sg-delta[data-tone="good"] { color: var(--kb-ok); }
+.kb-sg-delta[data-tone="bad"] { color: var(--kb-danger); }
+
+.kb-sg-spark {
+  position: relative;
+  display: block;
+  height: 28px;
+  margin: var(--kb-s2) 0 var(--kb-s1);
+}
+.kb-sg-spark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.kb-sg-spark polyline { fill: none; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.kb-sg-now { stroke: var(--kb-series-1); stroke-width: 1.5; }
+.kb-sg-before { stroke: var(--kb-ink-3); stroke-width: 1; stroke-dasharray: 1 3; opacity: 0.8; }
+.kb-sg-end {
+  position: absolute;
+  right: -2.5px;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: var(--kb-series-1);
+}
+
+.kb-sg-prev {
+  overflow: hidden;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.kb-sg-mono { font-family: var(--kb-font-code); color: var(--kb-ink-2); }
+
+.kb-sg-state { margin: 0 auto; }
+.kb-sg > .kb-err { margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  button.kb-sg-tile { transition: none; }
+}

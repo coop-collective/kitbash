@@ -111,3 +111,28 @@
 .kb-fd-track[data-on] .kb-fd-knob {
   transform: translateX(208px);
 }
+.kb-fd-doc { max-width: 760px; }
+.kb-fd-doc section { display: grid; gap: var(--kb-s2); }
+.kb-fd-doc h2 { margin-bottom: 0; }
+.kb-fd-doc p, .kb-fd-doc li { margin: 0; color: var(--kb-ink-2); line-height: 1.55; }
+.kb-fd-doc ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.kb-fd-doc :not(pre) > code {
+  padding: 1px 5px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  font-family: var(--kb-font-code);
+  font-size: 0.86em;
+  color: var(--kb-ink);
+}
+.kb-fd-code {
+  margin: 0;
+  padding: var(--kb-s3) var(--kb-s4);
+  overflow-x: auto;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-sm);
+  line-height: 1.6;
+  color: var(--kb-ink);
+}

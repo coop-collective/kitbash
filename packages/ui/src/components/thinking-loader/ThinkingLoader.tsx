@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cx, formatDuration, Icon, Shimmer, Spinner, useElapsed, useReducedMotion } from "../../shared/index.ts";
 import "./thinking-loader.css";

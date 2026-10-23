@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { cx, Icon, Spinner, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./otp-input.css";

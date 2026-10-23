@@ -1,0 +1,22 @@
+/* Skeleton: unpainted primer parts sharing one sweep of light */
+.kb-skel {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  border-radius: var(--kb-r-part);
+  background:
+    linear-gradient(100deg, transparent 35%, color-mix(in oklab, var(--kb-panel) 70%, transparent) 50%, transparent 65%) 0 0 / 200vw 100% fixed,
+    color-mix(in oklab, var(--kb-ink) 9%, var(--kb-panel));
+  animation: kb-skel-sweep 1.8s linear infinite;
+}
+.kb-skel[data-radius="control"] { border-radius: var(--kb-r-control); }
+.kb-skel[data-radius="card"] { border-radius: var(--kb-r-card); }
+.kb-skel[data-radius="round"] { border-radius: 50%; }
+.kb-skel-text { display: block; }
+@keyframes kb-skel-sweep {
+  from { background-position: 100vw 0, 0 0; }
+  to { background-position: -100vw 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-skel { animation: none; }
+}

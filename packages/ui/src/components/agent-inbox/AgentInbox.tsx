@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { cx, Icon, NumberRoll, Spinner, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";
 import type { IconName, Tone } from "../../shared/index.ts";

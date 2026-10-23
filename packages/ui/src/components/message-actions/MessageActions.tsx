@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { cx, Icon, useReducedMotion } from "../../shared/index.ts";
 import "./message-actions.css";

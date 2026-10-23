@@ -26,3 +26,6 @@ export const Finished: Story = { args: { autoplay: false } };
 
 /** The refund sub-agent folded into one seamed bar. */
 export const Folded: Story = { args: { autoplay: false, defaultFolded: ["refund"] } };
+
+/** While data loads: the same layout as skeleton parts. */
+export const Loading: Story = { args: { loading: true } };

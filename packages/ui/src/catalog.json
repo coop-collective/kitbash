@@ -480,6 +480,174 @@
       "category": "Chat",
       "inspiration": "https://www.affectui.com/components/writing-assistant",
       "twist": "Instead of a decorative gradient glow, the card's rim is edge-lit like clear acrylic and only glows ultramarine while the assistant is writing or listening."
+    },
+    {
+      "slug": "skeleton",
+      "name": "Skeleton",
+      "export": "Skeleton",
+      "category": "Loading",
+      "inspiration": "",
+      "twist": "Placeholder parts in unpainted primer gray that all share one light sweep fixed to the viewport, so a loading screen reads as one surface instead of dozens of blinking boxes."
+    },
+    {
+      "slug": "freshness-badge",
+      "name": "Freshness Badge",
+      "export": "FreshnessBadge",
+      "category": "Loading",
+      "inspiration": "",
+      "twist": "One quiet line that says how old the numbers on screen are (updated, refreshing, cached since a time, failed to refresh), wired to the stale-while-revalidate cache."
+    },
+    {
+      "slug": "empty-state",
+      "name": "Empty State",
+      "export": "EmptyState",
+      "category": "Loading",
+      "inspiration": "",
+      "twist": "An empty socket in a kit tray: the outline of the part that belongs here and the one action that puts it there."
+    },
+    {
+      "slug": "error-state",
+      "name": "Error State",
+      "export": "ErrorState",
+      "category": "Loading",
+      "inspiration": "",
+      "twist": "A failure explained, not apologized for: what failed, how to fix it, a copyable request detail, and a retry key, marked with the library's crimson failed square."
+    },
+    {
+      "slug": "stat-grid",
+      "name": "Stat Grid",
+      "export": "StatGrid",
+      "category": "Analytics",
+      "inspiration": "",
+      "twist": "Every metric is a cell of one panel split by hairlines, values on one baseline and one type size; the change is green or crimson by whether it is better for that metric (a shorter run time is good), and each sparkline draws the previous period dotted underneath."
+    },
+    {
+      "slug": "funnel-chart",
+      "name": "Funnel Chart",
+      "export": "FunnelChart",
+      "category": "Analytics",
+      "inspiration": "",
+      "twist": "Each bar keeps the previous step's length as a hatched offcut, so the drop-off is the part cut away; focusing a step opens how many stopped, the median time to reach it and a sample of who stopped, and the step that loses the most opens first."
+    },
+    {
+      "slug": "retention-grid",
+      "name": "Retention Grid",
+      "export": "RetentionGrid",
+      "category": "Analytics",
+      "inspiration": "",
+      "twist": "A real table with caption and scoped headers, shaded in one series hue across the actual range (week 0 unshaded); arrowing through cells lights the row and column headers like a crosshair and announces a plain-sentence reading, and the average row is weighted by cohort size."
+    },
+    {
+      "slug": "event-stream",
+      "name": "Event Stream",
+      "export": "EventStream",
+      "category": "Analytics",
+      "inspiration": "",
+      "twist": "Reads like a serial monitor: new rows slide in at the top, pausing holds the list still while new events count up on a \"12 new\" key, and an opened row shows its properties as key/value pairs on a recessed plate."
+    },
+    {
+      "slug": "top-list",
+      "name": "Top List",
+      "export": "TopList",
+      "category": "Analytics",
+      "inspiration": "",
+      "twist": "Each row's size is a thin rail under its name measured against the leader; switching the metric re-ranks the rows with a slide you can follow, and the change column is colored by whether the move is better for that metric."
+    },
+    {
+      "slug": "presence-stack",
+      "name": "Presence Stack",
+      "export": "PresenceStack",
+      "category": "Multiplayer",
+      "inspiration": "",
+      "twist": "Faces sit in a recessed tray with the overflow as a molded +4 key, and agents are square parts carrying the Kitbash mark; a dot on each avatar shows state (green active person, cobalt agent at work, hollow ring idle, faded face away), and following someone rings their face in gunmetal."
+    },
+    {
+      "slug": "live-cursors",
+      "name": "Live Cursors",
+      "export": "LiveCursors",
+      "category": "Multiplayer",
+      "inspiration": "",
+      "twist": "Cursors and name flags take each person's series paint and their selections a tint of it with a caret at the end; cursors glide (or jump with reduced motion), idle ones fade and drop their flag, and a legend under the page says where everyone is and is the keyboard way to ping each cursor."
+    },
+    {
+      "slug": "typing-indicator",
+      "name": "Typing Indicator",
+      "export": "TypingIndicator",
+      "category": "Multiplayer",
+      "inspiration": "",
+      "twist": "People get three tiny keycaps pressing down in turn while an agent gets the Kitbash mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike; names collapse to \"Maya and 3 others\"."
+    },
+    {
+      "slug": "activity-feed",
+      "name": "Activity Feed",
+      "export": "ActivityFeed",
+      "category": "Multiplayer",
+      "inspiration": "",
+      "twist": "Days are split by labeled hairlines and back-to-back actions by one actor hang from a single avatar on a runner line; comments read as quotes, agent runs end in a status tag, new items slide in at the top and are announced, and loading older items shows skeleton rows where they will land."
+    },
+    {
+      "slug": "chat-thread",
+      "name": "Chat Thread",
+      "export": "ChatThread",
+      "category": "Chat",
+      "inspiration": "",
+      "twist": "Days split by a hairline seam with the date set into it, agents shown as square molded badges instead of round faces, read receipts as tiny faces where each person stopped reading, a cobalt spinner only while an agent writes, a crimson square with Try again for a failed send, and a molded Jump to latest key; loading older messages keeps your scroll position."
+    },
+    {
+      "slug": "conversation-list",
+      "name": "Conversation List",
+      "export": "ConversationList",
+      "category": "Chat",
+      "inspiration": "",
+      "twist": "One signal per state: unread is a heavier name, mentions a gunmetal count, muted a bell-off icon; the Agents section uses the library's status shapes (cobalt pulse while working, yellow diamond when waiting on you), so the sidebar doubles as an agent switchboard."
+    },
+    {
+      "slug": "reaction-picker",
+      "name": "Reaction Picker",
+      "export": "ReactionPicker",
+      "category": "Chat",
+      "inspiration": "",
+      "twist": "Your own reactions stay pressed in like a latched switch with a gunmetal edge; the popover is a parts tray you walk with the arrow keys from the search field, with a :shortcode: readout, and skin tones are round paint-pot swatches."
+    },
+    {
+      "slug": "user-table",
+      "name": "User Table",
+      "export": "UserTable",
+      "category": "Users",
+      "inspiration": "",
+      "twist": "Seats are a plate of studs and the last owner's role select is locked; agents and service accounts sit in their own section with square avatars and show cobalt Working only while running; invites carry the decal diamond with Resend; the bulk bar snaps in over the toolbar, and the next page lands as skeleton rows."
+    },
+    {
+      "slug": "invite-members",
+      "name": "Invite Members",
+      "export": "InviteMembers",
+      "category": "Users",
+      "inspiration": "",
+      "twist": "Each address snaps into a recessed tray as a chip; problem chips go dashed and say why (not an email, listed twice, already a member) and drop out of the count; three role keys, the seat price before sending, then the tray turns into one result per address with a reason and Retry failed."
+    },
+    {
+      "slug": "profile-card",
+      "name": "Profile Card",
+      "export": "ProfileCard",
+      "category": "Profiles",
+      "inspiration": "",
+      "twist": "Their local time sits on a 24-hour rail with working hours solid and a gunmetal tick for now, so you can see whether it's a good moment to message; the only floating card with a shadow, opened by a name link on hover delay, focus or click, flipping near screen edges and closing on Escape."
+    },
+    {
+      "slug": "profile-header",
+      "name": "Profile Header",
+      "export": "ProfileHeader",
+      "category": "Profiles",
+      "inspiration": "",
+      "twist": "Follow is the one orange key and stays pressed in, in gunmetal, while you follow; the agent variant uses a square avatar with the Kitbash mark and splits permissions into what it reads, what it does on its own, and what it asks a person first (the decal diamond)."
+    },
+    {
+      "slug": "profile-editor",
+      "name": "Profile Editor",
+      "export": "ProfileEditor",
+      "category": "Profiles",
+      "inspiration": "",
+      "twist": "A new photo opens a crop step with a round mask (drag or arrow keys, a ribbed zoom slider) previewed at 48, 32 and 24px; the handle is checked as you type, errors show inline with the crimson square, and a sticky save bar rises only while there are changes."
     }
   ]
 }

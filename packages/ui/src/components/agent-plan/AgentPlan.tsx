@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, DragEvent, KeyboardEvent } from "react";
 import { cx, formatDuration, Icon, Spinner, useInterval } from "../../shared/index.ts";

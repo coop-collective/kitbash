@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { cx, Icon, NumberRoll, Tag, useReducedMotion } from "../../shared/index.ts";

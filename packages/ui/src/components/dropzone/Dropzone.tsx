@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useRef, useState } from "react";
 import type { DragEvent } from "react";
 import { cx, Icon, useInterval } from "../../shared/index.ts";

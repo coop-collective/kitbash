@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { cx, formatDuration, Icon, useElapsed, useReducedMotion } from "../../shared/index.ts";

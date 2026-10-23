@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent } from "react";
 import { cx, Icon, NumberRoll } from "../../shared/index.ts";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useRef, useState } from "react";
 import { Button } from "../button/Button.tsx";
 import { cx, Icon, NumberRoll, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";

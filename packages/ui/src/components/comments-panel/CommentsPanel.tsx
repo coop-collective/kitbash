@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar, cx, Icon, Spinner, useReducedMotion } from "../../shared/index.ts";
 import "./comments-panel.css";

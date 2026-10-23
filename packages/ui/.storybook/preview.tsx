@@ -21,7 +21,7 @@ const preview: Preview = {
     layout: "centered",
     controls: { expanded: true },
     options: {
-      storySort: { order: ["Foundations", "Components", ["Agents", "Chat", "Inputs", "Data display", "Feedback", "Navigation", "Cards", "Buttons"]] },
+      storySort: { order: ["Foundations", "Components", ["Agents", "Chat", "Multiplayer", "Analytics", "Data display", "Users", "Profiles", "Inputs", "Loading", "Feedback", "Navigation", "Cards", "Buttons"]] },
     },
   },
   decorators: [

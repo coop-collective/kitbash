@@ -40,3 +40,6 @@ export const SingleLine: Story = {
     series: [{ id: "hitl", label: "Escalated runs", values: [18, 22, 19, 9, 7, 24, 21, 17, 15, 14, 6, 5, 12, 11] }],
   },
 };
+
+/** While data loads: the same layout as skeleton parts. */
+export const Loading: Story = { args: { loading: true } };

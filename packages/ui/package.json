@@ -7,18 +7,20 @@
   "description": "Kitbash UI: Styrene-themed React components for agent and AI products, with a Storybook catalog agents can borrow from.",
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./shared": "./src/shared/index.ts",
+    "./*": "./src/components/*/index.ts"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build -o dist/storybook",
     "typecheck": "tsc -p tsconfig.json",
-    "validate": "node scripts/check-catalog.mjs && node scripts/gen-skill-catalog.mjs --check",
-    "gen-skill-catalog": "node scripts/gen-skill-catalog.mjs"
-  },
-  "dependencies": {
-    "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "validate": "node scripts/check-catalog.mjs && node scripts/gen-skill-catalog.mjs --check && node scripts/gen-entries.mjs --check && node scripts/gen-barrel.mjs --check",
+    "gen-skill-catalog": "node scripts/gen-skill-catalog.mjs",
+    "gen-entries": "node scripts/gen-entries.mjs",
+    "ssr-check": "node scripts/ssr-check.mjs",
+    "test": "node scripts/ssr-check.mjs",
+    "gen-barrel": "node scripts/gen-barrel.mjs"
   },
   "devDependencies": {
     "@storybook/react-vite": "10.6.3",
@@ -26,8 +28,17 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "6.1.2",
     "playwright": "1.64.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "storybook": "10.6.3",
     "typescript": "7.0.2",
     "vite": "8.3.5"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
   }
 }

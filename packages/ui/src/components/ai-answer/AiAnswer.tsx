@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import { cx, Icon, Shimmer, Spinner, useReducedMotion } from "../../shared/index.ts";
 import { MessageActions } from "../message-actions/MessageActions.tsx";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from "react";
 import { cx, Icon, Spinner, useReducedMotion } from "../../shared/index.ts";

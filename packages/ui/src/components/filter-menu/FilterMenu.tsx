@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { cx, Icon } from "../../shared/index.ts";

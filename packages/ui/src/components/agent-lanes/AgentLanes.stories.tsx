@@ -26,3 +26,6 @@ export const WaitingOnYou: Story = { args: { speed: 30 } };
 
 /** The demo approves itself after 24 simulated seconds and ships. */
 export const HandsOff: Story = { args: { speed: 16, approveAfter: 24 } };
+
+/** While data loads: the same layout as skeleton parts. */
+export const Loading: Story = { args: { loading: true } };

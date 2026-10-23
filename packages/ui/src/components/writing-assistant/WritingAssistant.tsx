@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { cx, Icon, Shimmer, Spinner, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./writing-assistant.css";

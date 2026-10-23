@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, useId, useState, type ReactNode } from "react";
 import { cx, Icon } from "../../shared/index.ts";
 import "./cited-answer.css";

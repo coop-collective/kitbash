@@ -1,7 +1,10 @@
+"use client";
+
 import { useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
 import { cx, Icon, NumberRoll } from "../../shared/index.ts";
 import "./kpi-chart.css";
+import { Skeleton, SkeletonRegion } from "../skeleton/Skeleton.tsx";
 
 /** Chart series colors (data): one hue per line, a light and a dark value each. */
 const SERIES = [
@@ -35,6 +38,8 @@ export interface KpiChartProps {
   lowerIsBetter?: boolean;
   /** Shaded spans that explain the data, as inclusive point indexes, e.g. weekends */
   bands?: Array<{ from: number; to: number; label: string }>;
+  /** Draw the layout-matching skeleton while data loads */
+  loading?: boolean;
   className?: string;
 }
 
@@ -73,7 +78,7 @@ function niceScale(n: number): { max: number; step: number } {
  * explain the shape of the data (weekends, incidents). The crosshair is a seam pin that snaps from day to day; the
  * headline, the end labels and the tooltip follow it, and arrow keys move it just like the pointer does.
  */
-export function KpiChart({
+function KpiChartView({
   title = "Tasks resolved by agents",
   labels = DAYS,
   series = kpiDemoSeries,
@@ -328,6 +333,27 @@ export function KpiChart({
           ))}
         </tbody>
       </table>
+    </section>
+  );
+}
+
+/** Kpi chart: shows the layout-matching skeleton while `loading`, then the live view. */
+export function KpiChart({ loading = false, ...props }: KpiChartProps) {
+  if (loading) return <KpiChartSkeleton className={props.className} />;
+  return <KpiChartView {...props} />;
+}
+
+function KpiChartSkeleton({ className }: { className?: string }) {
+  return (
+    <section className={cx("kb-kpi kb-part", className)} aria-label="KPI chart">
+      <SkeletonRegion label="Loading kpi chart">
+        <div style={{ display: "grid", gap: 10 }}>
+          <Skeleton width={180} height={12} />
+          <Skeleton width={110} height={30} radius="control" />
+          <Skeleton width={260} height={10} />
+          <Skeleton height={180} radius="card" style={{ marginTop: 12 }} />
+        </div>
+      </SkeletonRegion>
     </section>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Avatar, cx, Icon, Shimmer, Spinner, useReducedMotion } from "../../shared/index.ts";
 import "./comment-thread.css";

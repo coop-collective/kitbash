@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { cx, formatDuration, Icon, useElapsed, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./chat-composer.css";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { cx, Icon, NumberRoll, Tag, useReducedMotion } from "../../shared/index.ts";
 import "./setup-guide.css";

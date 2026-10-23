@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useId, useState } from "react";
 import { cx, NumberRoll, Tag, useInterval, useReducedMotion } from "../../shared/index.ts";
 import "./progress-tracker.css";

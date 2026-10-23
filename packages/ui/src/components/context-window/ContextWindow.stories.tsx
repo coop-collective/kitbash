@@ -50,3 +50,6 @@ export const SmallModel: Story = {
     ],
   },
 };
+
+/** While data loads: the same layout as skeleton parts. */
+export const Loading: Story = { args: { loading: true } };

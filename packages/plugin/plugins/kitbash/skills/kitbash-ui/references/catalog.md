@@ -41,6 +41,9 @@ Each component lives in `src/components/<slug>/` as `<Export>.tsx`, `<slug>.css`
 | Thinking Loader (`ThinkingLoader`) | `thinking-loader` | Built on the shared eight-ray Spinner and Shimmer, each phase clicks up into a drum window with a snap overshoot, and on finish the rays retract and a green check stud snaps into the socket. |
 | Thinking State (`ThinkingState`) | `thinking-state` | Steps sit on a recessed rail that fills like resin running down a mold channel, and each finished step gets a green peg that snaps into its socket. |
 | Writing Assistant (`WritingAssistant`) | `writing-assistant` | Instead of a decorative gradient glow, the card's rim is edge-lit like clear acrylic and only glows ultramarine while the assistant is writing or listening. |
+| Chat Thread (`ChatThread`) | `chat-thread` | Days split by a hairline seam with the date set into it, agents shown as square molded badges instead of round faces, read receipts as tiny faces where each person stopped reading, a cobalt spinner only while an agent writes, a crimson square with Try again for a failed send, and a molded Jump to latest key; loading older messages keeps your scroll position. |
+| Conversation List (`ConversationList`) | `conversation-list` | One signal per state: unread is a heavier name, mentions a gunmetal count, muted a bell-off icon; the Agents section uses the library's status shapes (cobalt pulse while working, yellow diamond when waiting on you), so the sidebar doubles as an agent switchboard. |
+| Reaction Picker (`ReactionPicker`) | `reaction-picker` | Your own reactions stay pressed in like a latched switch with a gunmetal edge; the popover is a parts tray you walk with the arrow keys from the search field, with a :shortcode: readout, and skin tones are round paint-pot swatches. |
 
 ## Inputs
 
@@ -102,3 +105,46 @@ Each component lives in `src/components/<slug>/` as `<Export>.tsx`, `<slug>.css`
 | Project Card (`ProjectCard`) | `project-card` | The progress ring is made of snap-fit arc parts, one per subtask: green when done, ultramarine while an agent works on it, decal yellow when it waits on a person; people, ring parts and rows light each other up on hover. |
 | Smart Recommendation (`SmartRecommendation`) | `smart-recommendation` | Confidence is shown as five molded pips pressed into the card (colored by level) instead of a percentage bar, and a swapped-in alternative snaps into the main slot. |
 | Tips Panel (`TipsPanel`) | `tips-panel` | Taking a tip presses its card down from a raised part into a recessed, cured-green socket with a stamped check, so the tips still to do stand up off the surface. |
+
+## Loading
+
+| Component | Slug | What makes it Styrene |
+|---|---|---|
+| Skeleton (`Skeleton`) | `skeleton` | Placeholder parts in unpainted primer gray that all share one light sweep fixed to the viewport, so a loading screen reads as one surface instead of dozens of blinking boxes. |
+| Freshness Badge (`FreshnessBadge`) | `freshness-badge` | One quiet line that says how old the numbers on screen are (updated, refreshing, cached since a time, failed to refresh), wired to the stale-while-revalidate cache. |
+| Empty State (`EmptyState`) | `empty-state` | An empty socket in a kit tray: the outline of the part that belongs here and the one action that puts it there. |
+| Error State (`ErrorState`) | `error-state` | A failure explained, not apologized for: what failed, how to fix it, a copyable request detail, and a retry key, marked with the library's crimson failed square. |
+
+## Analytics
+
+| Component | Slug | What makes it Styrene |
+|---|---|---|
+| Stat Grid (`StatGrid`) | `stat-grid` | Every metric is a cell of one panel split by hairlines, values on one baseline and one type size; the change is green or crimson by whether it is better for that metric (a shorter run time is good), and each sparkline draws the previous period dotted underneath. |
+| Funnel Chart (`FunnelChart`) | `funnel-chart` | Each bar keeps the previous step's length as a hatched offcut, so the drop-off is the part cut away; focusing a step opens how many stopped, the median time to reach it and a sample of who stopped, and the step that loses the most opens first. |
+| Retention Grid (`RetentionGrid`) | `retention-grid` | A real table with caption and scoped headers, shaded in one series hue across the actual range (week 0 unshaded); arrowing through cells lights the row and column headers like a crosshair and announces a plain-sentence reading, and the average row is weighted by cohort size. |
+| Event Stream (`EventStream`) | `event-stream` | Reads like a serial monitor: new rows slide in at the top, pausing holds the list still while new events count up on a "12 new" key, and an opened row shows its properties as key/value pairs on a recessed plate. |
+| Top List (`TopList`) | `top-list` | Each row's size is a thin rail under its name measured against the leader; switching the metric re-ranks the rows with a slide you can follow, and the change column is colored by whether the move is better for that metric. |
+
+## Multiplayer
+
+| Component | Slug | What makes it Styrene |
+|---|---|---|
+| Presence Stack (`PresenceStack`) | `presence-stack` | Faces sit in a recessed tray with the overflow as a molded +4 key, and agents are square parts carrying the Kitbash mark; a dot on each avatar shows state (green active person, cobalt agent at work, hollow ring idle, faded face away), and following someone rings their face in gunmetal. |
+| Live Cursors (`LiveCursors`) | `live-cursors` | Cursors and name flags take each person's series paint and their selections a tint of it with a caret at the end; cursors glide (or jump with reduced motion), idle ones fade and drop their flag, and a legend under the page says where everyone is and is the keyboard way to ping each cursor. |
+| Typing Indicator (`TypingIndicator`) | `typing-indicator` | People get three tiny keycaps pressing down in turn while an agent gets the Kitbash mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike; names collapse to "Maya and 3 others". |
+| Activity Feed (`ActivityFeed`) | `activity-feed` | Days are split by labeled hairlines and back-to-back actions by one actor hang from a single avatar on a runner line; comments read as quotes, agent runs end in a status tag, new items slide in at the top and are announced, and loading older items shows skeleton rows where they will land. |
+
+## Users
+
+| Component | Slug | What makes it Styrene |
+|---|---|---|
+| User Table (`UserTable`) | `user-table` | Seats are a plate of studs and the last owner's role select is locked; agents and service accounts sit in their own section with square avatars and show cobalt Working only while running; invites carry the decal diamond with Resend; the bulk bar snaps in over the toolbar, and the next page lands as skeleton rows. |
+| Invite Members (`InviteMembers`) | `invite-members` | Each address snaps into a recessed tray as a chip; problem chips go dashed and say why (not an email, listed twice, already a member) and drop out of the count; three role keys, the seat price before sending, then the tray turns into one result per address with a reason and Retry failed. |
+
+## Profiles
+
+| Component | Slug | What makes it Styrene |
+|---|---|---|
+| Profile Card (`ProfileCard`) | `profile-card` | Their local time sits on a 24-hour rail with working hours solid and a gunmetal tick for now, so you can see whether it's a good moment to message; the only floating card with a shadow, opened by a name link on hover delay, focus or click, flipping near screen edges and closing on Escape. |
+| Profile Header (`ProfileHeader`) | `profile-header` | Follow is the one orange key and stays pressed in, in gunmetal, while you follow; the agent variant uses a square avatar with the Kitbash mark and splits permissions into what it reads, what it does on its own, and what it asks a person first (the decal diamond). |
+| Profile Editor (`ProfileEditor`) | `profile-editor` | A new photo opens a crop step with a round mask (drag or arrow keys, a ribbed zoom slider) previewed at 48, 32 and 24px; the handle is checked as you type, errors show inline with the crimson square, and a sticky save bar rises only while there are changes. |

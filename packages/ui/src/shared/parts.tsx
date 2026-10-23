@@ -42,7 +42,8 @@ export function Shimmer({ children, className }: { children: ReactNode; classNam
   return <span className={cx("kb-shimmer", className)}>{children}</span>;
 }
 
-const AVATAR_COLORS = ["#3b3fd6", "#23885c", "#c2571a", "#1f7fb8", "#8a3fd6", "#b8325a", "#4d6b1f"];
+/** Avatar fills from the kit-paint family: never orange (the commit color) or crimson (failure) */
+const AVATAR_COLORS = ["#3f74ab", "#2f8a7a", "#6f7d34", "#7a6b9c", "#3d4f5c", "#94574a", "#4f6f8f"];
 
 /** Initials avatar; color is derived from the name so it is stable. */
 export function Avatar({ name, size = 24, src }: { name: string; size?: number; src?: string }) {
