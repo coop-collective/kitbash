@@ -32,6 +32,8 @@ Build before loading the plugin: it bundles its runtime and local catalog so an 
 
 The plugin is named `kit`; its local MCP server is named `kitbash`.
 
+For company signups and OAuth app setup, use the [Grok Bot account-manager starter](docs/GROK-BOT.md) or the plugin skill `$kitbash-accounts`. Grok manages provider accounts through Agent Vault; Claude Code and other coding tools handle application changes and Infisical credentials. Browser password filling and provider-secret capture require separately verified integrations.
+
 ### Claude Code
 
 From the project you want to work on, launch Claude with the built plugin:
