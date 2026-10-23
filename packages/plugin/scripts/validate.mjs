@@ -27,7 +27,7 @@ const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
 export const MARKETPLACE = "kitbash";
-export const SKILLS = ["kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-secrets", "kitbash-use"];
+export const SKILLS = ["kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-publish", "kitbash-secrets", "kitbash-use"];
 export const COMMANDS = ["bootstrap", "harvest", "install", "search", "secrets"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",

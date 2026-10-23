@@ -14,6 +14,8 @@ Use `kit bootstrap` interactively to choose a preset and blocks. The plugin expo
 
 For automated secret setup, `/kit:secrets setup my-app staging` generates all declared missing application keys, registers GitHub OIDC access, and configures Infisical's Worker sync through an [isolated secrets broker](docs/SECRETS-BROKER.md). The agent receives names and status; provider credentials and generated values stay outside its workspace. Bootstrap emits a policy proposal for registration with that broker.
 
+For company signups and OAuth app setup, use the [Grok Bot account-manager starter](docs/GROK-BOT.md) or the plugin skill `$kitbash-accounts`. Grok manages provider accounts through Agent Vault; Claude Code and other coding tools handle application changes and Infisical credentials. Browser password filling and provider-secret capture require separately verified integrations.
+
 **A registry of whole features for coding agents.** Auth, Stripe billing, orgs and roles, API keys, email sending,
 rate limits, uploads, waitlists: each one a *block* with its migrations, routes, UI, env and secret declarations,
 config patches, tests and a one-page agent guide. An agent searches in ~100 tokens, judges in ~1,000, installs without
