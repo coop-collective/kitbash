@@ -1,7 +1,0 @@
-{"time":"2026-10-19T14:23:59.685Z","phase":"maintenance/0","tool":"catalog_search","query":"team rooms websocket durable object hibernation","durationMs":2.191584000000148,"outcome":"success","responseBytes":2284}
-{"time":"2026-10-19T14:24:02.054Z","phase":"maintenance/0","tool":"catalog_get","id":"block:hibernating-websocket","durationMs":0.6636250000001382,"outcome":"success","responseBytes":8288}
-{"time":"2026-10-19T14:27:27.864Z","phase":"maintenance/0","tool":"project_check","check":"typecheck","durationMs":2312.6472080000094,"outcome":"success","responseBytes":1696}
-{"time":"2026-10-19T14:27:32.451Z","phase":"maintenance/0","tool":"project_check","check":"test","durationMs":4562.097708999994,"outcome":"error","responseBytes":1525}
-{"time":"2026-10-19T14:27:45.997Z","phase":"maintenance/0","tool":"project_check","check":"test","durationMs":4596.546958000021,"outcome":"success","responseBytes":1093}
-{"time":"2026-10-19T14:28:06.695Z","phase":"maintenance/0","tool":"project_check","check":"build","durationMs":1066.2933750000084,"outcome":"success","responseBytes":1279}
-{"time":"2026-10-19T14:28:07.765Z","phase":"maintenance/0","tool":"project_check","check":"migrate","durationMs":1442.0442919999768,"outcome":"success","responseBytes":1740}

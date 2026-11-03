@@ -1,0 +1,184 @@
+.kb-id {
+  width: 640px;
+  max-width: 100%;
+  border-radius: var(--kb-r-card);
+  overflow: visible;
+}
+
+.kb-id-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-id-mark {
+  align-self: start;
+  margin-top: 2px;
+  color: var(--kb-select-text);
+}
+.kb-id-title {
+  display: grid;
+  margin-right: auto;
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+}
+.kb-id-left {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-regular);
+  color: var(--kb-ink-2);
+}
+.kb-id-left .kb-roll { font-weight: var(--kb-w-strong); color: var(--kb-decal-ink); }
+.kb-id-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.kb-id-prose {
+  position: relative;
+  padding: 18px 20px 6px;
+}
+.kb-id-prose p {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  line-height: 1.85;
+  color: var(--kb-ink);
+}
+
+/* A pending edit sits on decal tape: it is waiting on a person */
+.kb-id-edit {
+  padding: 2px 3px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-decal-soft);
+  box-shadow: inset 0 -2px 0 var(--kb-decal);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  cursor: pointer;
+  transition: background var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-id-edit[data-active] {
+  background: color-mix(in oklab, var(--kb-decal) 38%, var(--kb-panel));
+  box-shadow: inset 0 -2px 0 var(--kb-decal), 0 0 0 1px var(--kb-decal);
+}
+.kb-id-edit:focus-visible {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 1px;
+}
+.kb-id-edit del {
+  color: var(--kb-danger);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  opacity: 0.85;
+}
+.kb-id-edit ins {
+  color: var(--kb-ok);
+  text-decoration: none;
+  font-weight: var(--kb-w-medium);
+}
+
+/* Decided: the tape peels and the kept words snap into the sentence */
+.kb-id-done {
+  display: inline;
+  border-radius: var(--kb-r-part);
+  animation: kb-id-seat var(--kb-slow) var(--kb-glide);
+}
+.kb-id-done:focus { outline: none; }
+.kb-id-done[data-decision="accepted"] {
+  animation-name: kb-id-seat-ok;
+}
+@keyframes kb-id-seat {
+  from { background: var(--kb-panel-2); }
+}
+@keyframes kb-id-seat-ok {
+  from { background: var(--kb-ok-soft); color: var(--kb-ok); }
+}
+
+/* Popover: a small raised part hanging under the edit */
+.kb-id-pop {
+  position: absolute;
+  z-index: 5;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  min-width: 220px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised), var(--kb-cast-lg);
+  animation: kb-id-pop var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-id-pop {
+  from { opacity: 0; transform: translate(-50%, -4px) scale(0.96); }
+}
+.kb-id-why {
+  padding: 0 4px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-id-pop-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.kb-id-pop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo);
+}
+.kb-id-pop-btn:active { transform: translateY(1px); box-shadow: var(--kb-pressed); }
+.kb-id-pop-btn[data-kind="accept"] {
+  background: var(--kb-ok);
+  border-color: color-mix(in oklab, var(--kb-ok) 70%, black);
+  color: var(--kb-panel);
+}
+.kb-id-pop-btn kbd,
+.kb-id-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--kb-r-part);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  background: rgb(0 0 0 / 0.08);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+.kb-id-pop-btn[data-kind="accept"] kbd { background: rgb(255 255 255 / 0.2); }
+
+.kb-id-keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 10px 20px 14px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-id-keys kbd { color: var(--kb-ink-2); background: var(--kb-panel-2); box-shadow: inset 0 0 0 1px var(--kb-line); }
+.kb-id-keys kbd + kbd { margin-left: -2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-id-done,
+  .kb-id-pop { animation: none; }
+}

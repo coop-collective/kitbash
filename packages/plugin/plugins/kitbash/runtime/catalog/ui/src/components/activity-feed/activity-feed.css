@@ -1,0 +1,156 @@
+/* Activity feed: days split by seams, each actor's run hanging from one avatar on a runner */
+.kb-af {
+  width: 560px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+.kb-af-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s3);
+  min-height: 52px;
+  padding: var(--kb-s3) var(--kb-s5);
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-af-head h3 { margin: 0; font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-af-body { padding: 0 var(--kb-s5) var(--kb-s2); }
+
+/* Day: a label riding on a seam */
+.kb-af-day-label {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s3);
+  margin: 0;
+  padding: var(--kb-s4) 0 var(--kb-s3);
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+}
+.kb-af-day-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--kb-line);
+}
+.kb-af-runs,
+.kb-af-items { margin: 0; padding: 0; list-style: none; }
+.kb-af-runs { display: grid; gap: var(--kb-s2); }
+
+.kb-af-run {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--kb-s3);
+}
+.kb-af-face { display: block; height: 28px; }
+
+.kb-af-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--kb-s3);
+  min-height: 34px;
+  padding: 4px 0 8px;
+}
+.kb-af-line {
+  margin: 0;
+  line-height: 20px;
+  color: var(--kb-ink-2);
+}
+.kb-af-who { font-weight: var(--kb-w-strong); color: var(--kb-ink); }
+.kb-af-obj {
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-medium);
+  text-decoration: underline;
+  text-decoration-color: var(--kb-line-strong);
+  text-underline-offset: 3px;
+  border-radius: 2px;
+}
+.kb-af-obj:hover { text-decoration-color: currentColor; }
+.kb-af-time {
+  padding-top: 1px;
+  font-size: var(--kb-text-xs);
+  line-height: 20px;
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+}
+.kb-af-detail {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+/* A comment reads as a quote: a seam on its left, the words in full ink */
+.kb-af-quote {
+  margin-top: 6px;
+  padding: 2px 0 2px 10px;
+  border-left: 2px solid var(--kb-line-strong);
+  color: var(--kb-ink);
+}
+.kb-af-outcome { grid-column: 1 / -1; margin-top: 2px; }
+
+/* The runner: from under the avatar, through each item, ending in a molded bend at the last one */
+.kb-af-run[data-many] .kb-af-item:first-child::after {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 32px;
+  bottom: 0;
+  border-left: 1.5px solid var(--kb-line-strong);
+}
+.kb-af-item + .kb-af-item::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 0;
+  width: 10px;
+  height: 14px;
+  border-left: 1.5px solid var(--kb-line-strong);
+  border-bottom: 1.5px solid var(--kb-line-strong);
+  border-bottom-left-radius: 5px;
+}
+.kb-af-item + .kb-af-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 0;
+  bottom: 0;
+  border-left: 1.5px solid var(--kb-line-strong);
+}
+
+/* A live arrival slots in from above */
+.kb-af-item[data-new] { animation: kb-af-in var(--kb-slow) var(--kb-glide); }
+.kb-af-run:has(.kb-af-item[data-new]:first-child) .kb-af-face { animation: kb-af-in var(--kb-slow) var(--kb-glide); }
+@keyframes kb-af-in {
+  from { opacity: 0; transform: translateY(-8px); }
+}
+
+.kb-af-skel {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--kb-s3);
+  padding: 4px 0 14px;
+}
+.kb-af-older-skel { padding-top: var(--kb-s3); border-top: 1px solid var(--kb-line); margin-top: var(--kb-s2); }
+
+.kb-af-foot {
+  display: flex;
+  justify-content: center;
+  min-height: 52px;
+  align-items: center;
+  padding: var(--kb-s2) var(--kb-s5);
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-af-empty { display: grid; justify-items: center; padding: var(--kb-s4); }
+.kb-af > .kb-err { margin: var(--kb-s2) var(--kb-s2) var(--kb-s3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-af-item[data-new],
+  .kb-af-run .kb-af-face { animation: none; }
+}

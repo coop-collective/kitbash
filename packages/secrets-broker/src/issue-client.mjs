@@ -7,7 +7,8 @@ import { validateConfig, httpsOrigin } from './config.mjs';
 import { fail, publicError } from './errors.mjs';
 
 /** Operator only. Issue a scoped broker capability, never a vault/provider credential. */
-export function issueClient({ policyFile, principalId, outputFile, brokerUrl }) {
+export function issueClient({ policyFile, principalId, outputFile, brokerUrl, format = 'env' }) {
+  if (!['env', 'mcp'].includes(format)) fail('invalid_request');
   const url = httpsOrigin(brokerUrl);
   const policyInfo = lstatSync(policyFile);
   const outputParent = lstatSync(path.dirname(path.resolve(outputFile)));
@@ -18,7 +19,10 @@ export function issueClient({ policyFile, principalId, outputFile, brokerUrl }) 
   const token = randomBytes(32).toString('base64url');
   const temporary = `${policyFile}.${randomUUID()}.tmp`;
   principal.tokenSha256 = createHash('sha256').update(token).digest('hex');
-  writeFileSync(outputFile, `KIT_SECRETS_BROKER_URL=${url}\nKIT_SECRETS_BROKER_TOKEN=${token}\n`, { mode: 0o600, flag: 'wx' });
+  const content = format === 'mcp'
+    ? `${JSON.stringify({ mcpServers: { kitbash_secrets: { type: 'http', url: `${url}/mcp`, headers: { Authorization: `Bearer ${token}` } } } }, null, 2)}\n`
+    : `KIT_SECRETS_BROKER_URL=${url}\nKIT_SECRETS_BROKER_TOKEN=${token}\n`;
+  writeFileSync(outputFile, content, { mode: 0o600, flag: 'wx' });
   try {
     writeFileSync(temporary, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
     renameSync(temporary, policyFile);
@@ -34,11 +38,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const argv = process.argv.slice(2);
     const args = {};
     for (let i = 0; i < argv.length; i += 2) {
-      if (!['--policy', '--principal', '--output', '--url'].includes(argv[i]) || !argv[i + 1] || args[argv[i]]) fail('invalid_request');
+      if (!['--policy', '--principal', '--output', '--url', '--format'].includes(argv[i]) || !argv[i + 1] || args[argv[i]]) fail('invalid_request');
       args[argv[i]] = argv[i + 1];
     }
-    if (Object.keys(args).length !== 4) fail('invalid_request');
-    console.log(JSON.stringify(issueClient({ policyFile: args['--policy'], principalId: args['--principal'], outputFile: args['--output'], brokerUrl: args['--url'] })));
+    if (['--policy', '--principal', '--output', '--url'].some(key => !args[key])) fail('invalid_request');
+    console.log(JSON.stringify(issueClient({ policyFile: args['--policy'], principalId: args['--principal'], outputFile: args['--output'], brokerUrl: args['--url'], format: args['--format'] })));
   } catch (error) {
     console.error(JSON.stringify(publicError(error)));
     process.exitCode = 1;

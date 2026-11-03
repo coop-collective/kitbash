@@ -1,7 +1,0 @@
-{
-  "classification": "infrastructure-startup-failure",
-  "reason": "Reference-mode MCP entrypoint had a syntax error; MCP init failed and agent proposed scratch fallback. Interrupted, not scored as reference arm.",
-  "costUsd": null,
-  "billing": "Final billing event unavailable; cost unknown, not zero.",
-  "partialTelemetry": "partial-telemetry.json"
-}

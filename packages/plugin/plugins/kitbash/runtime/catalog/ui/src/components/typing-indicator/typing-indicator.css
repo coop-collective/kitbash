@@ -1,0 +1,102 @@
+/* Typing indicator: keys pressing for people, gates lighting for an agent */
+.kb-ti {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--kb-s4);
+  min-height: 20px;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-ti[data-variant="bar"] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-height: 0;
+  background: var(--kb-panel);
+  border-top: 1px solid var(--kb-line);
+}
+.kb-ti[data-empty] { min-height: 0; }
+.kb-ti[data-variant="bar"][data-empty] { border-top-color: transparent; }
+
+.kb-ti-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  animation: kb-ti-in var(--kb-med) var(--kb-glide);
+}
+.kb-ti-row[data-variant="bar"] {
+  display: flex;
+  height: 36px;
+  padding: 0 var(--kb-s4);
+}
+.kb-ti-row[data-variant="bar"] + .kb-ti-row[data-variant="bar"] { border-top: 1px solid var(--kb-line); }
+@keyframes kb-ti-in {
+  from { opacity: 0; transform: translateY(3px); }
+}
+.kb-ti-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kb-ti-faces { display: inline-flex; padding-right: 2px; }
+.kb-ti-faces .kb-mav { margin-left: -4px; }
+.kb-ti-faces .kb-mav:nth-child(1) { z-index: 3; }
+.kb-ti-faces .kb-mav:nth-child(2) { z-index: 2; }
+.kb-ti-faces .kb-mav:first-child { margin-left: 0; }
+.kb-ti-faces .kb-avatar { box-shadow: 0 0 0 2px var(--kb-panel); }
+
+/* Three keys: each one a tiny molded cap that presses in, in turn */
+.kb-ti-keys {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 2px;
+  height: 9px;
+  flex: none;
+}
+.kb-ti-keys i {
+  width: 6px;
+  height: 7px;
+  border-radius: 1.5px;
+  background: var(--kb-ink-3);
+  box-shadow: inset 0 -1.5px 0 rgb(0 0 0 / 0.28);
+  animation: kb-ti-press 1.2s var(--kb-glide) infinite;
+}
+.kb-ti-keys i:nth-child(2) { animation-delay: 160ms; }
+.kb-ti-keys i:nth-child(3) { animation-delay: 320ms; }
+@keyframes kb-ti-press {
+  0%, 40%, 100% { transform: none; background: var(--kb-ink-3); }
+  15% { transform: translateY(2px); height: 6px; box-shadow: none; background: var(--kb-ink); }
+}
+.kb-ti-row[data-variant="bar"] .kb-ti-keys i { width: 7px; height: 8px; }
+
+/* The agent's mark: the part stays put, its four gates light in turn in cobalt */
+.kb-ti-gates {
+  flex: none;
+  fill: none;
+  stroke: var(--kb-agent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.kb-ti-row[data-variant="bar"] .kb-ti-gates { width: 20px; height: 20px; }
+.kb-ti-gates rect { stroke-width: 2.2; }
+.kb-ti-g {
+  opacity: 0.25;
+  animation: kb-ti-gate 0.88s linear infinite;
+}
+@keyframes kb-ti-gate {
+  0%, 30% { opacity: 1; }
+  45%, 100% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ti-row,
+  .kb-ti-keys i,
+  .kb-ti-g { animation: none; }
+  .kb-ti-g { opacity: 1; }
+}

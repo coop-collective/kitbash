@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "projects": {
+    "engine-box-runners": {
+      "projectId": "11111111-1111-4111-8111-111111111111",
+      "projectSlug": "engine-box-runners",
+      "domain": "https://app.infisical.com",
+      "secrets": {
+        "GITHUB_APP_ID": { "generate": false, "rotation": "provider" },
+        "GITHUB_APP_CLIENT_ID": { "generate": false, "rotation": "provider" },
+        "GITHUB_APP_CLIENT_SECRET": { "generate": false, "rotation": "provider" },
+        "GITHUB_APP_PRIVATE_KEY": { "generate": false, "rotation": "provider" },
+        "GITHUB_APP_WEBHOOK_SECRET": { "generate": false, "rotation": "provider" }
+      },
+      "targets": {
+        "staging": {
+          "environment": "staging",
+          "secretPath": "/app",
+          "githubApp": {
+            "owner": "your-org",
+            "ownerType": "organization",
+            "secrets": {
+              "appId": "GITHUB_APP_ID",
+              "clientId": "GITHUB_APP_CLIENT_ID",
+              "clientSecret": "GITHUB_APP_CLIENT_SECRET",
+              "privateKey": "GITHUB_APP_PRIVATE_KEY",
+              "webhookSecret": "GITHUB_APP_WEBHOOK_SECRET"
+            },
+            "manifest": {
+              "name": "Engine Box Runners Staging",
+              "url": "https://engine-box.example.com",
+              "hook_attributes": { "url": "https://engine-box.example.com/webhooks/github", "active": true },
+              "callback_urls": ["https://engine-box.example.com/auth/github/callback"],
+              "public": false,
+              "default_permissions": { "contents": "read" },
+              "default_events": ["push"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "principals": [{
+    "id": "grok-bot",
+    "tokenSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "grants": [{ "project": "engine-box-runners", "targets": ["staging"], "operations": ["setup", "status", "presence", "provision-github-app"] }]
+  }]
+}

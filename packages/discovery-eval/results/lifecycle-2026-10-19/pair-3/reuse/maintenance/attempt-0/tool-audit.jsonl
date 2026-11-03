@@ -1,5 +1,0 @@
-{"time":"2026-10-19T14:37:14.823Z","phase":"maintenance/0","tool":"catalog_search","query":"websocket durable object room team","durationMs":4.324666999999863,"outcome":"success","responseBytes":2284}
-{"time":"2026-10-19T14:40:01.388Z","phase":"maintenance/0","tool":"project_check","check":"typecheck","durationMs":2346.7751670000143,"outcome":"success","responseBytes":1691}
-{"time":"2026-10-19T14:40:03.741Z","phase":"maintenance/0","tool":"project_check","check":"test","durationMs":3629.687707999983,"outcome":"success","responseBytes":683}
-{"time":"2026-10-19T14:40:09.345Z","phase":"maintenance/0","tool":"project_check","check":"build","durationMs":1070.78033400001,"outcome":"success","responseBytes":1279}
-{"time":"2026-10-19T14:40:10.421Z","phase":"maintenance/0","tool":"project_check","check":"migrate","durationMs":1417.5302500000107,"outcome":"success","responseBytes":1740}

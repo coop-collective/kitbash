@@ -1,0 +1,13 @@
+{
+  "cases": [
+    {
+      "name": "alternate-params",
+      "params": {
+        "tablePrefix": "app_",
+        "routePrefix": "/account/jwt",
+        "cookieName": "identity",
+        "ttlSeconds": 300
+      }
+    }
+  ]
+}

@@ -1,35 +1,48 @@
 import { BrokerError, fail } from './errors.mjs';
 import { httpsOrigin } from './config.mjs';
+import { cloudflareSecretStore } from './cloudflare-store.mjs';
 
 // Nothing below logs requests, provider errors, login bodies, or raw responses.
 export async function requestJson(url, { headers, method = 'GET', body, request = fetch } = {}) {
-  let response;
+  const failed = (phase, status) => {
+    const error = new BrokerError('provider_failed', status);
+    error.phase = phase;
+    throw error;
+  };
+  const controller = new AbortController();
+  // Clear completed request timers so Durable Objects can evict immediately after an operation.
+  const timer = setTimeout(() => controller.abort(), 30_000);
   try {
-    response = await request(url, {
-      method, headers: { 'content-type': 'application/json', ...headers },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      redirect: 'error', signal: AbortSignal.timeout(30_000),
-    });
-  } catch { fail('provider_failed'); }
-  if (!response.ok || response.redirected) {
-    await response.body?.cancel().catch(() => {});
-    throw new BrokerError('provider_failed', response.status);
-  }
-  if (response.status === 204) return {};
-  let value;
-  try {
-    const chunks = [];
-    let size = 0;
-    for await (const chunk of response.body) {
-      size += chunk.length;
-      if (size > 2 * 1024 * 1024) fail('provider_failed');
-      chunks.push(chunk);
+    let response;
+    try {
+      response = await request(url, {
+        method, headers: { 'content-type': 'application/json', ...headers },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        // Workers supports manual/follow, but not the Fetch standard's error
+        // mode. Manual plus the non-2xx check below still refuses redirects.
+        redirect: 'manual', signal: controller.signal,
+      });
+    } catch { failed('transport'); }
+    if (!response.ok || response.redirected) {
+      await response.body?.cancel().catch(() => {});
+      failed('response', response.status);
     }
-    value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } catch { fail('provider_failed'); }
-  if (!value || typeof value !== 'object') fail('provider_failed');
-  if (value.approval) fail('conflict');
-  return value;
+    if (response.status === 204) return {};
+    let value;
+    try {
+      const chunks = [];
+      let size = 0;
+      for await (const chunk of response.body) {
+        size += chunk.length;
+        if (size > 2 * 1024 * 1024) fail('provider_failed');
+        chunks.push(chunk);
+      }
+      value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } catch { failed('decode'); }
+    if (!value || typeof value !== 'object') failed('shape');
+    if (value.approval) fail('conflict');
+    return value;
+  } finally { clearTimeout(timer); }
 }
 
 function providerApi(origin, token, request, extraHeaders = {}) {
@@ -45,6 +58,9 @@ function providerApi(origin, token, request, extraHeaders = {}) {
 /** Server process credentials only; never reads agent workspace files or a local CLI login. */
 export function makeProviders({ env = process.env, request = fetch } = {}) {
   return async scope => {
+    if (scope.backend === 'cloudflare-secrets-store') return {
+      storage: cloudflareSecretStore(scope, { token: env.KIT_BROKER_SECRETS_API_TOKEN, request }),
+    };
     const domain = httpsOrigin(scope.domain);
     let token = env.INFISICAL_TOKEN;
     if (!token) {

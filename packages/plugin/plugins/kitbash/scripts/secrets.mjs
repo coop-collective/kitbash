@@ -3,7 +3,7 @@ import { loadKit } from "./load-kit.mjs";
 
 const args = process.argv.slice(2);
 if (args.length === 1 && args[0] === "--help") {
-  console.log("Usage: secrets.mjs <setup|status|generate|provision-github|provision-worker-sync> <project-alias> <local|staging|production> [registered-secret-name]. setup generates allowed keys and registers configured access in one call. Requires an operator-configured broker; returns metadata only.");
+  console.log("Usage: secrets.mjs <setup|status|presence|generate|provision-github|provision-github-app|provision-worker-sync> <project-alias> <local|staging|production> [registered-secret-name]. setup generates allowed keys and registers configured access in one call. Requires an operator-configured broker; returns metadata only.");
 } else {
   try {
     if (args.length < 3 || args.length > 4) throw new Error();

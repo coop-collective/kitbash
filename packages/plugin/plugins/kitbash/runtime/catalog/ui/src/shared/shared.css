@@ -1,0 +1,123 @@
+/* Number roll: each digit is a vertical strip that slides to its value */
+.kb-roll {
+  display: inline-flex;
+  line-height: 1;
+}
+.kb-roll-digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  position: relative;
+}
+.kb-roll-size {
+  visibility: hidden;
+}
+.kb-roll-strip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -0.5em;
+  width: 1em;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--kb-slow) var(--kb-snap);
+}
+.kb-roll-strip > span {
+  height: 1em;
+  line-height: 1;
+}
+
+/* Eight-ray spinner: a kit-part starburst whose rays fade in sequence */
+.kb-spinner {
+  display: inline-block;
+  position: relative;
+  flex: none;
+}
+.kb-spinner > i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14%;
+  height: 30%;
+  margin-left: -7%;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: 50% 166%;
+  animation: kb-ray 0.8s linear infinite;
+}
+@keyframes kb-ray {
+  from { opacity: 1; }
+  to { opacity: 0.15; }
+}
+
+/* Shimmer: a light sweep across text or skeleton parts */
+.kb-shimmer {
+  background: linear-gradient(100deg, var(--kb-ink-3) 30%, var(--kb-ink) 50%, var(--kb-ink-3) 70%) 0 0 / 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kb-sweep 1.6s linear infinite;
+}
+@keyframes kb-sweep {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+
+/* Avatar: a molded disc with initials */
+.kb-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  font-weight: var(--kb-w-strong);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -1px 0 rgb(0 0 0 / 0.2);
+}
+
+/* Tag: status as an indicator shape plus text, like an LED beside a label, never a pastel pill.
+   Shape carries the state without color: running pulses, needs-you is a diamond, failed is a square. */
+.kb-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+}
+/* The text stays neutral so a status never looks like a link; only the indicator carries the color */
+.kb-tag[data-tone="accent"] { --tone: var(--kb-ink); color: var(--kb-ink); }
+.kb-tag[data-tone="agent"] { --tone: var(--kb-agent); }
+.kb-tag[data-tone="decal"] { --tone: var(--kb-decal); color: var(--kb-ink); }
+.kb-tag[data-tone="ok"] { --tone: var(--kb-ok); }
+.kb-tag[data-tone="danger"] { --tone: var(--kb-danger); color: var(--kb-ink); }
+.kb-tag[data-tone="info"] { --tone: var(--kb-info); }
+.kb-tag-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tone, currentColor);
+}
+.kb-tag[data-tone="decal"] .kb-tag-dot { border-radius: 1px; transform: rotate(45deg); background: var(--kb-decal); }
+.kb-tag[data-tone="danger"] .kb-tag-dot { border-radius: 1px; }
+.kb-tag[data-tone="neutral"] .kb-tag-dot { background: none; box-shadow: inset 0 0 0 1.5px var(--kb-ink-3); }
+.kb-tag[data-live] .kb-tag-dot {
+  animation: kb-breathe 1.4s ease-in-out infinite;
+}
+@keyframes kb-breathe {
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-spinner > i,
+  .kb-shimmer,
+  .kb-tag[data-live] .kb-tag-dot {
+    animation: none;
+  }
+  .kb-shimmer {
+    color: var(--kb-ink-2);
+  }
+}

@@ -14,7 +14,11 @@ Supply a private profile containing the signup pattern, receiving inbox, Agent V
 service location, and coding-tool handoff destination. Claude Code and other coding tools
 own Infisical access and application changes; no Infisical MCP is required in Grok.
 Include project/environment aliases as handoff metadata when known. Leave unknown
-endpoints unconfigured. Enter connector credentials only through supported secure
+endpoints unconfigured. Grok can also use the Kitbash broker's remote `/mcp` endpoint for scoped secret
+operations without its own Infisical login. Configure its bearer credential through protected connector
+controls and verify discovery of `kitbash_secrets` plus a successful `status` for the registered project/target.
+The feature registry connection and a saved skill do not configure this separate service.
+Enter connector credentials only through supported secure
 connection controls. Account details stay out of the reusable public template.
 
 Grok's documented native template flow is **Share → Create template → Copy link**.
@@ -59,15 +63,16 @@ passing browser test. Session cookies remain credentials even when the password 
 
 If browser integration cannot be established, use the native secure secret card or human
 takeover. This is a supported fallback, not evidence of Agent Vault integration. Record
-the remaining manual step. Likewise, provider secrets displayed only in a dashboard need
-a trusted capture path or human entry directly into Infisical.
+the remaining manual step. For provider credentials that can be captured or downloaded to private local
+files, use `kitbash_upload_secrets` and its local helper. It sends those files directly to the registered
+store and returns names/status. A human upload page is not required.
 
 ## One authorized provider pilot
 
 Obtain the provider, application name, intended owner, project/environment, callback
 URLs, and scopes from the task and existing records. Then run signup or account reuse,
 verification, login, and app registration in Grok. Hand metadata to the coding tools for
-application changes, secure credential delivery to Infisical, and a scoped check.
+application changes and a scoped runtime check. Use the Kitbash MCP file-upload tools for credential delivery.
 Keep a phase receipt so a blocked step can resume without duplicate accounts/apps.
 Keep recurring work disabled until the owner requests it after a successful trial.
 

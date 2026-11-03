@@ -1,0 +1,277 @@
+.kb-al {
+  width: 860px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-al-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s2);
+  padding: var(--kb-s3) var(--kb-s3) var(--kb-s3) var(--kb-s4);
+  border-bottom: 1px solid var(--kb-line);
+}
+.kb-al-head > div { flex: 1; min-width: 0; }
+.kb-al-head h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-al-head p {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+
+.kb-al-grid {
+  padding: var(--kb-s2) var(--kb-s4) var(--kb-s8);
+}
+.kb-al[data-done] .kb-al-grid { padding-bottom: var(--kb-s4); }
+.kb-al-axis,
+.kb-al-body {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+.kb-al-scale {
+  position: relative;
+  height: 22px;
+  margin-right: 18px;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-al-scale span {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  transition: left var(--kb-slow) var(--kb-glide);
+}
+.kb-al-scale span:first-child { transform: none; }
+
+.kb-al-names {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-al-names li {
+  border-bottom: 1px solid var(--kb-line);
+  display: flex;
+  align-items: center;
+  gap: var(--kb-s2);
+  padding-right: var(--kb-s2);
+}
+.kb-al-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+.kb-al-who strong {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+}
+.kb-al-who span {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kb-al-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--kb-line-strong);
+}
+.kb-al-dot[data-tone="agent"] { background: var(--kb-agent); }
+.kb-al-dot[data-tone="decal"] { background: var(--kb-decal); border-radius: 1px; transform: rotate(45deg); }
+
+/* Tracks: recessed channels the task parts sit in */
+.kb-al-tracks {
+  position: relative;
+  height: calc(var(--lane) * 5);
+  margin-right: 18px;
+}
+.kb-al-rule {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dotted var(--kb-line-strong);
+  transition: left var(--kb-slow) var(--kb-glide);
+}
+.kb-al-lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--lane);
+  border-bottom: 1px solid var(--kb-line);
+}
+/* Channels are split by hairlines only; no idle trace competing with the work */
+.kb-al-lane::before {
+  content: none;
+}
+
+.kb-al-runners {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+.kb-al-runners path {
+  fill: none;
+  stroke: var(--kb-ink-2);
+  stroke-width: 1.25;
+}
+.kb-al-runners marker path {
+  fill: var(--kb-ink-2);
+  stroke: none;
+}
+
+.kb-al-block {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 4px;
+  padding: 0 6px;
+  border-radius: 2px;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  container-type: inline-size;
+  background: color-mix(in oklab, var(--kb-ink) 17%, var(--kb-panel));
+  color: var(--kb-ink);
+  border: 0;
+  transition: left var(--kb-slow) var(--kb-glide), width 100ms linear;
+  animation: kb-al-seat var(--kb-med) var(--kb-glide);
+}
+/* The gate nub where a hand-off lands */
+.kb-al-block[data-state="failed"] {
+  background: var(--kb-danger-soft);
+  box-shadow: inset 2px 0 0 var(--kb-danger);
+  color: var(--kb-ink);
+}
+/* One grammar for every state: a soft fill and a colored left edge */
+.kb-al-block[data-state="running"] {
+  background: var(--kb-agent-soft);
+  box-shadow: inset 2px 0 0 var(--kb-agent);
+  color: var(--kb-ink);
+}
+
+/* Short blocks keep their full shape; only the label moves beside them */
+.kb-al-block[data-short] {
+  overflow: visible;
+}
+.kb-al-block[data-short] .kb-al-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(100% + 6px);
+  overflow: visible;
+  color: var(--kb-ink-2);
+}
+/* Held for a person: a dashed outline, no fill color, so the orange Approve key is the only warm mark */
+.kb-al-block[data-state="waiting"] {
+  top: 4px;
+  bottom: 4px;
+  justify-content: flex-start;
+  padding-right: 3px;
+  background: var(--kb-panel);
+  border: 1px dashed var(--kb-ink-3);
+  box-shadow: none;
+  color: var(--kb-ink);
+}
+.kb-al-dur {
+  margin-left: auto;
+  padding-left: 8px;
+  font-family: var(--kb-font-code);
+  color: var(--kb-ink-3);
+}
+
+.kb-al-label {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@container (max-width: 120px) {
+  .kb-al-block[data-state="waiting"] .kb-al-label { display: none; }
+}
+.kb-btn.kb-al-approve {
+  flex: none;
+  height: 22px;
+  padding: 0 8px;
+  font-size: var(--kb-text-xs);
+}
+
+@keyframes kb-al-seat {
+  from { opacity: 0; }
+}
+@keyframes kb-al-edge {
+  50% { opacity: 0.2; }
+}
+
+/* Now: a cut line through every lane */
+.kb-al-now {
+  position: absolute;
+  top: 0;
+  bottom: -24px;
+  z-index: 3;
+  width: 0;
+  border-left: 1px solid var(--kb-ink);
+  transition: left 100ms linear;
+  pointer-events: none;
+}
+.kb-al-now span {
+  position: absolute;
+  bottom: 0;
+  left: -1px;
+  transform: translateX(-50%);
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: var(--kb-ink);
+  color: var(--kb-panel);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+}
+[data-theme="dark"] .kb-al-now span {
+  background: var(--kb-panel-2);
+  color: var(--kb-ink);
+  box-shadow: inset 0 0 0 1px var(--kb-line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-al-block,
+  .kb-al-block[data-state="running"]::after { animation: none; }
+  .kb-al-now,
+  .kb-al-block { transition: none; }
+}
+
+/* Shipped: success shows in the lanes too, not only in the header */
+.kb-al[data-done] .kb-al-dot { background: var(--kb-ok); }
+.kb-al[data-done] .kb-al-block[data-state="done"]:has(svg) {
+  background: var(--kb-ok-soft);
+  box-shadow: inset 2px 0 0 var(--kb-ok);
+}
+.kb-al-gutter {
+  align-self: end;
+  padding-bottom: 4px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-al-busy { font-family: var(--kb-font-code); }
+.kb-al-block[data-state="waiting"] .kb-al-label { flex: none; }
+.kb-al-block[data-state="waiting"] .kb-btn.kb-al-approve { margin-left: 10px; }

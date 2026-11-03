@@ -1,0 +1,69 @@
+name: Deploy secrets broker
+
+on:
+  push:
+    paths:
+      - packages/secrets-broker/**
+      - pnpm-lock.yaml
+      - package.json
+      - pnpm-workspace.yaml
+      - .github/workflows/deploy-broker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: secrets-broker-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.KIT_BROKER_CONFIGURED == 'true' && (github.event_name == 'workflow_dispatch' || vars.KIT_BROKER_AUTO_DEPLOY == 'true') && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    environment: ${{ vars.KIT_BROKER_DEPLOY_ENVIRONMENT }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kitbash/secrets-broker run typecheck
+      - run: pnpm --filter @kitbash/secrets-broker test
+      - run: pnpm --filter @kitbash/secrets-broker run test:worker
+      - name: Fetch the deployment token from Infisical using GitHub OIDC
+        if: vars.KIT_BROKER_CI_PROVIDER == 'infisical'
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ github.event_name == 'push' && vars.INFISICAL_PUSH_IDENTITY_ID || vars.INFISICAL_DISPATCH_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG }}
+          secret-path: ${{ vars.INFISICAL_SECRET_PATH }}
+          include-imports: 'false'
+          recursive: 'false'
+          export-type: env
+      - name: Deploy using the organization Cloudflare credential
+        if: vars.KIT_BROKER_CI_PROVIDER != 'infisical'
+        run: pnpm run deploy:broker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          KIT_BROKER_HOSTNAME: ${{ vars.KIT_BROKER_HOSTNAME }}
+          KIT_BROKER_WORKER_NAME: ${{ vars.KIT_BROKER_WORKER_NAME }}
+          KIT_BROKER_PRINCIPAL: ${{ vars.KIT_BROKER_PRINCIPAL }}
+          KIT_BROKER_SECRET_BINDINGS: ${{ vars.KIT_BROKER_SECRET_BINDINGS }}
+      - name: Deploy using the optional Infisical credential
+        if: vars.KIT_BROKER_CI_PROVIDER == 'infisical'
+        run: pnpm run deploy:broker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          KIT_BROKER_HOSTNAME: ${{ vars.KIT_BROKER_HOSTNAME }}
+          KIT_BROKER_WORKER_NAME: ${{ vars.KIT_BROKER_WORKER_NAME }}
+          KIT_BROKER_PRINCIPAL: ${{ vars.KIT_BROKER_PRINCIPAL }}
+          KIT_BROKER_SECRET_BINDINGS: ${{ vars.KIT_BROKER_SECRET_BINDINGS }}

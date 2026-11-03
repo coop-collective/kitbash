@@ -1,2 +1,1 @@
-# the bundle is built by `pnpm -F @kitbash/plugin build` (scripts/build.mjs); launchers fall back to the sources
-plugins/kitbash/runtime/
+# Runtime and catalog are committed so GitHub plugin installs need no build.

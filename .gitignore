@@ -4,6 +4,11 @@ coverage/
 .wrangler/
 .dev.vars
 .env
+.env.*.tmp
+# Private template setup settings, generated deployment config, and MCP credentials.
+.kitbash/
+broker.policy.json
+broker.policy.json.*.tmp
 *.log
 .DS_Store
 # plan files and diffs are per-session working state

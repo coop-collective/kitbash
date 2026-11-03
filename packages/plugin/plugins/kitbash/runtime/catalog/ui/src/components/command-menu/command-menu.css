@@ -1,0 +1,241 @@
+.kb-cmd {
+  width: 560px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), var(--kb-cast-lg);
+  overflow: hidden;
+}
+
+/* Search field: a recessed well molded into the top of the frame */
+.kb-cmd-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px;
+  padding: 0 10px 0 12px;
+  height: 46px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-3);
+}
+.kb-cmd-field:focus-within {
+  box-shadow: var(--kb-recessed), 0 0 0 2px var(--kb-select);
+}
+.kb-cmd-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-lg);
+}
+.kb-cmd-input::placeholder {
+  color: var(--kb-ink-3);
+}
+.kb-cmd-input:focus-visible {
+  outline: none;
+}
+.kb-cmd-clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-2);
+  cursor: pointer;
+}
+.kb-cmd-clear:hover {
+  background: var(--kb-line);
+}
+
+/* Keycaps: small molded keys that press in when their shortcut fires */
+.kb-cmd-keys {
+  display: inline-flex;
+  gap: 3px;
+  flex: none;
+}
+.kb-cmd-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  line-height: 1;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), 0 2px 0 var(--kb-line-strong);
+  transition: transform var(--kb-fast) var(--kb-glide), box-shadow var(--kb-fast) var(--kb-glide);
+}
+.kb-cmd-option[data-fired] .kb-cmd-key {
+  transform: translateY(2px);
+  box-shadow: var(--kb-pressed);
+  color: var(--kb-select-text);
+  border-color: var(--kb-select);
+}
+
+/* List with one slider part that snaps between rows */
+.kb-cmd-list {
+  position: relative;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 0 10px 8px;
+  border-top: 1px solid var(--kb-line);
+  scrollbar-width: thin;
+}
+.kb-cmd-slider {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-select-soft);
+  box-shadow: none;
+  transition: transform var(--kb-med) var(--kb-snap), height var(--kb-fast) var(--kb-glide);
+  pointer-events: none;
+}
+.kb-cmd-slider::before {
+  display: none;
+  /* the slider's grip: a short accent rib on its leading edge */
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  margin-top: -9px;
+  border-radius: 2px;
+  background: var(--kb-select);
+}
+.kb-cmd-group-label {
+  padding: 12px 10px 6px;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-3);
+}
+.kb-cmd-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 10px 6px 14px;
+  border-radius: var(--kb-r-control);
+  cursor: pointer;
+  color: var(--kb-ink);
+  transition: transform var(--kb-fast) var(--kb-glide);
+}
+.kb-cmd-option[data-fired] {
+  transform: translateY(1px);
+}
+.kb-cmd-option mark {
+  background: none;
+  color: var(--kb-select-text);
+  font-weight: var(--kb-w-strong);
+}
+.kb-cmd-glyph {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 28px;
+  color: var(--kb-ink-3);
+}
+.kb-cmd-option[data-active] .kb-cmd-glyph {
+  color: var(--kb-select-text);
+}
+.kb-cmd-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.kb-cmd-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--kb-w-medium);
+}
+.kb-cmd-service {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+.kb-cmd-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 28px 12px 24px;
+  text-align: center;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-cmd-empty strong {
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-strong);
+  font-size: var(--kb-text-md);
+}
+
+.kb-cmd-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 6px 14px;
+  border-top: 1px solid var(--kb-line);
+  background: var(--kb-panel-2);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-cmd-foot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.kb-cmd-foot .kb-cmd-key {
+  min-width: 18px;
+  height: 18px;
+  font-size: var(--kb-text-xs);
+}
+.kb-cmd-status {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--kb-ok);
+  font-weight: var(--kb-w-medium);
+}
+.kb-cmd-status:not(:empty) {
+  animation: kb-cmd-in var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-cmd-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+@media (max-width: 520px) {
+  .kb-cmd-foot > span:nth-child(3) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-cmd-slider,
+  .kb-cmd-option,
+  .kb-cmd-key {
+    transition: none;
+  }
+  .kb-cmd-status:not(:empty) {
+    animation: none;
+  }
+}

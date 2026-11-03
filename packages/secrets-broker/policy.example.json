@@ -35,7 +35,7 @@
     {
       "id": "build-agent",
       "tokenSha256": "0000000000000000000000000000000000000000000000000000000000000000",
-      "grants": [{ "project": "my-app", "targets": ["local", "staging"], "operations": ["setup", "status", "generate", "provision-github", "provision-worker-sync"] }]
+      "grants": [{ "project": "my-app", "targets": ["local", "staging"], "operations": ["setup", "status", "presence", "generate", "provision-github", "provision-worker-sync"] }]
     }
   ]
 }

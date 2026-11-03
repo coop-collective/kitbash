@@ -13,7 +13,10 @@ async function preparedTemplate() {
     // This temp copy has its own allowBuilds config and may not have a lockfile yet.
     await execFileP("pnpm", ["install", "--offline", "--no-frozen-lockfile", "--config.confirmModulesPurge=false"], { cwd: dir, timeout: 120_000 });
   } catch (e) {
-    if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(`${e.message}\n${e.stdout}\n${e.stderr}`)) {
+    const details = `${e.message}\n${e.stdout}\n${e.stderr}`;
+    // pnpm 12 also resolves its pinned package manager from the metadata cache.
+    const missingManager = /ERR_PNPM_BAD_CONFIG_DEP/.test(details) && /Failed to resolve config dependency pnpm@/.test(details) && /package mirror/.test(details);
+    if (/ERR_PNPM_NO_OFFLINE_(?:META|TARBALL)\b/.test(details) || missingManager) {
       return { skip: "test-e2e/fixtures/hono-d1 dependencies are not in the local pnpm store (run pnpm install in a standalone template copy once)" };
     }
     throw e;

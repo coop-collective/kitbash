@@ -1,0 +1,186 @@
+.kb-otp {
+  --otp-cell: 46px;
+  --otp-gap: 8px;
+  --otp-split: 14px;
+  display: grid;
+  gap: var(--kb-s2);
+  width: max-content;
+  max-width: 100%;
+}
+.kb-otp-label {
+  font-weight: var(--kb-w-strong);
+  font-size: var(--kb-text-lg);
+}
+.kb-otp-hint {
+  margin: 0 0 var(--kb-s2);
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-otp-hint strong {
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-medium);
+}
+
+.kb-otp-field {
+  position: relative;
+  width: max-content;
+  cursor: text;
+}
+/* The one real input sits over the cells, invisible but focusable, so paste and autofill land in it */
+.kb-otp-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  font-size: var(--kb-text-lg);
+  color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  z-index: 2;
+}
+.kb-otp-cells {
+  position: relative;
+  display: flex;
+  gap: var(--otp-gap);
+  transition: gap var(--kb-med) var(--kb-glide);
+}
+.kb-otp-cell {
+  display: grid;
+  place-items: center;
+  width: var(--otp-cell);
+  height: 56px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  border: 1px solid var(--kb-line);
+  box-shadow: var(--kb-recessed);
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-strong);
+  transition: border-radius var(--kb-med) var(--kb-glide), margin var(--kb-med) var(--kb-glide), background var(--kb-med);
+}
+.kb-otp-cell-split {
+  margin-right: var(--otp-split);
+}
+/* A digit drops into its well and settles */
+.kb-otp-digit {
+  animation: kb-otp-drop var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-otp-drop {
+  from { transform: translateY(-10px) scale(0.8); opacity: 0; }
+}
+
+/* One ring for the whole field: it glides to the next empty cell instead of jumping between outlines */
+.kb-otp-ring {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: calc(var(--otp-cell) + 6px);
+  height: 62px;
+  border: 2px solid var(--kb-select);
+  border-radius: 11px;
+  transform: translateX(var(--otp-x, 0px));
+  opacity: 0;
+  transition: transform var(--kb-med) var(--kb-snap), opacity var(--kb-fast);
+  pointer-events: none;
+}
+.kb-otp-field[data-focused] .kb-otp-ring {
+  opacity: 1;
+}
+.kb-otp[data-state="error"] .kb-otp-ring {
+  border-color: var(--kb-danger);
+}
+.kb-otp[data-state="error"] .kb-otp-cell[data-filled] {
+  border-color: color-mix(in oklab, var(--kb-danger) 55%, var(--kb-line));
+  color: var(--kb-danger);
+}
+
+/* Calm shake: three short swings that decay */
+.kb-otp-cells[data-shake] {
+  animation: kb-otp-shake 420ms var(--kb-glide);
+}
+@keyframes kb-otp-shake {
+  15% { transform: translateX(-7px); }
+  35% { transform: translateX(5px); }
+  55% { transform: translateX(-3px); }
+  75% { transform: translateX(1px); }
+}
+
+/* Verified: the seams close and the cells fuse into one cured part */
+.kb-otp-verified {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kb-s2);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-ok-soft);
+  color: var(--kb-ok);
+  border: 1px solid color-mix(in oklab, var(--kb-ok) 40%, transparent);
+  box-shadow: var(--kb-raised);
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+.kb-otp[data-state="verified"] .kb-otp-cells {
+  gap: 0;
+}
+.kb-otp[data-state="verified"] .kb-otp-cell {
+  border-radius: 0;
+  margin-right: 0;
+}
+.kb-otp[data-state="verified"] .kb-otp-cell:first-child { border-radius: var(--kb-r-control) 0 0 var(--kb-r-control); }
+.kb-otp[data-state="verified"] .kb-otp-cell:nth-last-child(3) { border-radius: 0 var(--kb-r-control) var(--kb-r-control) 0; }
+.kb-otp[data-state="verified"] .kb-otp-ring { opacity: 0; }
+.kb-otp[data-state="verified"] .kb-otp-verified {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--kb-med) var(--kb-glide) var(--kb-med), transform var(--kb-med) var(--kb-snap) var(--kb-med);
+}
+.kb-otp[data-state="verifying"] .kb-otp-cell {
+  color: var(--kb-ink-3);
+}
+
+.kb-otp-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s4);
+  min-height: 24px;
+}
+.kb-otp-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  max-width: 34ch;
+}
+.kb-otp-msg[data-tone="danger"] { color: var(--kb-danger); }
+.kb-otp-msg[data-tone="ok"] { color: var(--kb-ok); }
+.kb-otp-resend {
+  flex: none;
+  border: 0;
+  padding: 2px 0;
+  background: none;
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-select-text);
+  cursor: pointer;
+}
+.kb-otp-resend:disabled {
+  color: var(--kb-ink-3);
+  cursor: default;
+  font-weight: var(--kb-w-regular);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-otp-digit,
+  .kb-otp-cells[data-shake] {
+    animation: none;
+  }
+}

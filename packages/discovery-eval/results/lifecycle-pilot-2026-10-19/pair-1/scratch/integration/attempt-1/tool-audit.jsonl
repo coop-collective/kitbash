@@ -1,3 +1,0 @@
-{"time":"2026-10-19T13:41:38.097Z","phase":"integration/1","tool":"project_check","check":"typecheck","durationMs":3660.8112500000025,"outcome":"success","responseBytes":1695}
-{"time":"2026-10-19T13:41:41.768Z","phase":"integration/1","tool":"project_check","check":"test","durationMs":10475.912041000003,"outcome":"success","responseBytes":650}
-{"time":"2026-10-19T13:41:54.074Z","phase":"integration/1","tool":"project_check","check":"build","durationMs":1484.3531670000011,"outcome":"success","responseBytes":1281}

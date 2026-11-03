@@ -1,0 +1,59 @@
+{
+  "description": "uuid5 (RFC 9562, SHA-1); factId(project, name, subject) = uuid5(uuid5(CANVALYTICS_NAMESPACE, project), `${name}:${subject}`); pseudonym(uidKey, userId) = base64url(HMAC-SHA256(uidKey, userId))[:22].",
+  "canvalytics_namespace": "6f1d3c8e-2b7a-4c59-9e41-0a8d5b3f7c21",
+  "uuid5": [
+    {
+      "namespace": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "name": "www.example.com",
+      "uuid": "2ed6657d-e927-568b-95e1-2665a8aea6a2"
+    },
+    {
+      "namespace": "6f1d3c8e-2b7a-4c59-9e41-0a8d5b3f7c21",
+      "name": "prj_xinf_prod",
+      "uuid": "6b24d510-3c2d-5302-8d0b-92ee0dd295f9"
+    }
+  ],
+  "fact_ids": [
+    {
+      "project": "prj_xinf_prod",
+      "name": "signup",
+      "subject": "acc_8f3a1b",
+      "id": "9db4dbca-fd2a-5035-98c1-8abdc7aab187"
+    },
+    {
+      "project": "prj_xinf_prod",
+      "name": "conversion",
+      "subject": "acc_8f3a1b",
+      "id": "6ac30214-e6f4-582a-b2c1-74dd95538958"
+    },
+    {
+      "project": "prj_xinf_staging",
+      "name": "signup",
+      "subject": "acc_8f3a1b",
+      "id": "bca1387d-bf03-5086-9a53-fd96626c75e0"
+    },
+    {
+      "project": "prj_xinf_prod",
+      "name": "signup",
+      "subject": "äcc-ünïcode",
+      "id": "c142c6bf-a726-5472-b3e2-fac3f7b797dd"
+    }
+  ],
+  "pseudonyms": {
+    "uid_key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "cases": [
+      {
+        "user_id": "acc_8f3a1b",
+        "uid": "1wb6IWvTBhdoKS5DqC72-C"
+      },
+      {
+        "user_id": "acc_000001",
+        "uid": "DJWAXabzUTx8pAyIt6MUWo"
+      },
+      {
+        "user_id": "user-42",
+        "uid": "dOpjGP2QejZzJRdc32L1Xd"
+      }
+    ]
+  }
+}

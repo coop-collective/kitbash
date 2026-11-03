@@ -1,0 +1,389 @@
+.kb-sf {
+  width: 560px;
+  max-width: 100%;
+  border-radius: var(--kb-r-frame);
+  overflow: hidden;
+}
+
+/* Rail of keys along the top seam of the card */
+.kb-sf-rail {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto 1fr auto;
+  align-items: center;
+  margin: 0;
+  padding: 16px 20px 14px;
+  list-style: none;
+  background: var(--kb-panel-2);
+  border-bottom: 1px solid var(--kb-line);
+  box-shadow: inset 0 -1px 0 var(--kb-bevel-hi);
+}
+.kb-sf-stop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+/* Seam to the next key: a recessed groove that fills like a sprue runner as you advance */
+.kb-sf-seam {
+  position: relative;
+  min-width: 12px;
+  height: 4px;
+  margin: 0 12px;
+  border-radius: 2px;
+  background: var(--kb-styrene);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.18);
+  overflow: hidden;
+}
+.kb-sf-seam::after {
+  content: "";
+  position: absolute;
+  inset: 0 100% 0 0;
+  border-radius: inherit;
+  background: var(--kb-ok);
+  transition: right var(--kb-slow) var(--kb-glide);
+}
+.kb-sf-seam[data-filled]::after {
+  right: 0;
+}
+.kb-sf-key {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: var(--kb-ink-3);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo);
+  transition: transform var(--kb-med) var(--kb-snap), background var(--kb-med), box-shadow var(--kb-med), color var(--kb-med);
+}
+.kb-sf-key:not(:disabled) {
+  cursor: pointer;
+}
+.kb-sf-key:disabled {
+  cursor: default;
+}
+.kb-sf-stop[data-state="todo"] .kb-sf-key {
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+}
+/* Current: raised ultramarine key */
+.kb-sf-stop[data-state="current"] .kb-sf-key {
+  background: var(--kb-select);
+  border-color: color-mix(in oklab, var(--kb-select) 70%, black);
+  color: var(--kb-select-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -2px 0 rgb(0 0 0 / 0.22), 0 2px 6px -2px color-mix(in oklab, var(--kb-select) 60%, transparent);
+  transform: translateY(-1px);
+}
+/* Done: latched, pressed into the rail and cured green */
+.kb-sf-stop[data-state="done"] .kb-sf-key {
+  background: var(--kb-ok-soft);
+  border-color: color-mix(in oklab, var(--kb-ok) 45%, var(--kb-line));
+  color: var(--kb-ok);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-sf-stop[data-state="done"] .kb-sf-key:hover:not(:disabled) {
+  border-color: var(--kb-ok);
+}
+.kb-sf-stop-text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+.kb-sf-stop-title {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  white-space: nowrap;
+}
+.kb-sf-stop-hint {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+}
+.kb-sf-stop[data-state="todo"] .kb-sf-stop-title {
+  color: var(--kb-ink-3);
+}
+
+/* Morphing frame */
+.kb-sf-morph {
+  overflow: hidden;
+  transition: height var(--kb-med) var(--kb-glide);
+}
+
+.kb-sf-step {
+  display: grid;
+  gap: 16px;
+  padding: 20px 20px 16px;
+  animation: kb-sf-slide var(--kb-med) var(--kb-glide);
+}
+.kb-sf-step[data-dir="-1"] {
+  animation-name: kb-sf-slide-back;
+}
+@keyframes kb-sf-slide {
+  from { opacity: 0; transform: translateX(28px); }
+}
+@keyframes kb-sf-slide-back {
+  from { opacity: 0; transform: translateX(-28px); }
+}
+.kb-sf-title {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  outline: none;
+}
+
+.kb-sf-field {
+  display: grid;
+  gap: 6px;
+}
+.kb-sf-field > label,
+.kb-sf-models legend {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-sf-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink);
+  font: inherit;
+}
+.kb-sf-input::placeholder {
+  color: var(--kb-ink-3);
+}
+.kb-sf .kb-sf-input:focus-visible {
+  outline: none;
+}
+.kb-sf-input:focus,
+.kb-sf-affix-well:focus-within {
+  border-color: var(--kb-select);
+  box-shadow: var(--kb-recessed), 0 0 0 3px color-mix(in oklab, var(--kb-select) 22%, transparent);
+}
+.kb-sf-area {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.kb-sf-affix-well {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-sf-bare,
+.kb-sf-bare:focus {
+  height: 100%;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.kb-sf-affix {
+  flex: none;
+  color: var(--kb-ink-3);
+}
+.kb-sf-budget {
+  width: 260px;
+}
+.kb-sf-field[data-invalid] .kb-sf-input:not(.kb-sf-bare),
+.kb-sf-field[data-invalid] .kb-sf-affix-well {
+  border-color: var(--kb-danger);
+  box-shadow: var(--kb-recessed), 0 0 0 3px color-mix(in oklab, var(--kb-danger) 16%, transparent);
+}
+.kb-sf-help {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-sf-help[data-tone="danger"] {
+  color: var(--kb-danger);
+  animation: kb-sf-nudge var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-sf-nudge {
+  from { transform: translateY(-3px); opacity: 0; }
+}
+
+/* Model choice: three molded cards; the chosen one presses in */
+.kb-sf-models {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.kb-sf-models legend {
+  margin-bottom: 6px;
+  padding: 0;
+}
+.kb-sf-model {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  cursor: pointer;
+  transition: transform var(--kb-fast) var(--kb-glide), box-shadow var(--kb-fast), border-color var(--kb-fast);
+}
+.kb-sf-model input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.kb-sf-model:has(input:focus-visible) {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 2px;
+}
+.kb-sf-model[data-on] {
+  border-color: var(--kb-select);
+  background: color-mix(in oklab, var(--kb-select-soft) 55%, var(--kb-panel));
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-sf-model-name {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-sf-model-note,
+.kb-sf-model-price {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-sf-model[data-on] .kb-sf-model-name {
+  color: var(--kb-select-text);
+}
+
+/* Review */
+.kb-sf-review {
+  display: grid;
+  margin: 0;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-sf-review-row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+}
+.kb-sf-review-row + .kb-sf-review-row {
+  border-top: 1px solid var(--kb-line);
+}
+.kb-sf-review dt {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-sf-review dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  overflow-wrap: anywhere;
+}
+.kb-sf-edit {
+  border: 0;
+  padding: 2px 6px;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-select-text);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  cursor: pointer;
+}
+.kb-sf-edit:hover {
+  background: var(--kb-select-soft);
+}
+
+.kb-sf-foot {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--kb-line);
+}
+.kb-sf-foot > :last-child {
+  justify-self: end;
+}
+.kb-sf-foot > :first-child {
+  justify-self: start;
+}
+.kb-sf-count {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+
+/* Success */
+.kb-sf-done {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 28px 26px;
+  text-align: center;
+}
+.kb-sf-done h3 {
+  margin: 4px 0 0;
+  font-size: var(--kb-text-xl);
+  font-weight: var(--kb-w-strong);
+  outline: none;
+}
+.kb-sf-done p {
+  margin: 0 0 8px;
+  max-width: 44ch;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-sf-done strong {
+  color: var(--kb-ink);
+}
+.kb-sf-done-badge {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--kb-ok);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -3px 0 rgb(0 0 0 / 0.2), 0 8px 18px -8px var(--kb-ok);
+  animation: kb-sf-pop var(--kb-slow) var(--kb-snap);
+}
+@keyframes kb-sf-pop {
+  from { transform: scale(0.5) rotate(-12deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-sf-step,
+  .kb-sf-done-badge,
+  .kb-sf-help[data-tone="danger"] {
+    animation: none;
+  }
+  .kb-sf-morph,
+  .kb-sf-seam::after {
+    transition: none;
+  }
+}

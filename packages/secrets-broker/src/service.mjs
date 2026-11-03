@@ -1,37 +1,34 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { authorize, validateConfig, validateOperation } from './config.mjs';
+import { authenticate, authorize, validateConfig, validateOperation } from './config.mjs';
 import { fail } from './errors.mjs';
 import { makeProviders } from './api.mjs';
 import { connectCloudflare, provisionGitHub, provisionWorkerSync } from './provision.mjs';
 import { ensureScope } from './scope.mjs';
 import { ensureCloudflareCredentials } from './credentials.mjs';
-
-function checkRecord(row, scope, name) {
-  if (!row || row.secretKey !== name || row.workspace !== scope.projectId || row.environment !== scope.environment ||
-      row.type !== 'shared' || (row.secretPath !== undefined && row.secretPath !== scope.secretPath)) fail('provider_failed');
-}
-
-async function secretNames(api, scope) {
-  const result = await api('/api/v4/secrets', { query: {
-    projectId: scope.projectId, environment: scope.environment, secretPath: scope.secretPath,
-    viewSecretValue: 'false', expandSecretReferences: 'false', includeImports: 'false',
-    includePersonalOverrides: 'false', recursive: 'false',
-  } });
-  if (!Array.isArray(result.secrets)) fail('provider_failed');
-  const names = new Set();
-  for (const row of result.secrets) {
-    checkRecord(row, scope, row.secretKey);
-    if (typeof row.secretKey !== 'string' || names.has(row.secretKey)) fail('provider_failed');
-    names.add(row.secretKey);
-  }
-  return names;
-}
+import { createSecret, secretNames } from './secrets.mjs';
+import { createGitHubAppFlow } from './github-app.mjs';
 
 /** This service never loads, executes, or trusts code/config from the agent's repo. */
-export function createService(config, store, { env = process.env, providers = makeProviders({ env }), entropy = randomBytes, githubProvision = provisionGitHub, workerProvision = provisionWorkerSync, scopeProvision = ensureScope, credentialsProvision = ensureCloudflareCredentials, connectionProvision = connectCloudflare } = {}) {
+export function createService(config, store, { env = process.env, providers = makeProviders({ env }), entropy = randomBytes, githubProvision = provisionGitHub, workerProvision = provisionWorkerSync, scopeProvision = ensureScope, credentialsProvision = ensureCloudflareCredentials, connectionProvision = connectCloudflare, githubAppFlow, githubAppOptions = {} } = {}) {
   validateConfig(config);
   let queue = Promise.resolve();
   let queued = 0;
+
+  async function enqueue(work) {
+    if (queued >= 32) fail('unavailable');
+    queued++;
+    const job = queue.then(work);
+    queue = job.catch(() => {});
+    try { return await job; } finally { queued--; }
+  }
+
+  function scopeOf(input) {
+    const project = config.projects[input.project];
+    if (project.backend === 'cloudflare-secrets-store') return {
+      ...project.targets[input.target], backend: project.backend, accountId: project.accountId, storeId: project.storeId,
+    };
+    return { ...project.targets[input.target], projectId: project.projectId, projectSlug: project.projectSlug, domain: project.domain };
+  }
 
   function checkpoint(input, scope) {
     const key = `${input.project}:${input.target}:${input.operation}`;
@@ -41,15 +38,37 @@ export function createService(config, store, { env = process.env, providers = ma
     return { state: entry.state, save: store.save };
   }
 
+  githubAppFlow ??= createGitHubAppFlow({
+    publicOrigin: env.KIT_BROKER_PUBLIC_ORIGIN, ...githubAppOptions,
+    resolve(input) {
+      validateOperation(input);
+      if (!config.projects[input.project]?.targets[input.target]?.githubApp) fail('forbidden');
+      const scope = scopeOf(input);
+      return { scope, receipt: checkpoint(input, scope) };
+    },
+  });
+
   async function perform(input, sharedProviders) {
     const project = config.projects[input.project];
-    const target = project.targets[input.target];
-    const scope = { ...target, projectId: project.projectId, projectSlug: project.projectSlug, domain: project.domain };
+    const scope = scopeOf(input);
+    if (input.operation === 'presence' && !Object.hasOwn(project.secrets, input.name)) fail('forbidden');
     const clients = sharedProviders ?? await providers(scope);
     const { infisical, github } = clients;
+    const storage = clients.storage ?? infisical;
+    const ensure = receipt => clients.storage ? secretNames(storage, scope) : scopeProvision(scope, infisical, receipt);
     const base = { operation: input.operation, project: input.project, target: input.target };
+    if (input.operation === 'provision-github-app') {
+      if (!scope.githubApp) fail('forbidden');
+      const receipt = checkpoint(input, scope);
+      await ensure(receipt);
+      return { ...base, ...await githubAppFlow.begin(input, scope, storage, receipt) };
+    }
+    if (input.operation === 'presence') {
+      const names = await secretNames(storage, scope);
+      return { ...base, name: input.name, status: names.has(input.name) ? 'present' : 'missing' };
+    }
     if (input.operation === 'setup') {
-      await scopeProvision(scope, infisical, checkpoint(input, scope));
+      await ensure(checkpoint(input, scope));
       for (const [name, policy] of Object.entries(project.secrets)) {
         if (policy.generate) await perform({ ...input, operation: 'generate', name }, clients);
       }
@@ -68,7 +87,7 @@ export function createService(config, store, { env = process.env, providers = ma
       return { ...status, ...base, status: status.github?.configured === false || status.workerSync?.configured === false ? 'pending' : 'ready' };
     }
     if (input.operation === 'status') {
-      const names = await secretNames(infisical, scope);
+      const names = await secretNames(storage, scope);
       const receipt = operation => store.data.entries[`${input.project}:${input.target}:${operation}`]?.state.completed === true;
       return {
         ...base, status: 'ready', secrets: Object.keys(project.secrets).map(name => ({ name, status: names.has(name) ? 'present' : 'missing' })),
@@ -79,7 +98,7 @@ export function createService(config, store, { env = process.env, providers = ma
     if (input.operation === 'generate') {
       const policy = Object.hasOwn(project.secrets, input.name) && project.secrets[input.name];
       if (!policy?.generate || policy.rotation === 'provider') fail('forbidden');
-      const names = await secretNames(infisical, scope);
+      const names = await secretNames(storage, scope);
       // Existence is sufficient to refuse replacement; neither value nor value hash is retrieved.
       if (names.has(input.name)) return { ...base, name: input.name, status: 'already-exists' };
       const receipt = checkpoint(input, scope);
@@ -88,13 +107,8 @@ export function createService(config, store, { env = process.env, providers = ma
       receipt.state.keys[input.name] = 'pending';
       await receipt.save();
       const secretValue = entropy(policy.bytes ?? 32).toString('base64url');
-      const result = await infisical(`/api/v4/secrets/${input.name}`, { method: 'POST', body: {
-        projectId: scope.projectId, environment: scope.environment, secretPath: scope.secretPath,
-        secretValue, type: 'shared', skipMultilineEncoding: true,
-      } });
-      if (result.approval) fail('conflict');
-      checkRecord(result.secret, scope, input.name);
-      if (!(await secretNames(infisical, scope)).has(input.name)) fail('provider_failed');
+      await createSecret(storage, scope, input.name, secretValue);
+      if (!(await secretNames(storage, scope)).has(input.name)) fail('provider_failed');
       receipt.state.keys[input.name] = 'created';
       await receipt.save();
       return { ...base, name: input.name, status: 'created' };
@@ -126,14 +140,24 @@ export function createService(config, store, { env = process.env, providers = ma
   }
 
   return {
+    // Authenticate discovery and protocol requests too, before any MCP response is served.
+    authenticate(bearer) { return authenticate(config, bearer).id; },
+    previewGitHubApp(id) { return githubAppFlow.preview(id); },
+    openGitHubApp(id, origin) { return enqueue(() => githubAppFlow.open(id, origin)); },
+    async completeGitHubApp(state, cookie, code) {
+      return enqueue(async () => {
+        const input = await githubAppFlow.consume(state, cookie);
+        const scope = scopeOf(input);
+        const receipt = checkpoint(input, scope);
+        const clients = await providers(scope);
+        await githubAppFlow.complete(code, scope, clients.storage ?? clients.infisical, receipt);
+        return { ...input, status: 'configured' };
+      });
+    },
     async execute(input, bearer) {
       validateOperation(input);
       authorize(config, bearer, input);
-      if (queued >= 32) fail('unavailable');
-      queued++;
-      const job = queue.then(() => perform(input));
-      queue = job.catch(() => {});
-      try { return await job; } finally { queued--; }
+      return enqueue(() => perform(input));
     },
   };
 }

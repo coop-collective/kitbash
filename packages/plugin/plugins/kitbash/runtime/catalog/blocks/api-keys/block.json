@@ -1,0 +1,336 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "api-keys",
+  "type": "registry:block",
+  "title": "Prefixed API keys with HMAC storage, optional KV verify cache and owner routes",
+  "description": "Keys like ak_live_<id8>_<secret43>: the secret is shown once and stored only as an HMAC with a pepper. Verification reads an optional KV cache, then D1, with a constant-time compare. Revocation busts the cache. Includes a requireApiKey middleware, owner-scoped create/list/rename/revoke routes, a 50-key cap and optional scope labels. Without a KV binding there is simply no cache.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "2.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "security"
+  ],
+  "meta": {
+    "maturity": "production",
+    "origin": "harvested",
+    "est_hours_saved": 5
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "appSlug",
+      "type": "identifier",
+      "default": "my-app",
+      "description": "Short name used for resources (D1 name in the config patch)."
+    },
+    {
+      "name": "keyPrefix",
+      "type": "identifier",
+      "default": "ak_live_",
+      "pattern": "^[a-z]{2,6}_[a-z]{2,6}_$",
+      "description": "Key prefix; makes keys greppable and secret-scannable (for example xk_live_)."
+    },
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "Prefix for the block's table; set when the project already has an api_keys table."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/account/keys",
+      "description": "Mount point for the owner routes."
+    },
+    {
+      "name": "cacheTtlS",
+      "type": "integer",
+      "default": 60,
+      "min": 60,
+      "max": 3600,
+      "description": "Seconds a verified key stays in KV (Cloudflare KV minimum is 60); also the longest a revoke can take to reach another colo."
+    },
+    {
+      "name": "maxActiveKeys",
+      "type": "integer",
+      "default": 50,
+      "min": 1,
+      "max": 1000,
+      "description": "Active keys allowed per owner."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_api_keys.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_api_keys.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/api-keys/crypto.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/api-keys/crypto.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/api-keys/keys.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/api-keys/keys.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/api-keys/middleware.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/api-keys/middleware.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/api-keys/routes.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/api-keys/routes.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/api-keys.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/api-keys.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "config/dev.vars.example",
+      "type": "registry:file",
+      "target": ".dev.vars.example",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "append-missing-lines"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/api-keys/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "env": [],
+  "secrets": [
+    {
+      "name": "KEY_PEPPER",
+      "description": "16+ random chars; HMAC pepper for key hashes. Changing it invalidates every key.",
+      "obtain": "openssl rand -hex 32",
+      "required": true
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true,
+      "create": "wrangler d1 create {{kit.appSlug}}"
+    },
+    {
+      "type": "kv",
+      "name": "KEY_CACHE",
+      "required": false,
+      "create": "wrangler kv namespace create KEY_CACHE",
+      "note": "Optional verify cache. Without it every call reads D1; nothing else changes."
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_api_keys.sql",
+      "name": "api_keys",
+      "creates": [
+        "{{kit.tablePrefix}}api_keys"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}api_keys"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}",
+      "auth": "session",
+      "description": "List the signed-in owner's keys (never the hash)."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}",
+      "auth": "session",
+      "description": "Create a key; the full key is in this response only."
+    },
+    {
+      "method": "PATCH",
+      "path": "{{kit.routePrefix}}/:id",
+      "auth": "session",
+      "description": "Rename an active key."
+    },
+    {
+      "method": "DELETE",
+      "path": "{{kit.routePrefix}}/:id",
+      "auth": "session",
+      "description": "Revoke a key (idempotent)."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "requireApiKey",
+      "from": "src/lib/api-keys/middleware.ts",
+      "kind": "hono-middleware"
+    },
+    {
+      "symbol": "authenticateKey",
+      "from": "src/lib/api-keys/keys.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "createKey",
+      "from": "src/lib/api-keys/keys.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "revokeKey",
+      "from": "src/lib/api-keys/keys.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "hasScope",
+      "from": "src/lib/api-keys/keys.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "apiKeyRoutes",
+      "from": "src/lib/api-keys/routes.ts",
+      "kind": "hono-app-factory"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/api-keys.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "format",
+        "hmac-storage",
+        "kv-cache",
+        "no-kv-degrade",
+        "revoke",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/api-keys.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Adds prefixed API keys to a Hono Worker: one table, a requireApiKey middleware and owner-scoped create/list/rename/revoke routes. Keys are stored as HMAC with a pepper secret. A KV binding adds a verify cache; without it every call reads D1. Needs a D1 binding and the KEY_PEPPER secret.",
+    "when_to_use": [
+      "Programs or CLIs call the API with a long-lived key a person can create and revoke.",
+      "You want keys that secret scanners can recognise by prefix."
+    ],
+    "when_not_to_use": [
+      "You need OAuth tokens or per-key spend caps.",
+      "Revocation must take effect everywhere in under a second: skip KEY_CACHE and read D1 only, or add a Durable Object revoked set."
+    ],
+    "adapt": [
+      {
+        "id": "set-pepper",
+        "required": true,
+        "title": "Set KEY_PEPPER",
+        "do": "Add KEY_PEPPER=<16+ random chars> to .dev.vars; in production use wrangler secret put KEY_PEPPER.",
+        "check": "The test suite passes; creating a key works."
+      },
+      {
+        "id": "wire-middleware",
+        "required": true,
+        "title": "Protect API routes with requireApiKey",
+        "where": "{{paths.app}}/index.ts",
+        "do": "import { requireApiKey } from './lib/api-keys/middleware'; app.use('/v1/*', requireApiKey);",
+        "check": "GET /v1/... without a key returns 401; with a key, c.get('apiKey').owner_id is set."
+      },
+      {
+        "id": "mount-routes",
+        "required": true,
+        "title": "Mount the owner routes behind your own sign-in",
+        "where": "{{paths.app}}/index.ts",
+        "do": "import { apiKeyRoutes } from './lib/api-keys/routes'; app.route('{{kit.routePrefix}}', apiKeyRoutes((c) => c.get('member')?.id ?? null));",
+        "check": "POST {{kit.routePrefix}} without sign-in returns 401; signed in returns 201 with the key."
+      },
+      {
+        "id": "kv-cache",
+        "required": false,
+        "title": "Create the KV namespace, or drop the cache",
+        "do": "wrangler kv namespace create KEY_CACHE and put its id in wrangler.jsonc; or delete the kv_namespaces entry to run without a cache.",
+        "check": "With the entry removed, authentication still works and reads D1 each time."
+      }
+    ],
+    "author_notes": "A revoked key can still pass at other colos for up to cacheTtlS seconds when KEY_CACHE is bound. Pair with d1-rate-limit to limit by key id."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/inference-market",
+      "commit": "9231c25",
+      "paths": [
+        "packages/web/src/keys.ts",
+        "packages/web/src/auth/crypto.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T12:00:00Z"
+  }
+}

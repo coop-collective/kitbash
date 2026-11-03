@@ -1,0 +1,176 @@
+.kb-ca {
+  width: min(620px, 100%);
+  border-radius: var(--kb-r-frame);
+  overflow: hidden;
+}
+
+.kb-ca-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 18px 4px;
+}
+.kb-ca-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-select-soft);
+  color: var(--kb-select-text);
+}
+.kb-ca-q {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.4;
+}
+
+.kb-ca-body {
+  padding: 8px 18px 6px;
+  font-size: var(--kb-text-md);
+  line-height: 1.7;
+}
+.kb-ca-p { margin: 0 0 12px; }
+
+/* Lit sentence: an ultramarine underlay that slides in under the words */
+.kb-ca-sentence {
+  border-radius: var(--kb-r-part);
+  background: linear-gradient(var(--kb-select-soft), var(--kb-select-soft)) no-repeat left / 0% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size var(--kb-med) var(--kb-glide), color var(--kb-fast);
+}
+.kb-ca-sentence[data-lit] {
+  background-size: 100% 100%;
+  color: var(--kb-ink);
+}
+
+.kb-ca-cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 3px;
+  padding: 0 4px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  line-height: 1;
+  vertical-align: 0.15em;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+  transition: background var(--kb-fast), color var(--kb-fast), transform var(--kb-fast);
+}
+.kb-ca-cite[data-lit] { background: var(--kb-select-soft); color: var(--kb-select-text); border-color: color-mix(in oklab, var(--kb-select) 45%, transparent); }
+.kb-ca-cite[aria-expanded="true"] {
+  background: var(--kb-select);
+  color: var(--kb-select-ink);
+  border-color: color-mix(in oklab, var(--kb-select) 70%, black);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+
+/* The well: a cavity cut into the answer, holding the quoted passage */
+.kb-ca-well {
+  margin: -4px 0 14px;
+  padding: 10px 12px 12px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed), inset 3px 0 0 var(--kb-select);
+  animation: kb-ca-open var(--kb-med) var(--kb-glide);
+  transform-origin: top;
+}
+.kb-ca-well-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--kb-text-sm);
+}
+.kb-ca-well-title { font-weight: var(--kb-w-strong); }
+.kb-ca-well-domain { color: var(--kb-ink-3); flex: 1; }
+.kb-ca-close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+}
+.kb-ca-close:hover { background: var(--kb-panel); color: var(--kb-ink); }
+.kb-ca-passage {
+  margin: 6px 0 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-md);
+  line-height: 1.6;
+}
+/* Matching words stand proud of the cavity floor, like an embossed mark */
+.kb-ca-mark {
+  padding: 1px 3px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-medium);
+  box-shadow: inset 0 -2px 0 var(--kb-select), 0 1px 1px rgb(0 0 0 / 0.08);
+  animation: kb-ca-emboss var(--kb-slow) var(--kb-snap) 120ms backwards;
+}
+
+.kb-ca-fav {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--kb-r-part);
+}
+
+/* Sources: the bottom tray of the part */
+.kb-ca-sources {
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--kb-line);
+  background: var(--kb-panel-2);
+}
+.kb-ca-sources-title { margin: 0 0 6px; font-size: var(--kb-text-sm); font-weight: var(--kb-w-strong); color: var(--kb-ink-2); }
+.kb-ca-sources ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.kb-ca-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px 5px 4px;
+  border-radius: var(--kb-r-part);
+  font-size: var(--kb-text-sm);
+  transition: background var(--kb-fast), box-shadow var(--kb-fast);
+}
+.kb-ca-source[data-lit] { background: var(--kb-panel); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--kb-select) 45%, transparent), var(--kb-cast); }
+.kb-ca-num {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--kb-panel);
+  box-shadow: var(--kb-recessed);
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+}
+.kb-ca-source[data-lit] .kb-ca-num { background: var(--kb-select); color: var(--kb-select-ink); box-shadow: none; }
+.kb-ca-source-title { font-weight: var(--kb-w-medium); }
+.kb-ca-source-domain { color: var(--kb-ink-3); margin-left: auto; }
+
+@keyframes kb-ca-open { from { opacity: 0; transform: scaleY(0.85); } }
+@keyframes kb-ca-emboss { from { box-shadow: inset 0 0 0 var(--kb-select); background: transparent; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ca-well,
+  .kb-ca-mark { animation: none; }
+}

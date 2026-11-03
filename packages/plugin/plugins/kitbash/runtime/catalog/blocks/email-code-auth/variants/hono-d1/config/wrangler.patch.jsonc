@@ -1,0 +1,6 @@
+{
+  // email-code-auth needs a D1 database bound as DB (kept as is when the project already has one).
+  "d1_databases": [
+    { "binding": "DB", "database_name": "{{kit.appSlug}}", "database_id": "REPLACE_ME", "migrations_dir": "{{paths.migrations}}" }
+  ]
+}

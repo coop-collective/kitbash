@@ -1,0 +1,18 @@
+{
+  "name": "kitbash",
+  "description": "Kitbash: MIT-licensed application blocks, bootstraps, recipes, and skills for coding agents",
+  "owner": {
+    "name": "Xava Labs"
+  },
+  "plugins": [
+    {
+      "name": "kit",
+      "description": "Use the bundled local block catalog to bootstrap projects, install and verify features, and prepare source contributions (local MCP server, skills, /kit:* commands).",
+      "version": "0.1.0",
+      "source": "./packages/plugin/plugins/kitbash",
+      "author": {
+        "name": "Xava Labs"
+      }
+    }
+  ]
+}

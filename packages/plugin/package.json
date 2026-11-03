@@ -7,7 +7,7 @@
   "description": "Kitbash plugin: bootstrap projects, install feature blocks, and provision secrets through a metadata-only broker",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "validate": "node scripts/validate.mjs",
     "typecheck": "node scripts/check-syntax.mjs"
   },

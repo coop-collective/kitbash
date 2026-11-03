@@ -1,5 +1,12 @@
 # Provisioning adapters
 
+The broker also exposes the same operations as remote MCP at `/mcp`. See
+[connector setup](../../docs/SECRETS-BROKER.md#remote-connector-for-grok-bot).
+`provision-github` below means Actions OIDC. The separate `src/github-app.mjs` adapter implements
+[new GitHub App manifest registration](../../docs/SECRETS-BROKER.md#new-github-app-credentials), capturing credentials
+directly into Infisical with no value-return operation. Its batch-create request follows
+[Infisical's OpenAPI contract](https://app.infisical.com/api/docs/json) (checked 2026-10-25).
+
 `src/provision.mjs` runs inside the trusted broker. It accepts owner-controlled policy and injected provider clients; none of its functions return credentials, provider response bodies, or generated identity IDs. Keep its checkpoints and provider credentials outside agent-controlled files and processes.
 
 The broker calls:
@@ -28,7 +35,9 @@ GitHub setup creates a project-managed Infisical identity and a custom role with
 
 The broker credential needs project role creation/read, project identity creation/read, permission to assign the custom role, and identity auth configuration. Infisical custom-role availability depends on the instance's RBAC entitlement; failure never falls back to a project-wide reader or admin role. GitHub access needs repository metadata, Actions read, and Environments write for the configured repository. No GitHub Actions secret is created: OIDC provides the runtime identity.
 
-Cloudflare configuration requires `connectionId` or `connectionName`, `workerName`, and `syncName`. A connection name allows the broker to create a project-scoped Infisical connection directly using its Cloudflare account ID and API token. An explicitly configured connection ID is verified as a project-scoped Cloudflare API-token connection. The account credential must permit the intended Workers secret operations; this adapter does not mint new Cloudflare account credentials. The Infisical broker identity needs app connection create/read/connect and secret sync create/read/sync permissions in the target project.
+Cloudflare configuration requires `connectionId` or `connectionName`, `workerName`, and `syncName`. A connection name allows the broker to create a project-scoped Infisical connection directly using its Cloudflare account ID and API token. An explicitly configured connection ID is verified as a project-scoped Cloudflare API-token connection. The account credential must permit the intended Workers secret operations; the application connection adapter uses an existing credential. The Infisical broker identity needs app connection create/read/connect and secret sync create/read/sync permissions in the target project.
+
+Operator-side `pnpm run setup` uses the GitHub organization's `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` variable, restricted to private repositories, for the broker's own deployment. Application secrets and the MCP key never go to GitHub. This default creates no Infisical CI identities. `--skip-ci` uses local Wrangler authentication without configuring GitHub. The optional `KIT_BROKER_CI_PROVIDER=infisical` path retains the dedicated CI folder and two event-specific OIDC readers. See [template setup](../../docs/BROKER-SETUP.md) for credential provisioning and recovery.
 
 Worker sync uses an existing Worker script. `autoSync: true` enables Infisical synchronization, including the initial asynchronous job; omitted/false creates a manual sync only. The adapter disables destination secret deletion, nested-folder synchronization, and nonsecret binding updates. It never imports destination values into the vault. Native sync sends the source folder's secrets according to Infisical behavior; dedicate that folder to runtime secrets and do not import deployment credentials into it. A successful configuration response does not prove that an asynchronous sync completed. The explicit sync endpoint returns `pending`, and operators can inspect Infisical's sync job status without exposing its raw messages to the agent.
 

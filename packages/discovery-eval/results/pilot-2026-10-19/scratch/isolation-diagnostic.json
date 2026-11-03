@@ -1,1 +1,0 @@
-{"diagnostic":"post-run actual deletion isolation; original scores unchanged","statuses":{"created":201,"foreignRead":404,"foreignDelete":404,"ownerRead":200,"ownerDelete":204,"after":404},"ownerBytesPreserved":true,"passed":true}

@@ -1,0 +1,458 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "cli-oauth-login",
+  "type": "registry:block",
+  "title": "OAuth sign-in for a person's own CLI (My CLI on this computer)",
+  "description": "OAuth 2.1 sign-in for a person's own CLI or MCP client (PKCE, dynamic registration) on @cloudflare/workers-oauth-provider, a branded consent page, and revocable cli_logins grants.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "2.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "oauth",
+    "mcp",
+    "cli"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "harvested",
+    "est_hours_saved": 10
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono",
+        "db": "d1"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "tokenPrefix",
+      "type": "identifier",
+      "default": "app_",
+      "pattern": "^[a-z]{2,6}_$",
+      "description": "The auth block's bearer token prefix (same value as email-code-auth's tokenPrefix). Such bearers skip OAuth."
+    },
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "Prefix for the cli_logins table."
+    },
+    {
+      "name": "authTablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "email-code-auth's tablePrefix, to find its members table."
+    },
+    {
+      "name": "apiRoute",
+      "type": "path",
+      "default": "/mcp",
+      "description": "The route OAuth access tokens are for (an MCP endpoint, usually)."
+    },
+    {
+      "name": "brandName",
+      "type": "string",
+      "default": "My App",
+      "description": "Shown on the sign-in and consent pages and in the resource metadata."
+    },
+    {
+      "name": "brandColor",
+      "type": "string",
+      "default": "#7c8fff",
+      "pattern": "^#[0-9a-fA-F]{6}$",
+      "description": "Accent color of the consent page."
+    },
+    {
+      "name": "remoteClients",
+      "type": "enum",
+      "default": "warn",
+      "values": [
+        "warn",
+        "refuse"
+      ],
+      "description": "A redirect that is not this computer (a cloud agent): warn on the consent page, or refuse."
+    },
+    {
+      "name": "emailSignIn",
+      "type": "boolean",
+      "default": true,
+      "description": "Offer email-code sign-in on the authorize page (uses email-code-auth's startCode/consumeCode); a pasted token always works."
+    },
+    {
+      "name": "accessTokenTtlS",
+      "type": "integer",
+      "default": 3600,
+      "min": 300,
+      "max": 86400,
+      "description": "Access token lifetime in seconds (refresh tokens renew it)."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_cli_logins.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_cli_logins.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/types.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/types.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/identity.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/identity.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/cli-logins.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/cli-logins.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/pages.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/pages.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/html.d.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/html.d.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/templates/layout.html",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/layout.html",
+      "role": "ui",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/templates/signin.html",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/signin.html",
+      "role": "ui",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/templates/code.html",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/code.html",
+      "role": "ui",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/templates/consent.html",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/consent.html",
+      "role": "ui",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/templates/error.html",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cli-oauth-login/templates/error.html",
+      "role": "ui",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/provider.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/provider.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/authorize.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/authorize.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/cli-oauth-login/middleware.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/cli-oauth-login/middleware.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/routes/cli-oauth-login/oauth.ts",
+      "type": "registry:lib",
+      "target": "{{paths.routes}}/cli-oauth-login/oauth.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/oauth-helpers.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/oauth-helpers.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/cli-oauth.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/cli-oauth.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/cli-oauth-login/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6",
+    "@cloudflare/workers-oauth-provider@^1.2.1"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@>=0.8"
+  ],
+  "registryDependencies": [
+    "@coop/email-code-auth@^2"
+  ],
+  "env": [
+    {
+      "name": "PUBLIC_ORIGIN",
+      "secret": false,
+      "description": "Optional. The origin OAuth tokens are bound to (https://app.example.com); unset uses the request's own (https, or http on localhost)."
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true,
+      "create": "wrangler d1 create <app>"
+    },
+    {
+      "type": "kv",
+      "name": "OAUTH_KV",
+      "required": true,
+      "create": "wrangler kv namespace create OAUTH_KV",
+      "note": "Holds OAuth clients, grants, hashed tokens and authorize-page sessions."
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_cli_logins.sql",
+      "name": "cli_logins",
+      "creates": [
+        "{{kit.tablePrefix}}cli_logins"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}cli_logins"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/authorize",
+      "auth": "session",
+      "description": "Sign in (token or email code), then the consent page."
+    },
+    {
+      "method": "POST",
+      "path": "/authorize",
+      "auth": "session",
+      "description": "Approve or deny; approve makes a cli_logins grant."
+    },
+    {
+      "method": "POST",
+      "path": "/authorize/signin/:how",
+      "auth": "public",
+      "description": "Sign in to the authorize page: token, email (send a code) or code."
+    },
+    {
+      "method": "POST",
+      "path": "/oauth/register",
+      "auth": "public",
+      "description": "Dynamic client registration (provider)."
+    },
+    {
+      "method": "POST",
+      "path": "/oauth/token",
+      "auth": "public",
+      "description": "PKCE code exchange and refresh (provider)."
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/oauth-authorization-server",
+      "auth": "public",
+      "description": "RFC 8414 metadata (provider); RFC 9728 metadata is at /.well-known/oauth-protected-resource plus apiRoute."
+    },
+    {
+      "method": "ALL",
+      "path": "{{kit.apiRoute}}",
+      "auth": "bearer",
+      "description": "The protected route: an OAuth access token or the app's bearer; requirePerson sets the member."
+    },
+    {
+      "method": "GET",
+      "path": "/api/cli-logins",
+      "auth": "bearer",
+      "description": "My live CLI sign-ins."
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/cli-logins/:id",
+      "auth": "bearer",
+      "description": "Revoke one: the row and its OAuth grants, at once."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "oauthWorker",
+      "from": "src/lib/cli-oauth-login/provider.ts"
+    },
+    {
+      "symbol": "requirePerson",
+      "from": "src/lib/cli-oauth-login/middleware.ts"
+    },
+    {
+      "symbol": "oauthRoutes",
+      "from": "src/routes/cli-oauth-login/oauth.ts"
+    },
+    {
+      "symbol": "cliLoginRoutes",
+      "from": "src/routes/cli-oauth-login/oauth.ts"
+    },
+    {
+      "symbol": "revokeCliGrants",
+      "from": "src/lib/cli-oauth-login/provider.ts"
+    }
+  ],
+  "ui": [
+    {
+      "name": "consent-page",
+      "path": "src/lib/cli-oauth-login/templates/consent.html",
+      "kind": "html-template",
+      "description": "Sign-in and consent pages; brand params brandName and brandColor."
+    }
+  ],
+  "tests": [
+    {
+      "file": "test/cli-oauth.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "pkce-flow",
+        "consent",
+        "revoke",
+        "refresh",
+        "login-csrf-origin"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/cli-oauth.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "A bare CLI or MCP client signs in with the person's account over OAuth and then acts as that person; each approval is a revocable cli_logins row. Needs email-code-auth, D1 and a KV namespace OAUTH_KV.",
+    "when_to_use": [
+      "A CLI or MCP client should sign in through the browser instead of a pasted token."
+    ],
+    "when_not_to_use": [
+      "Third-party identity providers.",
+      "Cloud agents needing their own limited identity."
+    ],
+    "adapt": [
+      {
+        "id": "mount-routes",
+        "required": true,
+        "title": "Mount the routes",
+        "do": "In src/index.ts: app.route('/', oauthRoutes); app.route('/api', cliLoginRoutes);",
+        "check": "GET /authorize answers HTML."
+      },
+      {
+        "id": "protect-api",
+        "required": true,
+        "title": "Put requirePerson on the API route",
+        "do": "app.all('{{kit.apiRoute}}', requirePerson, handler); c.get('member') is the person.",
+        "check": "No token: 401 with resource_metadata."
+      },
+      {
+        "id": "wrap-worker",
+        "required": true,
+        "title": "Wrap the app",
+        "do": "export default oauthWorker(app); instead of export default app",
+        "check": "/.well-known/oauth-authorization-server answers on localhost."
+      },
+      {
+        "id": "create-kv",
+        "required": true,
+        "title": "Create OAUTH_KV",
+        "do": "wrangler kv namespace create OAUTH_KV; id into wrangler.jsonc; PUBLIC_ORIGIN in production.",
+        "check": "Dry-run deploy lists OAUTH_KV."
+      }
+    ],
+    "author_notes": "Your own bearer prefix bypasses OAuth on purpose, so existing token clients keep working. Browser sign-in POSTs require an exact same-origin Origin header before sending or consuming codes or creating a session. The pages use Referrer-Policy: same-origin so native same-origin forms retain Origin while cross-origin destinations receive no referrer."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": [
+        "packages/api/src/oauth.ts",
+        "packages/api/src/cli-logins.ts",
+        "packages/api/migrations/0034_cli_logins.sql",
+        "packages/api/migrations/0025_cloud_agents.sql",
+        "packages/api/test/cli-oauth.test.ts",
+        "packages/api/test/oauth-helpers.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T12:10:37Z"
+  }
+}

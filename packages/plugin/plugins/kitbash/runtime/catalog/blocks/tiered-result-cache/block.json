@@ -1,0 +1,195 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "tiered-result-cache",
+  "type": "registry:block",
+  "title": "Typed result caching through edge, KV and an authoritative loader",
+  "description": "Request-scoped typed JSON result cache: named Cache API, optional KV, and loaders for R2, D1, Durable Objects, Analytics Engine or other sources. Absolute freshness and stale bounds, versioned tenant keys, promotion and strict bypass.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "2.0.0",
+  "license": "MIT",
+  "categories": [
+    "cache",
+    "durable-objects",
+    "kv",
+    "r2",
+    "d1",
+    "analytics-engine"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "original",
+    "est_hours_saved": 6
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "cacheNamespace",
+      "type": "identifier",
+      "default": "results",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "description": "Storage namespace used by the named Cache and KV keys."
+    },
+    {
+      "name": "maxBytes",
+      "type": "integer",
+      "default": 65536,
+      "min": 1024,
+      "max": 262144,
+      "description": "Maximum UTF-8 bytes per stored envelope and per cache read."
+    },
+    {
+      "name": "maxLifetimeSeconds",
+      "type": "integer",
+      "default": 86400,
+      "min": 60,
+      "max": 86400,
+      "description": "Maximum combined fresh and stale lifetime."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/lib/tiered-result-cache/result-cache.ts",
+      "type": "registry:lib",
+      "target": "{{paths.lib}}/tiered-result-cache/result-cache.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/result-cache.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/result-cache.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "wrangler.jsonc",
+      "role": "config-patch",
+      "merge": "jsonc-deep",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/tiered-result-cache/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "envVars": {},
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "kv",
+      "name": "RESULT_CACHE",
+      "required": false,
+      "note": "Optional second tier. Omit kv from createResultCache to use only edge and the authoritative loader."
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [],
+  "exports": [
+    {
+      "symbol": "createResultCache",
+      "from": "src/lib/tiered-result-cache/result-cache.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/result-cache.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "tier-promotion",
+        "absolute-expiry",
+        "tenant-isolation",
+        "generation-race",
+        "strict-bypass",
+        "bounded-streams",
+        "stale-refresh",
+        "request-dedupe"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/result-cache.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Shared typed result cache for Workers: named Cache API, optional KV, then an application loader for R2, D1, Durable Objects, Analytics Engine or other JSON sources. Tenant/version keys, absolute expiry, bounded JSON, request-local dedupe and opt-in stale refresh. Authorization stays outside.",
+    "when_to_use": [
+      "Read-only R2, D1, Durable Object, Analytics Engine or API projections tolerate an explicit freshness window.",
+      "Many callers reuse the same tenant-scoped result."
+    ],
+    "when_not_to_use": [
+      "Authentication, permissions, revocation, balances or state requiring immediate consistency.",
+      "Large binary assets, streaming results, or hot mutable KV keys."
+    ],
+    "adapt": [
+      {
+        "id": "bind-cache",
+        "required": false,
+        "title": "Provision the optional KV tier",
+        "where": "wrangler.jsonc",
+        "do": "Replace the KV placeholder ID with an existing namespace, or omit kv in the utility options and remove the optional binding.",
+        "check": "With KV omitted the same loader works through the edge tier."
+      },
+      {
+        "id": "scope-and-loader",
+        "required": true,
+        "title": "Authorize, scope, and version the result",
+        "where": "Worker handler or service",
+        "do": "After authorization, create one cache per request. Supply trusted scope/tenant/version keys, a runtime parser and a bounded JSON loader for the chosen source. Scope source queries to the tenant; include all query inputs in keys. Bypass forces a loader call subject to source consistency.",
+        "check": "Different tenants/versions never share results; bypass executes the store loader."
+      }
+    ],
+    "author_notes": "Fresh-only default. KV is eventually consistent and cache deletion is not global invalidation. Version changes must come from authoritative state; a KV-cached revision pointer does not guarantee immediate freshness. Dedupe is only within one request."
+  },
+  "provenance": {
+    "source": {
+      "repo": "local:~/Workspace/platform",
+      "commit": "8f8ed9c2a44507490912f8631806664c724be767",
+      "paths": [
+        "packages/playground/container/src/npm-bundle.ts",
+        "packages/playground/src/preview/preview-response-cache.ts"
+      ]
+    },
+    "origin": "original",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}

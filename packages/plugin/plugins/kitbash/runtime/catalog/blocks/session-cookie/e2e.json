@@ -1,0 +1,13 @@
+{
+  "cases": [
+    {
+      "name": "alternate-params",
+      "params": {
+        "tablePrefix": "app_",
+        "cookieName": "browser",
+        "routePrefix": "/me/sessions",
+        "ttlSeconds": 300
+      }
+    }
+  ]
+}

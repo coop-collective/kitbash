@@ -1,0 +1,306 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "jwt-session-cookie",
+  "type": "registry:block",
+  "title": "JWT session cookies with D1 revocation",
+  "description": "Adds purpose-separated HS256 JWT cookies, mandatory issuer/audience/type/expiry checks, uncached D1 owner versions and logout revocations, hardened host cookies, and strict mutation origins.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "2.0.0",
+  "license": "MIT",
+  "categories": [
+    "auth",
+    "accounts"
+  ],
+  "meta": {
+    "maturity": "experimental",
+    "origin": "harvested",
+    "est_hours_saved": 4
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "hono": ">=4.6",
+    "wrangler": ">=4",
+    "node": ">=22.18",
+    "typescript": ">=5.9"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "tablePrefix",
+      "type": "identifier",
+      "default": "",
+      "pattern": "^([a-z]+_)?$",
+      "description": "SQL table prefix to avoid conflicts."
+    },
+    {
+      "name": "routePrefix",
+      "type": "path",
+      "default": "/auth/jwt-session",
+      "description": "Mount point for this block."
+    },
+    {
+      "name": "cookieName",
+      "type": "identifier",
+      "default": "jwt_session",
+      "pattern": "^[a-z][a-z0-9_]{0,31}$",
+      "description": "Cookie suffix; HTTPS uses __Host- and loopback HTTP uses dev_."
+    },
+    {
+      "name": "ttlSeconds",
+      "type": "integer",
+      "default": 604800,
+      "min": 60,
+      "max": 2592000,
+      "description": "Absolute session lifetime in seconds."
+    }
+  ],
+  "files": [
+    {
+      "path": "migrations/0001_jwt_sessions.sql",
+      "type": "registry:file",
+      "target": "{{paths.migrations}}/0001_jwt_sessions.sql",
+      "role": "migration",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/jwt-session-cookie/session.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/jwt-session-cookie/session.ts",
+      "role": "service",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "src/lib/jwt-session-cookie/routes.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/jwt-session-cookie/routes.ts",
+      "role": "route",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/jwt-session-cookie.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/jwt-session-cookie.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "config/dev.vars.example",
+      "type": "registry:file",
+      "target": ".dev.vars.example",
+      "role": "config-patch",
+      "variant": "hono-d1",
+      "merge": "append-missing-lines"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/jwt-session-cookie/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [
+    "hono@^4.6",
+    "jose@^6.2.12"
+  ],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0"
+  ],
+  "registryDependencies": [],
+  "env": [
+    {
+      "name": "JWT_SESSION_ORIGIN",
+      "secret": false,
+      "description": "Canonical public origin, without a trailing slash. HTTPS in production; HTTP allowed only on loopback for local development."
+    }
+  ],
+  "secrets": [
+    {
+      "name": "JWT_SESSION_SECRET",
+      "description": "At least 32 random bytes encoded as a string. HKDF derives the session key; rotating this secret signs out every browser.",
+      "required": true
+    }
+  ],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true
+    }
+  ],
+  "migrations": [
+    {
+      "file": "migrations/0001_jwt_sessions.sql",
+      "name": "jwt_session_cookie",
+      "creates": [
+        "{{kit.tablePrefix}}jwt_session_owners",
+        "{{kit.tablePrefix}}jwt_session_revocations"
+      ],
+      "idempotent": false
+    }
+  ],
+  "tables": [
+    "{{kit.tablePrefix}}jwt_session_owners",
+    "{{kit.tablePrefix}}jwt_session_revocations"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "{{kit.routePrefix}}",
+      "auth": "session",
+      "description": "Current JWT session owner after authoritative state verification."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/logout",
+      "auth": "session",
+      "description": "Revoke this JWT until its expiry and clear the browser cookie."
+    },
+    {
+      "method": "POST",
+      "path": "{{kit.routePrefix}}/logout-all",
+      "auth": "session",
+      "description": "Rotate this owner's session version and clear the browser cookie."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "createJwtSession",
+      "from": "src/lib/jwt-session-cookie/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "readJwtSession",
+      "from": "src/lib/jwt-session-cookie/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "revokeOwnerJwtSessions",
+      "from": "src/lib/jwt-session-cookie/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "setJwtSessionOwnerEnabled",
+      "from": "src/lib/jwt-session-cookie/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "cleanupJwtSessionRevocations",
+      "from": "src/lib/jwt-session-cookie/session.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "requireJwtSession",
+      "from": "src/lib/jwt-session-cookie/routes.ts",
+      "kind": "function"
+    },
+    {
+      "symbol": "jwtSessionRoutes",
+      "from": "src/lib/jwt-session-cookie/routes.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/jwt-session-cookie.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "jwt-profile",
+        "key-separation",
+        "authorization",
+        "revocation",
+        "storage",
+        "cookies",
+        "routes"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run {{paths.tests}}/jwt-session-cookie.test.ts",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "HS256 JWT cookies with strict claims, D1 revocation, and origin checks.",
+    "when_to_use": [
+      "Browser sessions needing immediate logout and account-wide revocation."
+    ],
+    "when_not_to_use": [
+      "Stateless auth, cross-site cookies, public-key or OAuth tokens."
+    ],
+    "adapt": [
+      {
+        "id": "configure",
+        "required": true,
+        "title": "Configure bindings",
+        "do": "Set JWT_SESSION_ORIGIN to the canonical HTTPS origin, JWT_SESSION_SECRET to 32+ random bytes, and DB.",
+        "check": "HTTPS issues a hardened __Host- cookie."
+      },
+      {
+        "id": "issue-after-login",
+        "required": true,
+        "title": "Issue after verified sign-in",
+        "where": "{{paths.app}}/index.ts",
+        "do": "After verified login, account and CSRF/OAuth-state checks, call createJwtSession with a trusted account id; append setCookie to a private no-store response.",
+        "check": "Invalid login creates no session."
+      },
+      {
+        "id": "mount",
+        "required": true,
+        "title": "Mount and protect browser APIs",
+        "where": "{{paths.app}}/index.ts",
+        "do": "Mount jwtSessionRoutes() at {{kit.routePrefix}}; protect other browser APIs with requireJwtSession.",
+        "check": "Invalid sessions return 401; unsafe requests without exact Origin return 403."
+      },
+      {
+        "id": "lifecycle",
+        "required": true,
+        "title": "Integrate account lifecycle",
+        "do": "Await revokeOwnerJwtSessions after recovery. Await setJwtSessionOwnerEnabled(false) on suspension/deletion, true on authorized re-enable; keep account changes consistent.",
+        "check": "Old tokens fail after reset/disable and remain invalid after re-enable."
+      },
+      {
+        "id": "cleanup",
+        "required": true,
+        "title": "Maintain revocations",
+        "do": "Schedule cleanupJwtSessionRevocations. Never cache readJwtSession or its D1 authority checks.",
+        "check": "Unexpired revocations survive; expired rows are removed in batches of 500."
+      }
+    ],
+    "author_notes": "Claims are readable. Each valid request reads D1 primary state. Account schema, login UI, and rate limiting belong to the host."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/coop-collective/mailcheap",
+      "commit": "6fd333e2b9a66d65785958de40061afa72fa6059",
+      "paths": [
+        "lib/session-token.js",
+        "lib/auth.js",
+        "tests/session-token.test.mjs"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}

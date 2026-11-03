@@ -42,7 +42,7 @@ the agent can read. Do not use credential reveal/export commands or a general va
    intended existing resources; record uncertain writes before trying again.
 2. Check actual access: receiving inbox, Agent Vault role and service scope, and provider
    login method. Confirm the intended project/environment with the coding-tool handoff;
-   the coding side checks Infisical access. Distinguish configured from tested. Do not
+   the coding side checks the selected secret store and runtime destination. Distinguish configured from tested. Do not
    infer mail delivery from group membership.
 3. Use the provider's supported API or browser workflow. For passwords, use a validated
    trusted fill mechanism. Proxy body substitution is a candidate for tested provider
@@ -57,13 +57,15 @@ the agent can read. Do not use credential reveal/export commands or a general va
 5. Register the requested OAuth app with the intended owner, redirect URIs, and scopes.
    Creating an app, connecting an OAuth grant, and generating a login password are
    separate operations. OAuth authorization tokens for automation stay in Agent Vault;
-   the application's credentials go to Infisical.
-6. Arrange capture of provider-issued values through the coding side's trusted provider
-   adapter or operator input. It writes directly to the registered Infisical destination
-   and returns metadata.
-   Reading a displayed secret with the model and then hiding it is not a secure import.
-   When no such capture exists, report the handoff as pending and request secure human
-   entry. Preserve completed work; do not recreate the app to get another secret.
+   the application's credentials go to its registered Kitbash storage destination.
+6. Capture or download provider-issued values directly to private files on the bot computer when
+   the provider supports it. Register their names with `generate: false`, then use
+   `kitbash_upload_secrets` and its local-file helper to send them to Kitbash. The helper prints
+   names/status only; do not print file contents or include them in MCP arguments. Use
+   `kitbash_secret_deliveries` when an enrolled controller should also receive the upload.
+   Follow provider consent/MFA requirements, but do not introduce a human upload page for files
+   already available on the bot computer. Keep the existing App and record uncertain uploads
+   before retrying. If a provider cannot be accessed, report that concrete missing access.
 7. Combine provider-state evidence with the coding side's receipt for credential presence
    and a scoped authentication check where authorized. Report the exact checks completed
    and remaining handoffs.
@@ -71,18 +73,23 @@ the agent can read. Do not use credential reveal/export commands or a general va
 ## Existing Kitbash capabilities
 
 In Grok, manage provider accounts and automation access through Agent Vault. Claude Code
-and other coding tools own application edits and Infisical provisioning; Kitbash supplies
+and other coding tools own application edits and runtime configuration; Kitbash supplies
 their workflow and implementation support. Grok does not need an Infisical MCP connector.
 Prepare a handoff with provider/app IDs, project/environment, redirect URIs, scopes,
 credential names/references, and completed/pending phases. Never put values in the handoff.
 The coding side must verify secure capture and destination state; handing work to another
 agent does not protect a secret already read by a model.
 
-When available, `kitbash_secrets` supports `status`, `setup`, `generate`,
-`provision-github`, and `provision-worker-sync`, with a registered `project` and explicit
-`target`. `generate` additionally takes a registered `name`. The tool generates application
-keys inside the broker and returns metadata. It has no provider-account creation,
-password-fill, provider-secret import, general API proxy, or rotation operation.
+With the broker's remote `/mcp` connector configured, Grok can call `kitbash_secrets` directly without a local
+Infisical login. Load `kitbash-secrets` for `status`, `presence`, `setup`, `generate`, `provision-github`,
+`provision-github-app`, and `provision-worker-sync`, with a registered `project` and explicit `target`.
+`generate` and `presence` additionally take a registered `name`. `provision-github` configures Actions OIDC;
+`provision-github-app` starts a new App manifest handoff. Give its approval link to the human to open in their
+own browser outside the bot computer. Credentials go directly from GitHub to the broker to Infisical; the
+agent receives names and status. Do not open the handoff in agent browser tools or ask for callback codes.
+Existing App credentials and other provider secrets can use the general `kitbash_upload_secrets` local-file
+workflow. Uploads require registered names and preserve existing values. No general provider-account creation,
+password-fill, API proxy, or rotation operation is exposed.
 
 Do not fabricate endpoints or call proposed tools as if implemented. A Grok Bot template
 does not install a vault, broker, connector, or browser proxy. Use available capabilities

@@ -1,1 +1,0 @@
-{"diagnostic":"Post-run delayed initial profile GET; measured acceptance score unchanged","editableBeforeInitialLoad":true,"typedValue":"Typed before initial profile response","valueAfterInitialLoad":"New Revision","typedInputOverwritten":true,"scope":"Reproduces the UI race under a controlled delay, not the exact event ordering of the original run."}

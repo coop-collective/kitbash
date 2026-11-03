@@ -1,0 +1,40 @@
+{
+  "_doc": "Cases for test-e2e/install.test.mjs, read from this block directory (never installed into projects). The defaults case always runs; \"cases\" add param sets ({name, params, dependencyParams?}); registryDependencies are installed first by `kit install` itself (from blocks/, with dependencyParams passed as --param <dependency>.<name>=<value>). \"conflicts\" entries write \"setup\" files into a fresh project, expect the dry run to exit 1 with the listed conflicts, then install with \"resolve\" ({params?, on_conflict?}) and expect verify to pass. \"chains\" install several blocks into one project.",
+  "cases": [],
+  "conflicts": [
+    {
+      "name": "prodSim-overwrites-the-template-config",
+      "params": {
+        "prodSim": "true"
+      },
+      "expect": [
+        {
+          "kind": "file",
+          "name": "vitest.config.ts"
+        }
+      ],
+      "resolve": {
+        "on_conflict": "overwrite"
+      }
+    },
+    {
+      "name": "prodSim-replays-history-under-newer-migrations",
+      "setup": {
+        "migrations/0002_note.sql": "CREATE TABLE note (id INTEGER PRIMARY KEY, body TEXT NOT NULL);\n"
+      },
+      "params": {
+        "prodSim": "true",
+        "shippedThrough": "1"
+      },
+      "expect": [
+        {
+          "kind": "file",
+          "name": "vitest.config.ts"
+        }
+      ],
+      "resolve": {
+        "on_conflict": "overwrite"
+      }
+    }
+  ]
+}

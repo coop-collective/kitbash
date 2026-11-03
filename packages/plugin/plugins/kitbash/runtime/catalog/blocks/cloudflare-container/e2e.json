@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "name": "go",
+      "variant": "go"
+    },
+    {
+      "name": "rust",
+      "variant": "rust"
+    },
+    {
+      "name": "custom-bun",
+      "variant": "bun",
+      "params": {
+        "serviceName": "digest",
+        "routePath": "/digest",
+        "authService": "custom-auth",
+        "maxInstances": 2
+      }
+    }
+  ]
+}

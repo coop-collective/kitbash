@@ -1,5 +1,0 @@
-{"time":"2026-10-19T14:32:21.053Z","phase":"integration/0","tool":"project_check","check":"typecheck","durationMs":2625.182791999978,"outcome":"success","responseBytes":1579}
-{"time":"2026-10-19T14:32:25.951Z","phase":"integration/0","tool":"project_check","check":"test","durationMs":7042.313666000002,"outcome":"error","responseBytes":1666}
-{"time":"2026-10-19T14:32:53.758Z","phase":"integration/0","tool":"project_check","check":"test","durationMs":1809.9089159999858,"outcome":"success","responseBytes":649}
-{"time":"2026-10-19T14:32:57.375Z","phase":"integration/0","tool":"project_check","check":"build","durationMs":1100.0012920000008,"outcome":"success","responseBytes":1281}
-{"time":"2026-10-19T14:32:58.478Z","phase":"integration/0","tool":"project_check","check":"migrate","durationMs":1415.5463749999763,"outcome":"success","responseBytes":1610}

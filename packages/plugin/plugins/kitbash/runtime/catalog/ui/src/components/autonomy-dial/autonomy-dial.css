@@ -1,0 +1,235 @@
+.kb-ad {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+  width: 840px;
+  max-width: 100%;
+  padding: 20px;
+  border-radius: var(--kb-r-frame);
+}
+@media (max-width: 720px) {
+  .kb-ad { grid-template-columns: 1fr; }
+}
+
+.kb-ad-dial {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+.kb-ad-title {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+}
+.kb-ad-sub {
+  margin: 2px 0 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+
+/* The dial face: three detent labels around a knob */
+.kb-ad-face {
+  position: relative;
+  width: 260px;
+  height: 176px;
+  user-select: none;
+}
+.kb-ad-stop {
+  position: absolute;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-3);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--kb-fast);
+}
+.kb-ad-stop:hover { color: var(--kb-ink); }
+.kb-ad-stop[data-active] { color: var(--kb-ink); font-weight: var(--kb-w-strong); }
+.kb-ad-stop[data-pos="0"] { right: 186px; top: 64px; }
+.kb-ad-stop[data-pos="1"] { left: 50%; top: 14px; transform: translateX(-50%); }
+.kb-ad-stop[data-pos="2"] { left: 186px; top: 64px; }
+
+.kb-ad-ticks {
+  position: absolute;
+  left: 130px;
+  top: 112px;
+}
+.kb-ad-ticks > i {
+  position: absolute;
+  left: -1.5px;
+  top: -62px;
+  width: 3px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--kb-line-strong);
+  transform-origin: 1.5px 62px;
+  transition: background var(--kb-fast);
+}
+.kb-ad-ticks > i[data-active] { background: var(--kb-select); }
+
+/* The knob: a recessed socket holding a knurled cap that rotates with a snap */
+.kb-ad-knob {
+  position: absolute;
+  left: 130px;
+  top: 112px;
+  width: 100px;
+  height: 100px;
+  margin: -50px 0 0 -50px;
+  border-radius: 50%;
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  cursor: grab;
+  touch-action: none;
+}
+.kb-ad-knob:active { cursor: grabbing; }
+.kb-ad-knob:focus-visible { outline-offset: 3px; }
+.kb-ad-cap {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--kb-panel) 0 60%, transparent 61%),
+    repeating-conic-gradient(var(--kb-line-strong) 0 4deg, var(--kb-panel) 4deg 10deg);
+  box-shadow:
+    inset 0 1px 0 var(--kb-bevel-hi),
+    inset 0 -2px 0 var(--kb-bevel-lo),
+    0 2px 4px rgb(0 0 0 / 0.18),
+    0 6px 12px -6px rgb(0 0 0 / 0.35);
+  transition: transform var(--kb-slow) var(--kb-snap);
+}
+.kb-ad-cap::after {
+  /* the domed center of the cap catches light on top */
+  content: "";
+  position: absolute;
+  inset: 17%;
+  border-radius: 50%;
+  background: var(--kb-panel);
+  box-shadow: inset 0 2px 0 var(--kb-bevel-hi), inset 0 -2px 3px var(--kb-bevel-lo);
+}
+.kb-ad-pointer {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 13%;
+  width: 4px;
+  height: 22%;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--kb-select);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.25);
+}
+.kb-ad-hint {
+  margin: 0;
+  min-height: 3.2em;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-ad-hint strong { color: var(--kb-ink); font-weight: var(--kb-w-strong); }
+
+/* The two columns the actions move between */
+.kb-ad-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+.kb-ad-col {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-ad-col header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 2px;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-ad-col[data-tone="own"] header { color: var(--kb-select-text); }
+.kb-ad-col[data-tone="ask"] header { color: var(--kb-decal-ink); }
+.kb-ad-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--kb-r-pill);
+  font-size: var(--kb-text-xs);
+  background: var(--kb-select-soft);
+}
+.kb-ad-col[data-tone="ask"] .kb-ad-count {
+  background: var(--kb-decal);
+  color: #3a2b00;
+}
+.kb-ad-col ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each action is a small raised part; in the asking column it wears a decal edge */
+.kb-ad-chip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), 0 1px 2px rgb(0 0 0 / 0.06);
+  font-size: var(--kb-text-sm);
+  will-change: transform;
+}
+.kb-ad-chip > svg { color: var(--kb-ink-3); }
+.kb-ad-col[data-tone="own"] .kb-ad-chip > svg { color: var(--kb-select-text); }
+.kb-ad-col[data-tone="ask"] .kb-ad-chip { border-left: 3px solid var(--kb-decal); padding-left: 8px; }
+.kb-ad-chip-label {
+  padding: 6px 0;
+  line-height: 1.3;
+}
+.kb-ad-lock {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--kb-fast), background var(--kb-fast);
+}
+.kb-ad-chip:hover .kb-ad-lock,
+.kb-ad-lock:focus-visible { opacity: 1; }
+.kb-ad-lock:hover { background: var(--kb-panel-2); color: var(--kb-ink); }
+.kb-ad-lock[aria-pressed="true"] {
+  opacity: 1;
+  color: var(--kb-decal-ink);
+  background: var(--kb-decal-soft);
+}
+.kb-ad-empty {
+  padding: 10px;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-ad-cap { transition: none; }
+}

@@ -1,0 +1,4 @@
+{
+  // Optional second tier. The utility works with edge caching alone when kv is omitted.
+  "kv_namespaces": [{ "binding": "RESULT_CACHE", "id": "REPLACE_ME" }]
+}
