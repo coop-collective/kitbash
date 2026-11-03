@@ -177,7 +177,8 @@ describe("profile", () => {
     const d = await detectStack(fs);
     expect(d.stack).toEqual({ lang: "ts", runtime: "cloudflare-workers", framework: "hono", db: "d1", ui: "none", test: "vitest-workerd" });
     expect(d.paths.migrations).toBe("migrations");
-    expect(d.migrations).toEqual({ pattern: "NNNN_name.sql", width: 4 });
+    // new migrations are always UTC timestamps, even next to existing NNNN_ files (they sort first)
+    expect(d.migrations).toEqual({ pattern: "TIMESTAMP_name.sql" });
     expect(d.config).toEqual({ wrangler: "wrangler.jsonc", env_example: ".dev.vars.example" });
     expect(d.package_manager).toBe("pnpm");
   });
@@ -206,5 +207,17 @@ describe("profile", () => {
     const fresh = await loadOrDetectProfile(memoryFs({ "package.json": "{}" }));
     expect(fresh.detected).toBe(true);
     expect(fresh.profile.project_id).toMatch(/^prj_[a-z2-7]{20}$/);
+  });
+});
+
+describe("timestamp migrations", () => {
+  it("stamps a block's migrations after existing NNNN_ files and the newest timestamp, in increasing seconds", async () => {
+    const { renumberMigrations } = await import("../src/plan.ts");
+    const profile = { migrations: { pattern: "TIMESTAMP_name.sql" } } as never;
+    const out = renumberMigrations(["0001_auth.sql", "0002_auth_tokens.sql"], ["0053_first_picks.sql"], profile, "2026-11-03T01:45:00Z");
+    expect(out).toEqual({ "0001_auth.sql": "20261103014500_auth.sql", "0002_auth_tokens.sql": "20261103014501_auth_tokens.sql" });
+    expect(["0053_first_picks.sql", ...Object.values(out)].sort()).toEqual(["0053_first_picks.sql", "20261103014500_auth.sql", "20261103014501_auth_tokens.sql"]);
+    const later = renumberMigrations(["0001_x.sql"], ["20261103014501_auth_tokens.sql"], profile, "2026-11-03T01:45:00Z");
+    expect(later).toEqual({ "0001_x.sql": "20261103014502_x.sql" });
   });
 });
