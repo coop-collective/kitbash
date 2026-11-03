@@ -21,8 +21,7 @@
       "tests": "test"
     },
     "migrations": {
-      "pattern": "NNNN_name.sql",
-      "width": 4
+      "pattern": "TIMESTAMP_name.sql"
     },
     "package_manager": "pnpm",
     "config": {

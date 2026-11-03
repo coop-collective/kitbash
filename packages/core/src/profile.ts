@@ -163,15 +163,11 @@ export async function detectStack(fs: KitFs): Promise<DetectedProfile> {
 
   // migration naming
   const migs = ((await fs.list(paths.migrations!)) ?? []).filter((n) => n.endsWith(".sql"));
-  let pattern: ProjectProfile["migrations"]["pattern"] = "NNNN_name.sql";
-  let width = 4;
-  const nums = migs.map((n) => /^(\d+)_/.exec(n)?.[1]).filter((x): x is string => !!x);
-  if (nums.length) {
-    if (nums.some((n) => n.length >= 12)) {
-      pattern = "TIMESTAMP_name.sql";
-      width = 14;
-    } else width = Math.max(...nums.map((n) => n.length));
-  }
+  // ---- 2026-11-03: new migrations are always UTC timestamps (YYYYMMDDHHMMSS_name.sql), so parallel branches never pick
+  // the same number; existing NNNN_ files stay as they are and sort before every timestamp. NNNN is an explicit opt-out.
+  const pattern: ProjectProfile["migrations"]["pattern"] = "TIMESTAMP_name.sql";
+  const width = 14;
+  void migs;
 
   // package manager
   let pm: ProjectProfile["package_manager"] = "npm";

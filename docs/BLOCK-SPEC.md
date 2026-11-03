@@ -115,7 +115,7 @@ Keys marked **shadcn** exist in `registry-item.json` with the same meaning. Keys
     { "type": "d1",         "name": "DB",    "required": true,  "create": "wrangler d1 create {{kit.appSlug}}" },
     { "type": "send_email", "name": "EMAIL", "required": false, "note": "Without it the code is printed in dev and sign-in is refused in production." }
   ],
-  "migrations": [                                               // kit: ordered; renumbered at install (§6.3)
+  "migrations": [                                               // kit: ordered; timestamped at install (§6.3)
     { "file": "migrations/0001_auth.sql", "name": "auth", "creates": ["{{kit.tablePrefix}}members", "{{kit.tablePrefix}}member_tokens", "{{kit.tablePrefix}}login_codes"], "idempotent": false }
   ],
   "tables": ["{{kit.tablePrefix}}members", "{{kit.tablePrefix}}member_tokens", "{{kit.tablePrefix}}login_codes"], // kit: interface, for conflict checks
@@ -220,7 +220,7 @@ Created by `kit init` (stack detection) or by the first `registry_install`; the 
   "project_id": "prj_8f3a…",                 // random; used for the lock and for usage metering (one per repo)
   "stack": { "runtime": "cloudflare-workers", "framework": "hono", "db": "d1", "ui": "react", "lang": "ts", "test": "vitest-workerd" },
   "paths": { "app": "src", "routes": "src/routes", "lib": "src/lib", "ui": "src/components", "migrations": "migrations", "tests": "test" },
-  "migrations": { "pattern": "NNNN_name.sql", "width": 4 },
+  "migrations": { "pattern": "TIMESTAMP_name.sql" },
   "config": { "wrangler": "wrangler.jsonc", "env_example": ".dev.vars.example" },
   "package_manager": "pnpm"
 }
@@ -232,13 +232,22 @@ Pick the variant whose `stack` matches the profile best (exact on `framework` an
 `compat` ranges against `package.json`. A mismatch is a warning in the plan, not a stop, unless `framework` has no
 matching variant.
 
-### 6.3 Migration renumbering
+### 6.3 Migration naming: UTC timestamps
 
-Read `{{paths.migrations}}`; find the highest `NNNN`; assign the block's migrations the next numbers in order, keeping
-the `_name` suffix (`0001_auth.sql` → `0035_auth.sql`). Record the mapping in the lock. Rules for authors: a block
-version never edits an earlier migration; a new version adds `0002_…`, and the installer renumbers it after the
-project's current highest. Projects using timestamps (`20260514143000_…`) get `pattern: "TIMESTAMP_name.sql"` and the
-installer uses "now" in increasing seconds.
+**Rule: every new migration is named with a UTC timestamp, `YYYYMMDDHHMMSS_name.sql`** (for example
+`20261103014500_vote_credit_consumption.sql`). Never hand-pick or increment a number. Two branches that each add "the
+next number" collide (two different `0053_*.sql` files) and the second merge either conflicts or applies out of order;
+timestamps make that impossible in practice and keep the order the work happened.
+
+The installer reads `{{paths.migrations}}` and assigns the block's migrations "now" (UTC) in increasing seconds, always
+after the newest existing timestamp, keeping the `_name` suffix (`0001_auth.sql` → `20261103014500_auth.sql`), and
+records the mapping in the lock. Existing `NNNN_*.sql` files are never renamed: they sort before every timestamp, so a
+project can switch to timestamps at any point and keep its history. Rules for block authors are unchanged: a block
+version never edits an earlier migration; a new version adds `0002_…` in the block source (block-local order), and the
+installer stamps it at install.
+
+`pattern: "NNNN_name.sql"` (with `width`) remains available only as an explicit per-project opt-out in
+`.kit/project.json`; the detected and bootstrapped default is `pattern: "TIMESTAMP_name.sql"`.
 
 ### 6.4 Conflict checks
 
