@@ -1,0 +1,41 @@
+name: Plugin distribution
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test shipped payload before rebuilding
+        run: node --test packages/plugin/test/distribution.test.mjs
+      - run: pnpm --filter @kitbash/plugin validate
+      - run: pnpm --filter @kitbash/plugin build
+      - name: Require up-to-date committed bundle and catalog
+        run: |
+          git diff --exit-code -- packages/plugin/plugins/kitbash/runtime
+          test -z "$(git ls-files --others --exclude-standard packages/plugin/plugins/kitbash/runtime)"
+      - run: pnpm --filter @kitbash/plugin test
+  broker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kitbash/secrets-broker typecheck
+      - run: pnpm --filter @kitbash/secrets-broker test
+      - run: pnpm --filter @kitbash/secrets-broker test:worker

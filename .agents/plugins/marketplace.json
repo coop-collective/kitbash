@@ -1,0 +1,19 @@
+{
+  "name": "kitbash",
+  "interface": {
+    "displayName": "Kitbash"
+  },
+  "plugins": [
+    {
+      "name": "kit",
+      "source": {
+        "source": "local",
+        "path": "./packages/plugin/plugins/kitbash"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+{{#kit.if mailer == "email-service"}}
+  // Cloudflare Email Service: the sending binding. Onboard the domain of MAIL_FROM in Email Service before deploy.
+  "send_email": [{ "name": "EMAIL" }],
+{{/kit.if}}
+  "vars": { "MAIL_FROM": "login@{{kit.appDomain}}" }
+}

@@ -1,0 +1,237 @@
+/* One tool call: a slim part with a lamp, the tool, a summary and a clock */
+.kb-tc {
+  width: 620px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-control);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+  overflow: hidden;
+}
+.kb-tc[data-status="error"] {
+  border-color: color-mix(in oklab, var(--kb-danger) 45%, var(--kb-line));
+}
+
+.kb-tc-line {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.kb-tc-line:hover {
+  background: color-mix(in oklab, var(--kb-panel) 94%, var(--kb-ink));
+}
+.kb-tc-line:active {
+  box-shadow: var(--kb-pressed);
+}
+.kb-tc-line:focus-visible {
+  outline-offset: -2px;
+}
+
+/* The lamp: a lens sunk into the part, lit from inside */
+.kb-tc-lamp {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--lamp, var(--kb-ink-3));
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.55),
+    inset 0 -1px 1px rgb(0 0 0 / 0.25),
+    0 0 0 2px var(--kb-panel-2),
+    0 0 0 3px var(--kb-line),
+    0 0 8px -1px var(--lamp, transparent);
+}
+.kb-tc-lamp[data-status="running"] { --lamp: var(--kb-agent); animation: kb-tc-glow 1.2s ease-in-out infinite; }
+.kb-tc-lamp[data-status="ok"] { --lamp: var(--kb-ok); }
+.kb-tc-lamp[data-status="error"] { --lamp: var(--kb-danger); }
+@keyframes kb-tc-glow {
+  50% { filter: brightness(0.7); box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.4), 0 0 0 2px var(--kb-panel-2), 0 0 0 3px var(--kb-line); }
+}
+
+.kb-tc-tool {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink);
+  padding: 2px 6px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  white-space: nowrap;
+}
+.kb-tc-summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-tc[data-status="error"] .kb-tc-summary { color: var(--kb-danger); }
+.kb-tc-time {
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+  min-width: 4ch;
+  text-align: right;
+}
+.kb-tc[data-status="running"] .kb-tc-time { color: var(--kb-agent); }
+.kb-tc-chev {
+  color: var(--kb-ink-3);
+  transition: transform var(--kb-med) var(--kb-snap);
+}
+.kb-tc-line[aria-expanded="true"] .kb-tc-chev,
+.kb-tcg-head[aria-expanded="true"] .kb-tc-chev {
+  transform: rotate(180deg);
+}
+
+/* Unfolded body */
+.kb-tc-fold {
+  border-top: 1px solid var(--kb-line);
+  background: var(--kb-panel-2);
+}
+.kb-tc-body {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  animation: kb-tc-unfold var(--kb-med) var(--kb-glide);
+}
+@keyframes kb-tc-unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+.kb-tc-section header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+}
+.kb-tc-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: none;
+  color: var(--kb-ink-2);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+}
+.kb-tc-copy:hover { background: var(--kb-panel); color: var(--kb-ink); }
+.kb-tc-code {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  line-height: 1.6;
+  color: var(--kb-ink-2);
+}
+.kb-tc-k { color: var(--kb-agent); }
+.kb-tc-s { color: var(--kb-ok); }
+.kb-tc-n { color: var(--kb-info); }
+.kb-tc-l { color: var(--kb-danger); }
+
+.kb-tc-error {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-danger-soft);
+  color: var(--kb-danger);
+  font-size: var(--kb-text-sm);
+}
+.kb-tc-wait {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+
+/* Group: a header that sums the run, with a runner bar of every call */
+.kb-tcg {
+  width: 660px;
+  max-width: 100%;
+  border-radius: var(--kb-r-card);
+  overflow: hidden;
+}
+.kb-tcg-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px 12px;
+  width: 100%;
+  padding: 12px 14px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.kb-tcg-head:focus-visible { outline-offset: -2px; }
+.kb-tcg-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: var(--kb-w-strong);
+  min-width: 0;
+}
+.kb-tcg-title svg { color: var(--kb-agent); flex: none; }
+.kb-tcg-sum {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+}
+.kb-tcg-runner {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 3px;
+  height: 8px;
+  padding: 2px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-tcg-runner > i {
+  min-width: 10px;
+  border-radius: var(--kb-r-pill);
+  background: var(--seg, var(--kb-line-strong));
+  transition: flex-grow var(--kb-slow) var(--kb-glide), background var(--kb-med);
+}
+.kb-tcg-runner > i[data-status="ok"] { --seg: var(--kb-ok); }
+.kb-tcg-runner > i[data-status="error"] { --seg: var(--kb-danger); }
+.kb-tcg-runner > i[data-status="running"] {
+  --seg: var(--kb-agent);
+  animation: kb-tc-glow 1.2s ease-in-out infinite;
+}
+.kb-tcg-list {
+  display: grid;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+.kb-tcg-list .kb-tc { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-tc-lamp[data-status="running"],
+  .kb-tcg-runner > i[data-status="running"] { animation: none; }
+  .kb-tc-body { animation: none; }
+}

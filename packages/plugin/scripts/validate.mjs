@@ -106,11 +106,13 @@ function frontmatter(rel) {
 const dirs = (rel) => fs.readdirSync(path.join(root, rel), { withFileTypes: true });
 const skills = exists(`${P}/skills`) ? dirs(`${P}/skills`).filter((d) => d.isDirectory()).map((d) => d.name).sort() : [];
 check(JSON.stringify(skills) === JSON.stringify(SKILLS), `skills are ${skills.join(", ")}; expected ${SKILLS.join(", ")}`);
+// Skills may describe tools on the separately deployed secrets broker.
+const BROKER_TOOLS = ["kitbash_register_secrets", "kitbash_upload_secrets", "kitbash_secret_deliveries"];
 const mentioned = new Set();
 const scanTools = (rel, text) => {
   for (const m of text.matchAll(/\b(?:registry|kitbash)_[a-z_]+\b/g)) {
     mentioned.add(m[0]);
-    check(TOOLS.includes(m[0]), `${rel} names unknown tool ${m[0]}`);
+    check(TOOLS.includes(m[0]) || BROKER_TOOLS.includes(m[0]), `${rel} names unknown tool ${m[0]}`);
   }
 };
 for (const name of skills) {

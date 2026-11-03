@@ -207,7 +207,7 @@ test('provider auth remains inside broker and transport errors never echo respon
   const seen = [];
   const providers = makeProviders({ env: { INFISICAL_CLIENT_ID: 'fixture', INFISICAL_CLIENT_SECRET: SECRET, GITHUB_TOKEN: SECRET }, request: async (url, options) => {
     seen.push({ url: url.toString(), options });
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return new Response(JSON.stringify(url.pathname.endsWith('/login') ? { accessToken: 'fixture.access.token' } : { secrets: [] }));
   } });
   const { infisical, github } = await providers({ domain: 'https://vault.example.test' });
@@ -218,6 +218,18 @@ test('provider auth remains inside broker and transport errors never echo respon
   for (const request of [async () => { throw Error(SECRET); }, async () => new Response(SECRET, { status: 403 }), async () => new Response(SECRET)]) {
     await assert.rejects(requestJson('https://vault.example.test', { request }), error => !error.message.includes(SECRET));
   }
+});
+
+test('manual redirect mode rejects provider redirects without forwarding credentials or revealing the destination', async () => {
+  let calls = 0;
+  await assert.rejects(requestJson('https://vault.example.test/api/v4/secrets', {
+    headers: { authorization: `Bearer ${SECRET}` }, request: async (_url, options) => {
+      calls++;
+      assert.equal(options.redirect, 'manual');
+      return new Response(null, { status: 307, headers: { location: `https://elsewhere.example.test/${SECRET}` } });
+    },
+  }), error => error.code === 'provider_failed' && error.status === 307 && !error.message.includes(SECRET));
+  assert.equal(calls, 1);
 });
 
 test('native Worker sync rejects extra source-folder secrets before registering a connection', async () => {
@@ -289,4 +301,18 @@ test('private durable state locks, persists before reuse, and client capability 
   assert.equal(JSON.parse(readFileSync(policyFile)).principals[0].tokenSha256, createHash('sha256').update(token).digest('hex'));
   assert.equal(statSync(outputFile).mode & 0o777, 0o600);
   assert.throws(() => issueClient({ policyFile, outputFile, principalId: 'agent', brokerUrl: 'https://broker.example.test' }));
+  const mcpFile = path.join(root, 'connector.json');
+  const issued = issueClient({ policyFile, outputFile: mcpFile, principalId: 'agent', brokerUrl: 'https://broker.example.test', format: 'mcp' });
+  const connection = JSON.parse(readFileSync(mcpFile)).mcpServers.kitbash_secrets;
+  assert.equal(connection.type, 'http');
+  assert.equal(connection.url, 'https://broker.example.test/mcp');
+  const capability = connection.headers.Authorization.slice('Bearer '.length);
+  assert.equal(Buffer.from(capability, 'base64url').length, 32);
+  assert.notEqual(capability, token);
+  assert.equal(JSON.stringify(issued).includes(capability), false);
+  const saved = JSON.parse(readFileSync(policyFile));
+  assert.equal(saved.principals[0].tokenSha256, createHash('sha256').update(capability).digest('hex'));
+  assert.deepEqual(saved.principals[0].grants, config().principals[0].grants);
+  assert.equal(statSync(mcpFile).mode & 0o777, 0o600);
+  assert.throws(() => issueClient({ policyFile, outputFile: mcpFile, principalId: 'agent', brokerUrl: 'https://broker.example.test', format: 'mcp' }));
 });

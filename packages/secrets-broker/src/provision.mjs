@@ -20,11 +20,11 @@ function validateScope(config) {
   if (url.protocol !== 'https:' || url.origin !== config.domain || url.username || url.password) fail('invalid_provision_policy');
 }
 
-export function githubPolicy(config) {
+export function githubPolicy(config, brokerCI = false) {
   validateScope(config);
   const g = config.github;
   if (!g || !/^[A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(g.repository ?? '') ||
-      !['staging', 'production'].includes(g.environment) || !/^refs\/heads\/[A-Za-z0-9][A-Za-z0-9_./-]*$/.test(g.ref ?? '') ||
+      !(brokerCI ? /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(g.environment ?? '') : ['staging', 'production'].includes(g.environment)) || !/^refs\/heads\/[A-Za-z0-9][A-Za-z0-9_./-]*$/.test(g.ref ?? '') ||
       g.ref.includes('..') || !/^\.github\/workflows\/[A-Za-z0-9_-]+\.ya?ml$/.test(g.workflow ?? '') ||
       !SLUG.test(g.roleSlug ?? '') || !SLUG.test(g.identityName ?? '')) fail('invalid_github_policy');
   const audience = g.audience ?? `kitbash:${g.repository}:${g.environment}`;
@@ -82,15 +82,15 @@ async function read(api, endpoint, options) {
   return value;
 }
 
-function readerPermissions(config) {
-  return [...new Set(['/ci', config.secretPath])].map(secretPath => ({
+function readerPermissions(config, brokerCI = false) {
+  return [...new Set(brokerCI ? [config.secretPath] : ['/ci', config.secretPath])].map(secretPath => ({
     subject: 'secrets', action: ['describeSecret', 'readValue'],
     conditions: { environment: { $eq: config.environment }, secretPath: { $eq: secretPath } },
   }));
 }
-function validRole(role, config, policy) {
+function validRole(role, config, policy, brokerCI) {
   if (!UUID.test(role?.id ?? '') || role.projectId !== config.projectId || role.slug !== policy.roleSlug ||
-      !isDeepStrictEqual(role.permissions, readerPermissions(config))) fail('provision_role_mismatch');
+      !isDeepStrictEqual(role.permissions, readerPermissions(config, brokerCI))) fail('provision_role_mismatch');
 }
 function validIdentity(identity, config, policy) {
   if (!UUID.test(identity?.id ?? '') || identity.projectId !== config.projectId || identity.name !== policy.identityName ||
@@ -132,21 +132,42 @@ async function ensureGitHubEnvironment(config, policy, api, checkpoint) {
 /** Trusted policy only. API functions accept (path, {method,query,body}), sanitize
  * errors and expose numeric status. Checkpoint is private per target+operation. */
 export async function provisionGitHub(config, { infisical, github, checkpoint }) {
-  const policy = githubPolicy(config);
-  const state = checkpointFor(checkpoint, { projectId: config.projectId, projectSlug: config.projectSlug, domain: config.domain, environment: config.environment, secretPath: config.secretPath, github: policy });
-  const { repo, environmentPath } = await ensureGitHubEnvironment(config, policy, github, checkpoint);
+  return provisionGitHubIdentity(config, { infisical, github, checkpoint });
+}
+
+/** Operator-only template setup. Each event gets an exact-workflow OIDC identity
+ * that can read only the broker's dedicated deployment folder. No agent option
+ * can select this profile or relax application production environment checks. */
+export async function provisionBrokerGitHub(config, dependencies, eventName) {
+  if (!['push', 'workflow_dispatch'].includes(eventName) || !config.secretPath?.startsWith('/ci/')) fail('invalid_github_policy');
+  return provisionGitHubIdentity(config, dependencies, eventName);
+}
+
+async function provisionGitHubIdentity(config, { infisical, github, checkpoint }, brokerEvent) {
+  const brokerCI = brokerEvent !== undefined;
+  const policy = githubPolicy(config, brokerCI);
+  const state = checkpointFor(checkpoint, { projectId: config.projectId, projectSlug: config.projectSlug, domain: config.domain, environment: config.environment, secretPath: config.secretPath, github: policy,
+    ...(brokerCI ? { brokerEvent } : {}) });
+  let repo, environmentPath;
+  if (brokerCI) {
+    // Setup creates missing environments separately and preserves existing protections.
+    repo = await read(github, `/repos/${policy.repository}`);
+    if (!Number.isSafeInteger(repo.id) || repo.id <= 0 || !Number.isSafeInteger(repo.owner?.id) || repo.owner.id <= 0 || repo.full_name !== policy.repository || `refs/heads/${repo.default_branch}` !== policy.ref) fail('github_repository_mismatch');
+    environmentPath = `/repos/${policy.repository}/environments/${encodeURIComponent(policy.environment)}`;
+    if ((await read(github, environmentPath)).name !== policy.environment) fail('github_environment_mismatch');
+  } else ({ repo, environmentPath } = await ensureGitHubEnvironment(config, policy, github, checkpoint));
   const rolePath = `/api/v1/projects/${config.projectId}/roles`;
   let role = (await optional(infisical, `${rolePath}/slug/${policy.roleSlug}`))?.role;
   if (role && role.id !== state.roleId) fail('provision_role_already_exists');
   if (!role) {
     if (state.roleId) fail('provision_resource_missing');
     await writeStep(checkpoint, 'infisical-role', () => infisical(rolePath, { method: 'POST', body: {
-      slug: policy.roleSlug, name: policy.roleSlug, permissions: readerPermissions(config),
+      slug: policy.roleSlug, name: policy.roleSlug, permissions: readerPermissions(config, brokerCI),
       description: 'Kitbash GitHub deployment: exact environment and source folders only.',
-    } }), value => { validRole(value?.role, config, policy); state.roleId = value.role.id; });
+    } }), value => { validRole(value?.role, config, policy, brokerCI); state.roleId = value.role.id; });
     role = (await read(infisical, `${rolePath}/slug/${policy.roleSlug}`)).role;
   }
-  validRole(role, config, policy);
+  validRole(role, config, policy, brokerCI);
   const identityPath = `/api/v1/projects/${config.projectId}/identities`;
   if (!state.identityId) await writeStep(checkpoint, 'infisical-identity', () => infisical(identityPath, { method: 'POST', body: {
     name: policy.identityName, roles: [{ role: policy.roleSlug }], hasDeleteProtection: true,
@@ -163,7 +184,7 @@ export async function provisionGitHub(config, { infisical, github, checkpoint })
     boundClaims: {
       repository: policy.repository, repository_id: String(repo.id), repository_owner_id: String(repo.owner.id),
       ref: policy.ref, workflow_ref: `${policy.repository}/${policy.workflow}@${policy.ref}`,
-      environment: policy.environment, event_name: 'workflow_dispatch',
+      environment: policy.environment, event_name: brokerEvent ?? 'workflow_dispatch',
     },
     accessTokenTTL: 900, accessTokenMaxTTL: 900, accessTokenNumUsesLimit: 0,
   };
@@ -178,8 +199,11 @@ export async function provisionGitHub(config, { infisical, github, checkpoint })
     auth = (await read(infisical, oidcPath)).identityOidcAuth;
   }
   if (!sameOidc(auth)) fail('provision_oidc_mismatch');
+  const identityVariable = brokerCI
+    ? (brokerEvent === 'push' ? 'INFISICAL_PUSH_IDENTITY_ID' : 'INFISICAL_DISPATCH_IDENTITY_ID')
+    : 'INFISICAL_IDENTITY_ID';
   const variables = {
-    INFISICAL_IDENTITY_ID: state.identityId, INFISICAL_PROJECT_SLUG: config.projectSlug,
+    [identityVariable]: state.identityId, INFISICAL_PROJECT_SLUG: config.projectSlug,
     INFISICAL_DOMAIN: config.domain, INFISICAL_OIDC_AUDIENCE: policy.audience,
     INFISICAL_ENVIRONMENT_SLUG: config.environment, INFISICAL_SECRET_PATH: config.secretPath,
   };

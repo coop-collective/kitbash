@@ -1,0 +1,243 @@
+/* Trace waterfall: a profiler. Hairline rows, a dotted time grid, cobalt only for what is still running */
+.kb-tw {
+  width: 880px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-tw-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--kb-s6);
+  padding: var(--kb-s4) var(--kb-s5) var(--kb-s3);
+}
+.kb-tw-title { flex: 1; min-width: 0; }
+.kb-tw-title h3 { margin: 0; font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-tw-title p { margin: 2px 0 0; font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+.kb-tw-stats {
+  display: flex;
+  gap: var(--kb-s5);
+  margin: 0;
+}
+.kb-tw-stats div { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
+.kb-tw-stats dt { font-size: var(--kb-text-xs); color: var(--kb-ink-3); }
+.kb-tw-stats dd { margin: 0; font-family: var(--kb-font-code); font-size: var(--kb-text-md); font-weight: var(--kb-w-medium); }
+.kb-tw-stats .kb-tw-top { font-family: var(--kb-font); }
+.kb-tw-stats .kb-tw-top span { font-family: var(--kb-font-code); color: var(--kb-ink-2); }
+
+.kb-tw-grid {
+  --gutter: 64px;
+  padding: 0 var(--kb-s5) var(--kb-s2);
+}
+.kb-tw-row {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr) 48px 60px;
+  align-items: center;
+  column-gap: var(--kb-s3);
+  height: 30px;
+  border-bottom: 1px solid var(--kb-line);
+  animation: kb-tw-in var(--kb-med) var(--kb-glide);
+}
+.kb-tw-row:not(.kb-tw-axis):hover { background: var(--kb-select-soft); }
+.kb-tw-row:hover .kb-tw-dur,
+.kb-tw-row[data-selected] .kb-tw-dur { background: transparent; }
+.kb-tw-row[data-selected] { background: var(--kb-select-soft); box-shadow: inset 2px 0 0 var(--kb-select); }
+.kb-tw-row:last-child { border-bottom: 0; }
+@keyframes kb-tw-in {
+  from { opacity: 0; }
+}
+.kb-tw-axis {
+  height: 26px;
+  border-bottom-color: var(--kb-line-strong);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  animation: none;
+}
+.kb-tw-scale {
+  position: relative;
+  height: 100%;
+  font-family: var(--kb-font-code);
+}
+.kb-tw-scale i {
+  position: absolute;
+  top: 6px;
+  font-style: normal;
+  transform: translateX(-50%);
+}
+.kb-tw-scale i:first-child { transform: none; }
+.kb-tw-num {
+  text-align: right;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+.kb-tw-axis .kb-tw-num { font-family: inherit; color: var(--kb-ink-3); }
+
+/* Tree guides: one hairline per level of nesting */
+.kb-tw-name {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  align-self: stretch;
+  padding-left: calc(var(--depth) * 16px);
+  background-image: repeating-linear-gradient(90deg, var(--kb-line-strong) 0 1px, transparent 1px 16px);
+  background-size: calc(var(--depth) * 16px) 100%;
+  background-position: 8px 0;
+  background-repeat: no-repeat;
+}
+.kb-tw-fold,
+.kb-tw-fold-gap {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.kb-tw-fold {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+}
+.kb-tw-fold:hover { background: var(--kb-panel-2); color: var(--kb-ink); }
+.kb-tw-fold svg { transform: rotate(90deg); transition: transform var(--kb-med) var(--kb-snap); }
+.kb-tw-fold[aria-expanded="false"] svg { transform: none; }
+.kb-tw-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.kb-tw-pick span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kb-tw-pick svg { flex: none; color: var(--kb-ink-3); }
+.kb-tw-pick[data-kind="agent"] { font-weight: var(--kb-w-strong); }
+.kb-tw-code { font-family: var(--kb-font-code); font-size: var(--kb-text-xs); }
+
+/* Track: no channel, just the time grid; the right gutter holds duration labels */
+.kb-tw-track {
+  position: relative;
+  height: 100%;
+}
+.kb-tw-tick {
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  border-left: 1px dotted var(--kb-line-strong);
+}
+.kb-tw-now {
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  z-index: 1;
+  border-left: 1px solid var(--kb-agent);
+}
+.kb-tw-bar {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--bar);
+  transition: width 100ms linear;
+}
+.kb-tw-bar[data-kind="llm"] { --bar: var(--kb-series-1); }
+.kb-tw-bar[data-kind="tool"] { --bar: var(--kb-series-3); }
+/* A sub-agent is a bracket spanning its calls */
+/* Sub-agents are containers: an open bracket around their calls, never a filled bar */
+.kb-tw-bar[data-kind="agent"] {
+  --bar: transparent;
+  top: 9px;
+  bottom: 9px;
+  border: 1.5px solid var(--kb-ink-2);
+  border-radius: 0;
+  box-shadow: -1px 0 0 0 var(--kb-ink-3), 1px 0 0 0 var(--kb-ink-3);
+}
+.kb-tw-bar[data-running] { --bar: var(--kb-agent); }
+.kb-tw-bar[data-kind="agent"][data-running] { --bar: transparent; border-color: var(--kb-agent); border-right-style: dashed; }
+/* A folded branch keeps a seam where each child started */
+.kb-tw-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--kb-panel);
+}
+.kb-tw-row:has(.kb-tw-fold[aria-expanded="false"]) .kb-tw-bar[data-kind="agent"] { top: 9px; bottom: 9px; border-radius: 2px; box-shadow: none; }
+@keyframes kb-tw-edge {
+  50% { opacity: 0.2; }
+}
+
+/* Duration labels knock out the grid behind them */
+.kb-tw-dur {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 3px;
+  background: var(--kb-panel);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.kb-tw-live { color: var(--kb-agent); }
+.kb-tw-now-chip {
+  position: absolute;
+  top: 4px;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  border-radius: 2px;
+  background: var(--kb-agent);
+  color: var(--kb-agent-ink);
+  font-weight: var(--kb-w-medium);
+  font-size: var(--kb-text-xs);
+}
+.kb-tw-lead dd { font-size: var(--kb-text-lg); }
+.kb-tw-hidden {
+  flex: none;
+  margin-left: 4px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  font-weight: var(--kb-w-regular);
+}
+.kb-tw-title code { font-family: var(--kb-font-code); font-size: var(--kb-text-xs); color: var(--kb-ink); margin-right: 6px; }
+
+.kb-tw-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px var(--kb-s4);
+  min-height: 44px;
+  padding: var(--kb-s3) var(--kb-s5);
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-tw-detail[data-empty] { display: none; }
+.kb-tw-detail strong { color: var(--kb-ink); font-weight: var(--kb-w-strong); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-tw-row { animation: none; }
+  .kb-tw-bar, .kb-tw-fold svg { transition: none; }
+}

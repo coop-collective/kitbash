@@ -1,0 +1,44 @@
+{
+  "_doc": "Cases for test-e2e/install.test.mjs, read from this block directory (never installed into projects). The defaults case always runs; \"cases\" add param sets ({name, params, dependencyParams?}); registryDependencies are installed first by `kit install` itself (from blocks/, with dependencyParams passed as --param <dependency>.<name>=<value>). \"conflicts\" entries write \"setup\" files into a fresh project, expect the dry run to exit 1 with the listed conflicts, then install with \"resolve\" ({params?, on_conflict?}) and expect verify to pass. \"chains\" install several blocks into one project.",
+  "cases": [
+    {
+      "name": "prefixed",
+      "params": {
+        "tokenPrefix": "mc_",
+        "tablePrefix": "app_"
+      }
+    },
+    {
+      "name": "short-codes",
+      "params": {
+        "codeTtlMin": 2,
+        "routePrefix": "/signin"
+      },
+      "dependencyParams": {
+        "cf-email-sender": {
+          "mailer": "console"
+        }
+      }
+    }
+  ],
+  "conflicts": [
+    {
+      "name": "members-table",
+      "setup": {
+        "migrations/0002_members.sql": "CREATE TABLE members (id TEXT PRIMARY KEY, email TEXT NOT NULL);\n"
+      },
+      "expect": [
+        {
+          "kind": "table",
+          "name": "members",
+          "resolve_with_param": "tablePrefix"
+        }
+      ],
+      "resolve": {
+        "params": {
+          "tablePrefix": "auth_"
+        }
+      }
+    }
+  ]
+}

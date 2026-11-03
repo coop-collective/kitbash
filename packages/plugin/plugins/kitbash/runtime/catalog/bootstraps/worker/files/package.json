@@ -1,0 +1,34 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "types": "wrangler types --strict-vars=false",
+    "typecheck": "pnpm types && tsc --noEmit",
+    "test": "vitest run && node scripts/test-node.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "smoke": "node scripts/smoke.mjs",
+    "deploy": "node scripts/secrets.mjs deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "build:staging": "wrangler deploy --dry-run --env staging --outdir dist/staging",
+    "build:production": "wrangler deploy --dry-run --env production --outdir dist/production"
+  },
+  "dependencies": {
+    "hono": "4.13.9"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.23.0",
+    "@types/node": "24.0.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11",
+    "wrangler": "4.151.2"
+  }
+}

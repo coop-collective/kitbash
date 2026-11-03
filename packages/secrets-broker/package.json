@@ -5,10 +5,24 @@
   "license": "MIT",
   "type": "module",
   "description": "Isolated, metadata-only secret generation and access provisioning for Kitbash agents",
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "start": "node src/server.mjs",
     "test": "node --test test/*.test.mjs",
-    "typecheck": "node --check src/server.mjs && node --check src/service.mjs && node --check src/api.mjs && node --check src/config.mjs && node --check src/state.mjs && node --check src/provision.mjs && node --check src/scope.mjs && node --check src/credentials.mjs && node --check src/issue-client.mjs"
+    "typecheck": "node --check src/server.mjs && node --check src/mcp.mjs && node --check src/github-app.mjs && node --check src/secrets.mjs && node --check src/service.mjs && node --check src/api.mjs && node --check src/config.mjs && node --check src/state.mjs && node --check src/provision.mjs && node --check src/scope.mjs && node --check src/credentials.mjs && node --check src/issue-client.mjs && node --check src/http.mjs && node --check src/worker.mjs && node --check scripts/setup.mjs && node --check scripts/deployment.mjs && node --check scripts/deploy.mjs && node --check scripts/github-auth.mjs && node --check scripts/cloudflare-token.mjs && node --check scripts/broker-ci.mjs && node --check scripts/github-ci.mjs && node --check src/cloudflare-store.mjs && node --check src/registration.mjs && node --check src/github-import.mjs && node --check src/sealed-delivery.mjs && node --check scripts/controller-receiver.mjs && node --check scripts/enroll-controller.mjs && node --check src/uploads.mjs && node --check src/upload-helper.mjs",
+    "test:worker": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@modelcontextprotocol/client": "2.0.0",
+    "jsonc-parser": "3.3.1",
+    "vitest": "4.1.11",
+    "wrangler": "4.137.0"
   }
 }

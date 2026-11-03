@@ -1,0 +1,1 @@
+{"cases":[{"name":"custom-cache-policy","params":{"cacheNamespace":"docs","maxTtlSeconds":20}}]}

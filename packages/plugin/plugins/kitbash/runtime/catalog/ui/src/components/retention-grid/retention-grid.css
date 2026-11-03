@@ -1,0 +1,138 @@
+/* Retention grid: a real table, shaded like a test card. One series hue; the crosshair is gunmetal */
+.kb-rg {
+  --rg-hue: var(--kb-series-4);
+  width: 860px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-rg-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--kb-s3) var(--kb-s4);
+  padding: var(--kb-s4) var(--kb-s5) var(--kb-s3);
+}
+.kb-rg-title { flex: 1; min-width: 200px; }
+.kb-rg-title h3 { margin: 0; font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-rg-title p { margin: 2px 0 0; font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+
+.kb-rg-scroll {
+  overflow-x: auto;
+  padding: 0 var(--kb-s5) var(--kb-s3);
+}
+
+.kb-rg-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  margin: 0 -2px;
+  font-size: var(--kb-text-sm);
+}
+.kb-rg-table th {
+  font-weight: var(--kb-w-medium);
+  white-space: nowrap;
+  transition: color var(--kb-fast), background var(--kb-fast);
+}
+.kb-rg-table thead th {
+  height: 26px;
+  padding: 0 0 4px;
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  vertical-align: bottom;
+}
+.kb-rg-week { min-width: 52px; text-align: center; }
+.kb-rg-cohort { width: 72px; padding-right: var(--kb-s2); text-align: left; }
+tbody .kb-rg-cohort,
+tfoot .kb-rg-cohort { color: var(--kb-ink); }
+.kb-rg-size {
+  width: 64px;
+  padding-right: var(--kb-s3);
+  text-align: right;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-2);
+}
+thead .kb-rg-size { font-family: var(--kb-font); }
+/* Crosshair: the lit cell's row and column headers turn gunmetal */
+.kb-rg-table th[data-lit] { color: var(--kb-select-text); font-weight: var(--kb-w-strong); }
+.kb-rg-table thead th[data-lit] { box-shadow: inset 0 -2px 0 var(--kb-select); }
+tbody .kb-rg-cohort { padding-left: 8px; }
+.kb-rg-table tbody th[data-lit] { box-shadow: inset 2px 0 0 var(--kb-select); }
+
+.kb-rg-cell,
+.kb-rg-avg {
+  height: 30px;
+  padding: 0 4px;
+  border-radius: 2px;
+  text-align: center;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  white-space: nowrap;
+}
+.kb-rg-cell {
+  background: color-mix(in oklab, var(--rg-hue) var(--v, 0%), var(--kb-panel));
+  color: var(--kb-ink);
+  cursor: default;
+  outline-offset: 1px;
+}
+.kb-rg-cell[data-strong] { color: var(--kb-panel); font-weight: var(--kb-w-medium); }
+[data-theme="dark"] .kb-rg-cell[data-strong] { color: var(--kb-styrene); }
+.kb-rg-cell[data-base] { background: var(--kb-panel-2); color: var(--kb-ink-2); }
+.kb-rg-cell[data-empty] { background: transparent; }
+.kb-rg-cell[data-lit] { box-shadow: 0 0 0 2px var(--kb-select); position: relative; z-index: 1; }
+.kb-rg-cell:focus-visible { outline: 2px solid var(--kb-select); box-shadow: none; }
+
+tfoot .kb-rg-cohort,
+tfoot .kb-rg-size,
+.kb-rg-avg { border-top: 1px solid var(--kb-line-strong); }
+tfoot th, tfoot td { padding-top: 4px; }
+.kb-rg-avg { color: var(--kb-ink); font-weight: var(--kb-w-medium); }
+.kb-rg-avg[data-lit] { color: var(--kb-select-text); font-weight: var(--kb-w-strong); }
+
+.kb-rg-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s4);
+  min-height: 44px;
+  padding: var(--kb-s2) var(--kb-s5);
+  border-top: 1px solid var(--kb-line);
+}
+.kb-rg-read { margin: 0; font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+.kb-rg-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  font-family: var(--kb-font-code);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-rg-legend i {
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--rg-hue) var(--v), var(--kb-panel));
+}
+.kb-rg-legend i:first-of-type { margin-left: 4px; }
+.kb-rg-legend i:last-of-type { margin-right: 4px; }
+
+/* Skeleton: the same staircase the cohorts make */
+.kb-rg-skel { display: grid; gap: 4px; min-width: 620px; padding-top: 30px; }
+.kb-rg-skel-row {
+  display: grid;
+  grid-template-columns: 64px 64px repeat(var(--weeks), minmax(44px, 1fr));
+  align-items: center;
+  gap: 2px;
+}
+.kb-rg-skel-row:last-child { margin-top: 6px; }
+
+.kb-rg-state { margin: 0 auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-rg-table th { transition: none; }
+}

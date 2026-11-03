@@ -20,6 +20,9 @@
     "typecheck": "pnpm -r --workspace-concurrency=2 --if-present run typecheck",
     "lint": "pnpm -r --workspace-concurrency=2 --if-present run lint",
     "validate": "pnpm -r --workspace-concurrency=2 --if-present run validate",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm validate"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm validate",
+    "setup": "node packages/secrets-broker/scripts/setup.mjs",
+    "deploy:broker": "node packages/secrets-broker/scripts/deploy.mjs",
+    "setup:controller": "node packages/secrets-broker/scripts/enroll-controller.mjs"
   }
 }

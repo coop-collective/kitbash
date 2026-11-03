@@ -1,0 +1,18 @@
+# Replace ubuntu, example-runners and /opt/kitbash with the enrolled identity and paths.
+[Unit]
+Description=Kitbash encrypted credential receiver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+UMask=0077
+ExecStart=/usr/local/bin/node /opt/kitbash/runtime/scripts/controller-receiver.mjs receive /opt/kitbash/example-runners
+TimeoutStartSec=180
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/kitbash/example-runners

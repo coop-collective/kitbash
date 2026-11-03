@@ -1,0 +1,182 @@
+/* Host: fixed to the viewport corner, or absolute inside a frame when `contained` */
+.kb-toaster {
+  position: fixed;
+  z-index: 1000;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.kb-toaster[data-contained] { position: absolute; width: min(380px, calc(100% - 32px)); }
+.kb-toaster[data-position^="bottom"] { bottom: var(--kb-s4); }
+.kb-toaster[data-position^="top"] { top: var(--kb-s4); }
+.kb-toaster[data-position$="right"] { right: var(--kb-s4); }
+.kb-toaster[data-position$="left"] { left: var(--kb-s4); }
+.kb-toaster[data-position$="center"] { left: 50%; translate: -50% 0; }
+
+.kb-toaster-list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: auto;
+  transition: height var(--kb-med) var(--kb-glide);
+}
+
+/* Each toast is absolutely placed; the host writes its stack offset and scale */
+.kb-toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transition: transform var(--kb-med) var(--kb-glide), opacity var(--kb-med) var(--kb-glide), height var(--kb-med) var(--kb-glide);
+}
+.kb-toaster[data-position^="bottom"] .kb-toast { bottom: 0; transform-origin: 50% 0; }
+.kb-toaster[data-position^="top"] .kb-toast { top: 0; transform-origin: 50% 100%; }
+.kb-toast[data-behind] { overflow: hidden; border-radius: var(--kb-r-card); }
+.kb-toast[data-behind] .kb-toast-body > * { opacity: 0; }
+
+.kb-toast-body {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kb-s3);
+  padding: var(--kb-s3) var(--kb-s3) var(--kb-s3) var(--kb-s3);
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-raised), var(--kb-cast-lg);
+  touch-action: pan-y;
+  cursor: grab;
+  transition: transform var(--kb-med) var(--kb-snap), box-shadow var(--kb-fast);
+  animation: kb-toast-in var(--kb-slow) var(--kb-snap);
+}
+.kb-toast-body > * { transition: opacity var(--kb-fast); }
+.kb-toast-body:focus { outline: none; }
+.kb-toast-body[data-dragging] {
+  cursor: grabbing;
+  user-select: none;
+  transition: box-shadow var(--kb-fast);
+}
+/* Past the detent the part has popped out of its socket: it lifts and casts deeper */
+.kb-toast-body[data-unseated] {
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), var(--kb-cast-lg), 0 18px 30px -12px rgb(0 0 0 / 0.3);
+}
+.kb-toaster[data-position^="top"] .kb-toast-body { animation-name: kb-toast-in-top; }
+@keyframes kb-toast-in {
+  from { opacity: 0; transform: translateY(110%) scale(0.96); }
+}
+@keyframes kb-toast-in-top {
+  from { opacity: 0; transform: translateY(-110%) scale(0.96); }
+}
+.kb-toast[data-leaving] { pointer-events: none; }
+.kb-toast[data-leaving] .kb-toast-body {
+  animation: kb-toast-out var(--kb-med) var(--kb-glide) forwards;
+}
+@keyframes kb-toast-out {
+  to { opacity: 0; transform: translateX(var(--exit-x, 0)) scale(0.96); }
+}
+
+/* Icon well: a recessed socket; the glyph snaps in when a promise settles */
+.kb-toast-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-2);
+  box-shadow: var(--kb-recessed);
+  animation: kb-toast-glyph var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-toast-glyph {
+  from { transform: scale(0.5); opacity: 0; }
+}
+.kb-toast-icon[data-kind="loading"] { color: var(--kb-agent); animation: none; }
+.kb-toast-icon[data-kind="default"] { background: var(--kb-select-soft); color: var(--kb-select-text); }
+.kb-toast-icon[data-kind="success"] { background: var(--kb-ok-soft); color: var(--kb-ok); }
+.kb-toast-icon[data-kind="error"] { background: var(--kb-danger-soft); color: var(--kb-danger); }
+.kb-toast-icon[data-kind="info"] { background: var(--kb-info-soft); color: var(--kb-info); }
+.kb-toast-icon[data-kind="needs-you"] { background: var(--kb-decal); color: color-mix(in oklab, var(--kb-decal) 22%, black); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(0 0 0 / 0.15); }
+.kb-toast-icon[data-kind="success"] path {
+  stroke-dasharray: 24;
+  animation: kb-toast-tick var(--kb-slow) var(--kb-glide) both;
+}
+@keyframes kb-toast-tick {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* A person-needed toast carries the decal strip along its leading edge */
+.kb-toast[data-kind="needs-you"] .kb-toast-body {
+  border-color: color-mix(in oklab, var(--kb-decal) 55%, var(--kb-line));
+}
+
+.kb-toast-text {
+  flex: 1;
+  min-width: 0;
+  padding-top: 4px;
+}
+.kb-toast-title {
+  margin: 0;
+  font-weight: var(--kb-w-medium);
+  overflow-wrap: anywhere;
+}
+.kb-toast-desc {
+  margin: 2px 0 0;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+  overflow-wrap: anywhere;
+}
+
+.kb-toast-action {
+  flex: none;
+  align-self: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font: inherit;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo);
+  transition: transform var(--kb-fast) var(--kb-glide), box-shadow var(--kb-fast);
+}
+.kb-toast[data-kind="needs-you"] .kb-toast-action {
+  background: var(--kb-accent);
+  border-color: color-mix(in oklab, var(--kb-accent) 70%, black);
+  color: color-mix(in oklab, var(--kb-accent) 22%, black);
+  --kb-bevel-hi: rgb(255 255 255 / 0.45);
+}
+.kb-toast-action:active {
+  transform: translateY(1px);
+  box-shadow: var(--kb-pressed);
+}
+
+.kb-toast-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 2px -2px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--kb-r-part);
+  background: transparent;
+  color: var(--kb-ink-3);
+  cursor: pointer;
+}
+.kb-toast-close:hover { background: var(--kb-panel-2); color: var(--kb-ink); }
+.kb-toast-close:active { box-shadow: var(--kb-pressed); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-toast-body,
+  .kb-toast-icon,
+  .kb-toast-icon path,
+  .kb-toast[data-leaving] .kb-toast-body {
+    animation: none;
+  }
+  .kb-toast[data-leaving] { opacity: 0; }
+}

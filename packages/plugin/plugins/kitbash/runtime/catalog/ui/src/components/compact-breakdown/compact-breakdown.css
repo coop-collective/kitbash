@@ -1,0 +1,154 @@
+.kb-cbd {
+  width: min(360px, 100%);
+  padding: var(--kb-s4) var(--kb-s4) var(--kb-s3);
+  display: grid;
+  gap: var(--kb-s3);
+}
+
+.kb-cbd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s3);
+}
+.kb-cbd-title {
+  margin: 0;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+}
+
+/* Period switch: a recessed channel with a molded thumb that snaps between slots */
+.kb-cbd-tabs {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 2px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-cbd-tab {
+  position: relative;
+  z-index: 1;
+  height: 24px;
+  padding: 0 9px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-medium);
+  color: var(--kb-ink-3);
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: var(--kb-r-part);
+  transition: color var(--kb-fast);
+}
+.kb-cbd-tab[aria-checked="true"] { color: var(--kb-ink); }
+.kb-cbd-thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) / var(--n));
+  transform: translateX(calc(var(--i) * 100%));
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo), 0 1px 2px rgb(0 0 0 / 0.12);
+  transition: transform var(--kb-med) var(--kb-snap);
+}
+
+.kb-cbd-total {
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-strong);
+  letter-spacing: -0.01em;
+}
+
+/* The runner: parts sit in a recessed channel, separated by seams */
+.kb-cbd-runner {
+  position: relative;
+  height: 14px;
+  border-radius: var(--kb-r-pill);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  overflow: hidden;
+}
+.kb-cbd-piece {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: var(--kb-r-part);
+  border-left: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -1px 0 rgb(0 0 0 / 0.18);
+  transition: left var(--kb-slow) var(--kb-glide), width var(--kb-slow) var(--kb-glide), opacity var(--kb-fast);
+}
+.kb-cbd-piece:first-child { border-left-width: 0; }
+.kb-cbd-piece[data-dim] { opacity: 0.3; }
+
+.kb-cbd-rows {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kb-cbd-row {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 36px;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) 16px auto 34px;
+  align-items: center;
+  gap: var(--kb-s2);
+  padding: 0 var(--kb-s2);
+  margin: 0 calc(var(--kb-s2) * -1);
+  border-top: 1px solid var(--kb-line);
+  transition: transform var(--kb-slow) var(--kb-glide), opacity var(--kb-fast), background var(--kb-fast);
+}
+.kb-cbd-row[data-dim] { opacity: 0.45; }
+.kb-cbd-row[data-hot] { background: var(--kb-panel-2); border-top-color: transparent; }
+.kb-cbd-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.kb-cbd-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--kb-text-sm);
+}
+.kb-cbd-num {
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+  justify-self: end;
+}
+.kb-cbd-share {
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+  text-align: right;
+}
+/* A small chevron says a row just traded places, then fades */
+.kb-cbd-moved {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: var(--kb-ok);
+  background: var(--kb-ok-soft);
+  animation: kb-cbd-moved 2.4s var(--kb-snap) forwards;
+}
+.kb-cbd-moved[data-dir="down"] { color: var(--kb-ink-3); background: var(--kb-panel-2); }
+@keyframes kb-cbd-moved {
+  0% { opacity: 0; transform: scale(0.4); }
+  12% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-cbd-moved { animation: none; }
+}

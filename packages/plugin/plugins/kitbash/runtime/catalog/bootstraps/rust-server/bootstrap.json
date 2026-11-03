@@ -1,0 +1,33 @@
+{
+  "id": "rust-server",
+  "title": "Local Rust server",
+  "description": "Axum service with host/port settings, graceful shutdown, and root pnpm Cargo commands.",
+  "defaultHost": "127.0.0.1",
+  "defaultPort": 8080,
+  "profile": {
+    "stack": {
+      "runtime": "native",
+      "framework": "axum",
+      "ui": "none",
+      "lang": "rust",
+      "test": "cargo"
+    },
+    "paths": {
+      "app": "src",
+      "routes": "src/routes",
+      "lib": "src/lib",
+      "ui": "src/components",
+      "migrations": "migrations",
+      "tests": "test"
+    },
+    "migrations": {
+      "pattern": "NNNN_name.sql",
+      "width": 4
+    },
+    "package_manager": "pnpm",
+    "config": {
+      "env_example": ".env.example"
+    }
+  },
+  "compatibleBlocks": []
+}

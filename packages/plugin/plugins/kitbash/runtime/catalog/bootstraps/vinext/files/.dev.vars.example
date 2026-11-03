@@ -1,0 +1,2 @@
+# Runtime secrets are created and synchronized through scripts/secrets.mjs.
+# Commit names and documentation only; do not commit secret values.

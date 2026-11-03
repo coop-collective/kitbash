@@ -1,0 +1,4 @@
+{
+  "durable_objects": { "bindings": [{ "name": "{{kit.bindingName}}", "class_name": "{{kit.className}}" }] },
+  "migrations": [{ "tag": "{{kit.migrationTag}}", "new_sqlite_classes": ["{{kit.className}}"] }]
+}

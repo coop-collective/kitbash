@@ -1,0 +1,152 @@
+/* Profile header: one flat panel, a seam above the record, a Follow key that latches */
+.kb-ph {
+  width: 860px;
+  max-width: 100%;
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-frame);
+  box-shadow: var(--kb-raised);
+}
+
+.kb-ph-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kb-s5);
+  padding: var(--kb-s6) var(--kb-s6) 0;
+}
+.kb-ph-id { flex: 1; min-width: 0; }
+.kb-ph-name-row { display: flex; align-items: center; gap: var(--kb-s3); flex-wrap: wrap; }
+.kb-ph-name-row h2 {
+  margin: 0;
+  font-size: var(--kb-text-2xl);
+  font-weight: var(--kb-w-display);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.kb-ph-handle { margin: 2px 0 0; font-size: var(--kb-text-md); color: var(--kb-ink-3); }
+.kb-ph-handle code { font-family: var(--kb-font-code); font-size: var(--kb-text-sm); color: var(--kb-ink-2); }
+.kb-ph-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px var(--kb-s5);
+  margin: var(--kb-s3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+.kb-ph-meta li { display: inline-flex; align-items: center; gap: 6px; }
+.kb-ph-meta svg { color: var(--kb-ink-3); flex: none; }
+.kb-ph-meta code { font-family: var(--kb-font-code); font-size: var(--kb-text-sm); color: var(--kb-ink); }
+
+.kb-ph-actions { display: flex; gap: var(--kb-s2); flex: none; }
+/* Following: the key stays pressed in, gunmetal, like a latching switch */
+.kb-ph-follow[data-latched] {
+  --btn-bg: var(--kb-select-soft);
+  --btn-edge: var(--kb-select);
+  box-shadow: var(--kb-pressed);
+  transform: translateY(1px);
+}
+.kb-ph-follow .kb-btn-face svg { transition: transform var(--kb-med) var(--kb-snap); }
+.kb-ph-follow[data-latched] .kb-btn-face svg { animation: kb-ph-snap var(--kb-med) var(--kb-snap); }
+@keyframes kb-ph-snap {
+  from { transform: scale(0.4) rotate(-20deg); }
+}
+
+.kb-ph-bio {
+  max-width: 64ch;
+  margin: 0;
+  padding: var(--kb-s4) var(--kb-s6) var(--kb-s5) calc(var(--kb-s6) + 80px + var(--kb-s5));
+  font-size: var(--kb-text-md);
+  color: var(--kb-ink-2);
+  box-sizing: content-box;
+}
+
+.kb-ph-foot {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--kb-line);
+}
+.kb-ph-stats {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+}
+.kb-ph-stat {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 140px;
+  padding: var(--kb-s3) var(--kb-s6);
+  border-right: 1px solid var(--kb-line);
+}
+.kb-ph-stat:last-child { border-right: 0; }
+.kb-ph-stat:first-child { padding-left: calc(var(--kb-s6) + 80px + var(--kb-s5)); min-width: 0; }
+.kb-ph-stat dt { font-size: var(--kb-text-xs); color: var(--kb-ink-2); }
+.kb-ph-stat dd { margin: 0; font-size: var(--kb-text-lg); font-weight: var(--kb-w-strong); }
+.kb-ph-stat dd code { font-family: var(--kb-font-code); font-size: var(--kb-text-lg); font-weight: var(--kb-w-medium); }
+.kb-ph-fresh { margin-left: auto; align-self: center; padding-right: var(--kb-s5); }
+
+/* Agent: a square molded part with the Kitbash mark, and a permissions summary in three trays */
+.kb-ph-agent-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 80px;
+  height: 80px;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel-2);
+  color: var(--kb-ink-2);
+  box-shadow: var(--kb-raised);
+}
+.kb-ph-perms {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 var(--kb-s6) var(--kb-s5) calc(var(--kb-s6) + 80px + var(--kb-s5));
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-control);
+}
+.kb-ph-perm { padding: var(--kb-s3) var(--kb-s4); }
+.kb-ph-perm + .kb-ph-perm { border-left: 1px solid var(--kb-line); }
+.kb-ph-perm h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  font-size: var(--kb-text-sm);
+  font-weight: var(--kb-w-strong);
+}
+.kb-ph-ask {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--kb-decal);
+  transform: rotate(45deg);
+}
+.kb-ph-perm ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-2);
+}
+
+.kb-ph-state { display: grid; place-items: center; padding: var(--kb-s4); }
+
+@media (max-width: 720px) {
+  .kb-ph-main { flex-wrap: wrap; padding: var(--kb-s4) var(--kb-s4) 0; }
+  .kb-ph-bio,
+  .kb-ph-perms { padding-left: var(--kb-s4); margin-left: var(--kb-s4); }
+  .kb-ph-bio { margin-left: 0; }
+  .kb-ph-perms { grid-template-columns: minmax(0, 1fr); }
+  .kb-ph-stat:last-child { border-right: 0; }
+.kb-ph-stat:first-child { padding-left: var(--kb-s4); }
+  .kb-ph-stats { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-ph-follow[data-latched] .kb-btn-face svg { animation: none; }
+}

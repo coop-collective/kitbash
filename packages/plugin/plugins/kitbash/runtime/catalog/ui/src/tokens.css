@@ -1,0 +1,254 @@
+/*
+ * Styrene: the Kitbash UI theme.
+ *
+ * Surfaces read like injection-molded kit parts: a light catch on the top edge, a shade on the bottom,
+ * controls that press in, and confirmations that snap into place with a small overshoot.
+ * Every component reads these variables; override them on :root or any ancestor to rebrand.
+ */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Base palette */
+  --kb-styrene: #d8dde1;        /* page / well */
+  --kb-panel: #f6f7f8;          /* raised part */
+  --kb-panel-2: #eceef0;        /* recessed part inside a panel */
+  --kb-ink: #1d2830;            /* gunmetal */
+  --kb-ink-2: #4d5b66;          /* secondary text */
+  --kb-ink-3: #66727c;          /* tertiary text, placeholders */
+  --kb-line: #cdd3d7;           /* hairlines and part seams */
+  --kb-line-strong: #b3bbc1;
+
+  /* Signals: each color has exactly one meaning */
+  --kb-accent: #ff5714;         /* safety orange: only the action you commit (approve, send, run, apply) */
+  --kb-accent-ink: #140b05;     /* text on orange: dark, like the label on a hardware key */
+  --kb-accent-text: #aa3609;    /* orange as text on panels */
+  --kb-accent-soft: #fde3d8;
+  /* Selection, checked, current and focus: gunmetal, so orange stays reserved for the action you commit */
+  --kb-select: var(--kb-ink);
+  --kb-select-ink: var(--kb-panel);
+  --kb-select-text: var(--kb-ink);
+  --kb-select-soft: color-mix(in oklab, var(--kb-ink) 8%, var(--kb-panel));
+  --kb-agent: #2f5bd8;          /* paint-pot cobalt: an agent is working */
+  --kb-agent-ink: #ffffff;
+  --kb-agent-soft: #dfe7fb;
+  --kb-decal: #f2b90c;          /* decal yellow: waiting on a person. Never a button fill; one signal per item */
+  --kb-decal-soft: #fdf1c7;
+  --kb-decal-ink: #5a4300;
+  --kb-ok: #2e7d32;             /* cured green */
+  --kb-ok-soft: #dcefdc;
+  --kb-danger: #c8102e;         /* crimson: failed, destructive */
+  --kb-danger-ink: #ffffff;
+  --kb-danger-soft: #fadbe0;
+  --kb-info: #0e7c7b;           /* primer teal: neutral notices */
+  --kb-info-soft: #d5efee;
+
+  /* Chart series: model-kit paints, kept clear of the signal colors so data never reads as state */
+  --kb-series-1: #3d4f5c;       /* gunmetal */
+  --kb-series-2: #6f7d34;       /* olive drab */
+  --kb-series-3: #2f8a7a;       /* zinc green */
+  --kb-series-4: #3f74ab;       /* steel blue */
+  --kb-series-5: #94574a;       /* oxide brick */
+  --kb-series-6: #7a6b9c;       /* lavender gray */
+
+  /* Tactility is rare on purpose. Surfaces are flat panels with hairline seams (--kb-raised keeps only a faint top
+     catch, no shadow). The molded keycap (--kb-key) is reserved for things you physically press or turn: buttons,
+     keys, knobs, switches. Only floating layers (popovers, toasts, dragged parts) cast a shadow (--kb-cast-lg). */
+  --kb-bevel-hi: rgb(255 255 255 / 0.9);
+  --kb-bevel-lo: rgb(29 40 48 / 0.10);
+  --kb-cast: 0 0 0 transparent;
+  --kb-cast-lg: 0 1px 0 rgb(29 40 48 / 0.06), 0 22px 40px -18px rgb(29 40 48 / 0.38);
+  --kb-raised: inset 0 1px 0 var(--kb-bevel-hi);
+  --kb-key: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo), 0 1px 1px rgb(0 0 0 / 0.06);
+  --kb-pressed: inset 0 2px 3px rgb(29 40 48 / 0.16), inset 0 -1px 0 var(--kb-bevel-hi);
+  --kb-recessed: inset 0 1px 2px rgb(29 40 48 / 0.10), inset 0 -1px 0 var(--kb-bevel-hi);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --kb-styrene: #141a1f;
+  --kb-panel: #1e262d;
+  --kb-panel-2: #182026;
+  --kb-ink: #e5eaed;
+  --kb-ink-2: #a5b1b9;
+  --kb-ink-3: #8593a0;
+  --kb-line: #2c363e;
+  --kb-line-strong: #3d4952;
+
+  --kb-accent: #ff6624;
+  --kb-accent-ink: #1a0d04;
+  --kb-accent-text: #ff9970;
+  --kb-accent-soft: #472315;
+  --kb-agent: #86a5ff;
+  --kb-agent-ink: #0b1430;
+  --kb-agent-soft: #1d2a4f;
+  --kb-decal: #f5c63c;
+  --kb-decal-soft: #302b1c;
+  --kb-decal-ink: #fbe4a0;
+  --kb-ok: #6cc76f;
+  --kb-ok-soft: #1a3a1e;
+  --kb-danger: #ff6680;
+  --kb-danger-ink: #2b0a10;
+  --kb-danger-soft: #45202a;
+  --kb-info: #4fc4c0;
+  --kb-info-soft: #123a3a;
+
+  --kb-series-1: #a8b6c1;
+  --kb-series-2: #b4c26c;
+  --kb-series-3: #5cc9b4;
+  --kb-series-4: #5f9fe0;
+  --kb-series-5: #d79686;
+  --kb-series-6: #b7a9d9;
+
+  --kb-bevel-hi: rgb(255 255 255 / 0.07);
+  --kb-bevel-lo: rgb(0 0 0 / 0.35);
+  --kb-cast: 0 0 0 transparent;
+  --kb-cast-lg: 0 1px 0 rgb(0 0 0 / 0.3), 0 24px 44px -16px rgb(0 0 0 / 0.75);
+  --kb-pressed: inset 0 2px 4px rgb(0 0 0 / 0.45), inset 0 -1px 0 var(--kb-bevel-hi);
+  --kb-recessed: inset 0 1px 3px rgb(0 0 0 / 0.4), inset 0 -1px 0 var(--kb-bevel-hi);
+}
+
+:root {
+  /* Type: one family with a stamped, engineered feel; JetBrains Mono only for code and machine values (ids, durations, tokens, costs) */
+  --kb-font: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --kb-font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --kb-text-xs: 0.75rem;   /* 12 */
+  --kb-text-sm: 0.8125rem; /* 13 */
+  --kb-text-md: 0.875rem;  /* 14 */
+  --kb-text-lg: 1rem;      /* 16 */
+  --kb-text-xl: 1.25rem;   /* 20 */
+  --kb-text-2xl: 1.75rem;  /* 28 */
+
+  /* Radius follows hierarchy and stays tight, like tooled plastic: frame > card > control > part.
+     Pills are only for status tags and switches. */
+  --kb-r-frame: 9px;
+  --kb-r-card: 7px;
+  --kb-r-control: 5px;
+  --kb-r-part: 3px;
+  --kb-r-pill: 999px;
+
+  /* Weights: four, no in-betweens */
+  --kb-w-regular: 400;
+  --kb-w-medium: 500;
+  --kb-w-strong: 600;
+  --kb-w-display: 700;
+
+  /* Molded ribbing on anything you grab: drag handles, knobs, sliders */
+  --kb-ribbing: repeating-linear-gradient(0deg, var(--kb-line-strong) 0 1px, var(--kb-bevel-hi) 1px 2px, transparent 2px 4px);
+
+  /* Space on a 4px grid */
+  --kb-s1: 4px;
+  --kb-s2: 8px;
+  --kb-s3: 12px;
+  --kb-s4: 16px;
+  --kb-s5: 20px;
+  --kb-s6: 24px;
+  --kb-s8: 32px;
+
+  /* Motion: "snap" overshoots like a part clicking into its socket; "glide" settles */
+  --kb-snap: cubic-bezier(0.3, 1.45, 0.5, 1);
+  --kb-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --kb-fast: 140ms;
+  --kb-med: 260ms;
+  --kb-slow: 480ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kb-fast: 0ms;
+    --kb-med: 0ms;
+    --kb-slow: 0ms;
+  }
+}
+
+/* Root scope every component sits in */
+.kb-root {
+  font-family: var(--kb-font);
+  font-size: var(--kb-text-md);
+  line-height: 1.45;
+  color: var(--kb-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* No tabular figures: Schibsted's tabular set widens commas and periods ("38 ,400"). Ticking values use the code
+   face, and NumberRoll gives each digit its own fixed slot. */
+
+.kb-root *,
+.kb-root *::before,
+.kb-root *::after {
+  box-sizing: border-box;
+}
+
+/* Storybook canvas */
+.kb-stage {
+  min-height: 100%;
+  padding: var(--kb-s8);
+  background: var(--kb-styrene);
+}
+
+html:has(.kb-stage),
+html:has(.kb-stage) body {
+  background: var(--kb-styrene);
+}
+
+/* Shared focus treatment */
+.kb-root :focus-visible {
+  outline: 2px solid var(--kb-select);
+  outline-offset: 2px;
+}
+
+/* Screen-reader-only text */
+.kb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The molded panel every card-like component starts from */
+.kb-part {
+  background: var(--kb-panel);
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-card);
+  box-shadow: var(--kb-raised);
+}
+
+/* Ribbed grip: drawn on drag handles instead of a dotted icon */
+.kb-ribs {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--kb-ribbing);
+}
+
+/* Native checks and radios take the selection color */
+.kb-root input[type="checkbox"],
+.kb-root input[type="radio"] {
+  accent-color: var(--kb-select);
+}
+
+/* Native selects: the system arrow is replaced by the library chevron, with room so it never touches the edge.
+   A select that draws its own arrow opts out with data-own-arrow. */
+.kb-root select:not([multiple]):not([data-own-arrow]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  background-image: var(--kb-chevron);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 12px;
+  cursor: pointer;
+}
+:root,
+[data-theme="light"] {
+  --kb-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%234d5b66' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] {
+  --kb-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23a5b1b9' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+}

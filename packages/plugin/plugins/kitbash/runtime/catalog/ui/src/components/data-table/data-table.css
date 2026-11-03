@@ -1,0 +1,208 @@
+.kb-dt {
+  width: min(820px, 100%);
+  overflow: hidden;
+  border-radius: var(--kb-r-frame);
+}
+
+.kb-dt-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s3);
+  padding: var(--kb-s2) var(--kb-s2) var(--kb-s2) var(--kb-s4);
+}
+.kb-dt-cap {
+  font-weight: var(--kb-w-strong);
+}
+.kb-dt-tools {
+  display: flex;
+  gap: 2px;
+}
+
+/* The sheet is recessed into the frame; cells are the grid of the mold */
+.kb-dt-scroll {
+  overflow: auto;
+  max-height: 420px;
+  margin: 0 var(--kb-s2);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  outline-offset: -2px;
+  user-select: none;
+}
+.kb-dt-scroll:focus-visible { outline-offset: 1px; }
+
+.kb-dt-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  min-width: 100%;
+  font-size: var(--kb-text-sm);
+}
+
+.kb-dt-table th,
+.kb-dt-table td {
+  height: 34px;
+  padding: 0;
+  border-right: 1px solid var(--kb-line);
+  border-bottom: 1px solid var(--kb-line);
+  text-align: left;
+  font-weight: var(--kb-w-regular);
+}
+.kb-dt-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--kb-panel);
+  box-shadow: inset 0 -1px 0 var(--kb-line-strong);
+}
+.kb-dt-table thead th[data-hot] { background: color-mix(in oklab, var(--kb-panel) 88%, var(--kb-select)); }
+.kb-dt-corner {
+  left: 0;
+  z-index: 3 !important;
+}
+.kb-dt-rownum {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--kb-panel);
+  color: var(--kb-ink-3);
+  font-size: var(--kb-text-xs);
+  text-align: center !important;
+}
+.kb-dt-rownum[data-hot] {
+  color: var(--kb-select-text);
+  font-weight: var(--kb-w-strong);
+  background: color-mix(in oklab, var(--kb-panel) 88%, var(--kb-select));
+}
+
+.kb-dt-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kb-dt-table th[data-num] .kb-dt-sort { justify-content: flex-end; }
+.kb-dt-sort:hover { color: var(--kb-ink); }
+.kb-dt-sort:focus-visible { outline-offset: -2px !important; }
+.kb-dt-arrow {
+  display: inline-grid;
+  opacity: 0;
+  transition: opacity var(--kb-fast), transform var(--kb-med) var(--kb-snap);
+}
+.kb-dt-sort:hover .kb-dt-arrow { opacity: 0.45; }
+.kb-dt-arrow[data-dir] { opacity: 1 !important; color: var(--kb-select-text); }
+
+.kb-dt-table td {
+  position: relative;
+  background: var(--kb-panel);
+  cursor: cell;
+  white-space: nowrap;
+}
+.kb-dt-text {
+  display: block;
+  padding: 0 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 33px;
+}
+.kb-dt-table td[data-num] { text-align: right; }
+
+/* A cell changed in this session carries a small accent notch in its corner */
+.kb-dt-table td[data-changed]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-style: solid;
+  border-width: 6px 6px 0 0;
+  border-color: var(--kb-select) transparent transparent transparent;
+  opacity: 0.8;
+}
+
+/* Selection sinks into the sheet: recessed, tinted, with a ring only on the range's outer edges */
+.kb-dt-table td[data-sel] {
+  background: color-mix(in oklab, var(--kb-panel-2) 80%, var(--kb-select));
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.08);
+}
+.kb-dt-table td[data-sel]::after {
+  content: "";
+  position: absolute;
+  inset: -1px 0 0 -1px;
+  pointer-events: none;
+  border: 0 solid var(--kb-select);
+}
+.kb-dt-table td[data-edge*="t"]::after { border-top-width: 2px; }
+.kb-dt-table td[data-edge*="b"]::after { border-bottom-width: 2px; }
+.kb-dt-table td[data-edge*="l"]::after { border-left-width: 2px; }
+.kb-dt-table td[data-edge*="r"]::after { border-right-width: 2px; }
+
+/* The active cell stays raised: a key sitting proud of the pressed range */
+.kb-dt-table td[data-active] {
+  background: var(--kb-panel);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -2px 0 var(--kb-bevel-lo), 0 2px 6px -2px rgb(0 0 0 / 0.25);
+  z-index: 1;
+  animation: kb-dt-seat var(--kb-fast) var(--kb-snap);
+}
+@keyframes kb-dt-seat {
+  from { transform: translateY(1px); }
+}
+
+.kb-dt-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 0;
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  font: inherit;
+  text-align: inherit;
+  outline: 2px solid var(--kb-select);
+  outline-offset: -2px;
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.35);
+  user-select: text;
+}
+
+.kb-dt-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--kb-s3);
+  min-height: 36px;
+  padding: 0 var(--kb-s4);
+  font-size: var(--kb-text-xs);
+  color: var(--kb-ink-3);
+}
+.kb-dt-ref { color: var(--kb-ink-2); font-weight: var(--kb-w-medium); }
+.kb-dt-stats {
+  display: flex;
+  gap: var(--kb-s4);
+}
+.kb-dt-stats > span:not(.kb-dt-note) { color: var(--kb-ink-2); }
+.kb-dt-note {
+  color: var(--kb-select-text);
+  animation: kb-dt-note 2.6s var(--kb-glide) forwards;
+}
+@keyframes kb-dt-note {
+  0% { opacity: 0; transform: translateY(3px); }
+  10%, 75% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-dt-table td[data-active],
+  .kb-dt-note { animation: none; }
+}

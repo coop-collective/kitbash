@@ -1,0 +1,11 @@
+# Install alongside a service with the same base name, then enable this timer.
+[Unit]
+Description=Poll Kitbash for encrypted credential delivery
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

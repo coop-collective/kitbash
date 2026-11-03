@@ -1,0 +1,3 @@
+# email-code-auth: HMAC pepper for sign-in codes and bearer tokens, 32+ characters (openssl rand -hex 32).
+# Production: wrangler secret put TOKEN_PEPPER. Rotating it signs everyone out and voids pending codes.
+TOKEN_PEPPER=

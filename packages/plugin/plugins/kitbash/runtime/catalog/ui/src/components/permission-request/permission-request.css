@@ -1,0 +1,222 @@
+.kb-pr {
+  width: 500px;
+  max-width: 100%;
+}
+
+/* The ask: a raised part with a decal edge, because it is waiting on a person */
+.kb-pr-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--kb-line);
+  border-left: 4px solid var(--kb-decal);
+  border-radius: var(--kb-r-card);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  animation: kb-pr-in var(--kb-med) var(--kb-glide);
+}
+.kb-pr-card[hidden] { display: none; }
+@keyframes kb-pr-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+.kb-pr-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+.kb-pr-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+  color: var(--kb-ink-2);
+}
+.kb-pr-head h3 {
+  margin: 0;
+  font-size: var(--kb-text-lg);
+  font-weight: var(--kb-w-strong);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.kb-pr-resource {
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ink-3);
+}
+.kb-pr-reason {
+  margin: 0;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-text-sm);
+}
+.kb-pr-effects {
+  padding: 12px 14px;
+  border-radius: var(--kb-r-part);
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+.kb-pr-label {
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  color: var(--kb-ink-2);
+}
+.kb-pr-effects ol {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--kb-text-sm);
+}
+.kb-pr-effects li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.kb-pr-num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: var(--kb-text-xs);
+  font-weight: var(--kb-w-strong);
+  background: var(--kb-panel);
+  color: var(--kb-ink-2);
+  box-shadow: inset 0 0 0 1px var(--kb-line-strong);
+  transform: translateY(-1px);
+}
+.kb-pr-limit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--kb-line);
+  font-size: var(--kb-text-sm);
+  color: var(--kb-ok);
+}
+.kb-pr-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Three grant lengths cast as one molded strip; each segment presses in on its own */
+.kb-pr-grants {
+  display: inline-flex;
+  border: 1px solid var(--kb-line-strong);
+  border-radius: var(--kb-r-control);
+  overflow: hidden;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.06);
+}
+.kb-pr-grant {
+  height: 36px;
+  padding: 0 13px;
+  border: 0;
+  background: var(--kb-accent);
+  color: var(--kb-accent-ink);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -2px 0 rgb(0 0 0 / 0.22);
+  transition: transform var(--kb-fast) var(--kb-glide), box-shadow var(--kb-fast);
+}
+/* Risk gradient: only the narrowest grant is the orange key; longer grants are plain keys */
+.kb-pr-grant + .kb-pr-grant {
+  border-left: 1px solid var(--kb-line-strong);
+  background: var(--kb-panel);
+  color: var(--kb-ink);
+  box-shadow: var(--kb-key);
+}
+.kb-pr-grant:first-child:hover { background: color-mix(in oklab, var(--kb-accent) 90%, white); }
+.kb-pr-grant + .kb-pr-grant:hover { background: var(--kb-panel-2); }
+.kb-pr-grant:active { box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.3); }
+.kb-pr-grant:focus-visible { outline-offset: -4px; outline-color: var(--kb-accent-ink); }
+
+/* Folded: a single line led by a key tag */
+.kb-pr-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid var(--kb-line);
+  border-radius: var(--kb-r-control);
+  background: var(--kb-panel);
+  box-shadow: var(--kb-raised);
+  font-size: var(--kb-text-sm);
+  animation: kb-pr-fold var(--kb-med) var(--kb-snap);
+}
+.kb-pr-line:focus-visible { outline-offset: 2px; }
+@keyframes kb-pr-fold {
+  from { opacity: 0; transform: scaleY(1.8); transform-origin: top; }
+}
+.kb-pr[data-state="denied"] .kb-pr-line,
+.kb-pr[data-state="revoked"] .kb-pr-line {
+  background: var(--kb-panel-2);
+  box-shadow: var(--kb-recessed);
+}
+
+/* Key tag: a pill-ended tab with a punched hole, like the tag on a key ring */
+.kb-pr-tag {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px 0 8px;
+  border-radius: 17px 7px 7px 17px;
+  background: var(--kb-ok-soft);
+  color: var(--kb-ok);
+  box-shadow: inset 0 1px 0 var(--kb-bevel-hi), inset 0 -1px 0 var(--kb-bevel-lo);
+}
+.kb-pr[data-state="denied"] .kb-pr-tag,
+.kb-pr[data-state="revoked"] .kb-pr-tag {
+  background: var(--kb-panel);
+  color: var(--kb-ink-3);
+  box-shadow: inset 0 0 0 1px var(--kb-line);
+}
+.kb-pr-hole {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kb-styrene);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.3);
+}
+.kb-pr-ring { display: block; }
+.kb-pr-ring circle { fill: none; stroke-width: 2.5; }
+.kb-pr-ring-track { stroke: color-mix(in oklab, currentColor 22%, transparent); }
+.kb-pr-ring-fill {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+.kb-pr-line-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kb-ink-2);
+}
+.kb-pr-line-text strong {
+  color: var(--kb-ink);
+  font-weight: var(--kb-w-strong);
+}
+.kb-pr-left {
+  color: var(--kb-ink-2);
+  white-space: nowrap;
+  font-size: var(--kb-text-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-pr-card,
+  .kb-pr-line { animation: none; }
+  .kb-pr-ring-fill { transition: none; }
+}

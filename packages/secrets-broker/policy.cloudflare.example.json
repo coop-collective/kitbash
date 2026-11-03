@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "projects": {},
+  "principals": [
+    {
+      "id": "grok-bot",
+      "tokenSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "registration": {
+        "accountId": "00000000000000000000000000000000",
+        "storeId": "00000000000000000000000000000000",
+        "secretPrefix": "MCP_GROK_",
+        "targets": [
+          "staging",
+          "production"
+        ]
+      },
+      "grants": []
+    }
+  ]
+}

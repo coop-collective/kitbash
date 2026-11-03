@@ -13,6 +13,8 @@ The catalog ships in this repository. Install its source into your project, adap
 | [3 maintenance skills](#maintenance-and-pstack) | Explicit TypeScript, Rust, and page-delivery reviews after merge or before release |
 | [Agent plugin](#use-the-plugin) | Local MCP tools and skills for discovery, installation, verification, and secret setup |
 
+For installation from GitHub without a local build, see the [quick start](../README.md#install). The checkout workflow below is for development.
+
 ## Get started
 
 Use Node.js 22.18 or later and the repository's pinned pnpm version, currently 12.14.0.
@@ -204,8 +206,6 @@ pnpm test:e2e                  # browser journeys and block installation matrix
 See [workspace commands](../docs/WORKSPACE.md) for browser installation, native toolchains, Docker checks, and focused package commands. On constrained machines, run workspace tests serially with `pnpm -r --workspace-concurrency=1 --if-present run test`.
 
 To contribute a block, follow the [block format](../docs/BLOCK-SPEC.md), include its tests and adaptation checklist, preserve source provenance and license notices, and open a pull request. `/kit:harvest` can prepare a local block draft from existing code. Recipes and maintenance skills can be contributed directly in their respective directories.
-
-Earlier hosted-registry designs and economic experiments remain in [DESIGN](../docs/DESIGN.md), [PLAN](../docs/PLAN.md), and [research](../docs/research/). They are historical context, not the toolkit's product roadmap. The reuse experiments have not established a model-cost saving; see the [lifecycle study](../docs/research/lifecycle-reuse.md) for its evidence and limits.
 
 ## License
 

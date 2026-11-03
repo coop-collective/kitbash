@@ -6,33 +6,33 @@ Kitbash copies source into your app. You own and edit it. MIT licensed, with no 
 
 ## Install
 
-Requires **Git, Node.js 22.18+, and pnpm 12.14.0**. Run this once in a terminal to download and build the local toolkit:
-
-```sh
-git clone https://github.com/coop-collective/kitbash.git "$HOME/kitbash" && pnpm --dir "$HOME/kitbash" install && pnpm --dir "$HOME/kitbash" --filter @kitbash/cli build && pnpm --dir "$HOME/kitbash" --filter @kitbash/plugin build
-```
-
-Then copy the setup for your agent. These commands assume the checkout is at `~/kitbash`.
+Requires **Node.js 22.18+** and your agent CLI. The GitHub install includes the built runtime and local catalog—no manual clone, pnpm install, or build.
 
 ### Claude Code
 
 ```sh
-claude plugin marketplace add "$HOME/kitbash/packages/plugin" && claude plugin install kit@kitbash
+claude plugin marketplace add coop-collective/kitbash && claude plugin install kit@kitbash
 ```
 
-Start a new Claude session in your app. For a single session, use `claude --plugin-dir "$HOME/kitbash/packages/plugin/plugins/kitbash"` instead.
+Start a new Claude session in your app.
 
 ### Codex
 
 ```sh
-codex plugin marketplace add "$HOME/kitbash/packages/plugin" && codex plugin add kit@kitbash
+codex plugin marketplace add coop-collective/kitbash && codex plugin add kit@kitbash
 ```
 
 Start a new Codex session in your app.
 
 ### Cursor, Gemini CLI, Windsurf, Cline, and other MCP agents
 
-Kitbash runs as a local **stdio MCP server**. Copy this command to print a config with your actual installation path:
+Kitbash runs as a local **stdio MCP server**. For agents without a native plugin adapter, download the ready-built toolkit once:
+
+```sh
+git clone --branch v0.1.0 --depth 1 https://github.com/coop-collective/kitbash.git "$HOME/kitbash"
+```
+
+Then print the MCP config with your actual installation path:
 
 ```sh
 node -e 'console.log(JSON.stringify({mcpServers:{kitbash:{command:"node",args:[process.env.HOME+"/kitbash/packages/plugin/plugins/kitbash/scripts/kit-mcp.mjs"]}}},null,2))'
@@ -76,9 +76,26 @@ Claude Code also has `/kit:bootstrap`, `/kit:search`, and `/kit:install`. In Cod
 
 Preview the UI with `pnpm storybook` from the checkout.
 
+## Deploy the secrets manager on Cloudflare
+
+The optional secrets broker runs in your Cloudflare account. It gives agents scoped access to secret operations while keeping provider credentials on the server.
+
+```sh
+git clone https://github.com/coop-collective/kitbash.git ~/kitbash
+cd ~/kitbash
+pnpm install
+pnpm --filter @kitbash/secrets-broker exec wrangler login
+pnpm run setup --skip-ci
+```
+
+Requires Node.js 22.18+, pnpm 12.14.0, a Cloudflare account, and a hostname in a Cloudflare-managed zone. Prepare a storage policy and provider credentials using the [Cloudflare deployment guide](docs/BROKER-SETUP.md). The setup wizard deploys the Worker and prints the private MCP connection config. Use `pnpm run setup` to configure GitHub deployment credentials, then [enable automatic deployments](docs/BROKER-SETUP.md#enable-deployment-automation) if wanted.
+
+Keep the generated `.env` and `.kitbash/` files private. Rerunning setup replaces the broker connection key; use `pnpm run deploy:broker` for code updates that preserve it.
+
 ## Develop
 
 ```sh
+git clone https://github.com/coop-collective/kitbash.git ~/kitbash
 cd ~/kitbash
 pnpm bootstrap       # install workspace dependencies and Go modules
 pnpm workspace:map   # list packages
@@ -87,7 +104,7 @@ pnpm build           # build packages
 pnpm test:e2e        # browser journeys and block installation checks
 ```
 
-See [workspace setup](docs/WORKSPACE.md) for native toolchains, browser installation, Docker, and focused package commands. After changing the plugin or catalog, rebuild with `pnpm --filter @kitbash/plugin build` and reload or reinstall it.
+See [workspace setup](docs/WORKSPACE.md) for native toolchains, browser installation, Docker, and focused package commands. After changing the plugin or catalog, rebuild with `pnpm --filter @kitbash/plugin build`, commit the updated `runtime/`, and reload or reinstall it. CI checks that the shipped bundle matches its sources.
 
 Contributing a block? Follow the [block format](docs/BLOCK-SPEC.md), include tests and adaptation instructions, and preserve source attribution. `/kit:harvest` can prepare a draft from existing code.
 

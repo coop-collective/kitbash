@@ -1,0 +1,11 @@
+<div class="card">
+  <h1>Check your email</h1>
+  {{#error}}<div class="err">{{error}}</div>{{/error}}
+  <p class="muted">A six-digit code is on its way to {{email}}. New here? Signing in makes your account.</p>
+  <form method="post" action="/authorize/signin/code">
+    <input type="hidden" name="return" value="{{return_to}}">
+    <input type="hidden" name="email" value="{{email}}">
+    <label>Code</label><input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" autofocus required>
+    <div class="row"><button class="primary" type="submit">Sign in</button></div>
+  </form>
+</div>

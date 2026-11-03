@@ -1,0 +1,225 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "vitest-workerd-harness",
+  "type": "registry:block",
+  "title": "Vitest in workerd with migrations applied, plus a production-history replay test",
+  "description": "vitest.config.ts with cloudflareTest and readD1Migrations exposing TEST_MIGRATIONS, a setupFile that applies ./migrations to the test D1 before every test file, a harness self-check, and an optional replay test that applies newer migrations on top of the production state with rows in it.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "1.0.2",
+  "license": "MIT",
+  "categories": [
+    "testing",
+    "d1"
+  ],
+  "meta": {
+    "maturity": "production",
+    "origin": "harvested",
+    "est_hours_saved": 2
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "vitest-workerd"
+  },
+  "compat": {
+    "wrangler": ">=4",
+    "node": ">=20",
+    "typescript": ">=5.4"
+  },
+  "variants": [
+    {
+      "id": "hono-d1",
+      "default": true,
+      "root": "variants/hono-d1",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "prodSim",
+      "type": "boolean",
+      "default": false,
+      "description": "Add the production-history replay test: a second D1 (PROD_SIM_DB) in vitest.config.ts, test/migration-upgrade.test.ts and test/prod-seed.ts. Off keeps vitest.config.ts byte-identical to the hono-d1 template."
+    },
+    {
+      "name": "shippedThrough",
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 9999,
+      "description": "Only with prodSim: the highest migration number production has already run; the replay applies 1..N, seeds rows, then applies the rest."
+    }
+  ],
+  "files": [
+    {
+      "path": "vitest.config.ts",
+      "type": "registry:file",
+      "target": "vitest.config.ts",
+      "role": "lib",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/apply-migrations.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/apply-migrations.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/harness.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/harness.test.ts",
+      "role": "test",
+      "variant": "hono-d1"
+    },
+    {
+      "path": "test/prod-seed.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/prod-seed.ts",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
+      "path": "test/migration-upgrade.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/migration-upgrade.test.ts",
+      "role": "test",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
+      "path": "test/history-snapshot.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/history-snapshot.ts",
+      "role": "fixture",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
+      "path": "test/history-snapshot.test.ts",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/history-snapshot.test.ts",
+      "role": "test",
+      "variant": "hono-d1",
+      "when": "prodSim"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/vitest-workerd-harness/SKILL.md",
+      "role": "doc"
+    }
+  ],
+  "dependencies": [],
+  "devDependencies": [
+    "@cloudflare/vitest-pool-workers@^0.22.0",
+    "vitest@^4.1.11"
+  ],
+  "registryDependencies": [],
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "d1",
+      "name": "DB",
+      "required": true,
+      "note": "Tests read the D1 binding named DB from wrangler.jsonc; Miniflare backs it locally."
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [],
+  "exports": [
+    {
+      "symbol": "PROD_SEED",
+      "from": "test/prod-seed.ts",
+      "kind": "const"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "test/harness.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "workerd",
+        "migrations-applied"
+      ]
+    },
+    {
+      "file": "test/migration-upgrade.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "production-replay"
+      ]
+    },
+    {
+      "file": "test/history-snapshot.test.ts",
+      "runner": "vitest-workerd",
+      "covers": [
+        "dropped-tables",
+        "dropped-columns",
+        "duplicate-rows",
+        "blob-values"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "npx vitest run",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "Runs every test in workerd with the project's migrations applied to a local D1. Default install is a no-op on the hono-d1 template (identical files are skipped). With prodSim it adds a replay test that applies newer migrations over the production state.",
+    "when_to_use": [
+      "A Worker project has no vitest-in-workerd setup yet.",
+      "You want proof that new migrations keep production rows intact."
+    ],
+    "when_not_to_use": [
+      "The project already has a different vitest.config.ts you want to keep: the install stops with a file conflict.",
+      "The project tests with Node-only mocks of D1."
+    ],
+    "adapt": [
+      {
+        "id": "install-deps",
+        "required": true,
+        "title": "Install the test dependencies",
+        "do": "Run the package manager install so @cloudflare/vitest-pool-workers and vitest are present.",
+        "check": "npx vitest run passes test/harness.test.ts."
+      },
+      {
+        "id": "seed-prod-rows",
+        "required": false,
+        "title": "Seed real production-shaped rows (prodSim only)",
+        "where": "{{paths.tests}}/prod-seed.ts",
+        "do": "Add one INSERT per row for tables that hold data you cannot lose, written against the schema as of shippedThrough.",
+        "check": "test/migration-upgrade.test.ts passes and fails when a migration drops a seeded column value."
+      }
+    ],
+    "author_notes": "Replay rejects lost tables, columns, row values and duplicate rows. Intentional destructive changes require explicit domain assertions, not a generic preservation exemption."
+  },
+  "provenance": {
+    "source": {
+      "repo": "github.com/Disturbing/ideator",
+      "commit": "6dbd04b",
+      "paths": [
+        "packages/api/vitest.config.ts",
+        "packages/api/test/apply-migrations.ts",
+        "packages/api/test/migration-upgrade.test.ts"
+      ]
+    },
+    "origin": "harvested-own",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-18T12:00:00Z"
+  }
+}

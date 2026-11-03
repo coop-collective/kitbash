@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "__PROJECT_NAME__",
+  "main": "vinext/server/fetch-handler",
+  "compatibility_date": "__COMPATIBILITY_DATE__",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "dev": {
+    "ip": "__HOST__",
+    "port": __PORT__
+  },
+  "assets": {
+    "directory": "dist/client",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/*",
+      "!/_next/static/*",
+      "!/*/_next/static/*"
+    ]
+  },
+  "env": {
+    "staging": {
+      "name": "__PROJECT_NAME__-staging"
+    },
+    "production": {
+      "name": "__PROJECT_NAME__-production"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "d1_databases": [
+    { "binding": "DB", "database_name": "{{kit.appSlug}}", "database_id": "REPLACE_ME", "migrations_dir": "{{paths.migrations}}" }
+  ]
+}

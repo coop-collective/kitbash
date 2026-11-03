@@ -1,0 +1,20 @@
+<div class="card">
+  <h1>Sign in to {{kit.brandName}}</h1>
+  {{#error}}<div class="err">{{error}}</div>{{/error}}
+  <p class="muted">An app wants to connect to {{kit.brandName}} as you, usually your own CLI (Claude Code, Codex, Cursor, Grok). Sign in first; you confirm what is connecting next.</p>
+  {{#email_enabled}}
+  <form method="post" action="/authorize/signin/email">
+    <input type="hidden" name="return" value="{{return_to}}">
+    <label>Email</label><input type="email" name="email" value="{{email}}" autocomplete="email" autofocus required>
+    <div class="row"><button class="primary" type="submit">Email me a code</button></div>
+  </form>
+  <hr>
+  {{/email_enabled}}
+  <form method="post" action="/authorize/signin/token">
+    <input type="hidden" name="return" value="{{return_to}}">
+    <label>{{#email_enabled}}Or paste a {{kit.brandName}} token{{/email_enabled}}{{^email_enabled}}Paste your {{kit.brandName}} token{{/email_enabled}}</label>
+    <input type="password" name="token" placeholder="{{kit.tokenPrefix}}..." autocomplete="off" required>
+    <p class="muted" style="margin-top:8px">It is only checked, never stored or handed to the app that is connecting.</p>
+    <div class="row"><button class="{{#email_enabled}}ghost{{/email_enabled}}{{^email_enabled}}primary{{/email_enabled}}" type="submit">Sign in with token</button></div>
+  </form>
+</div>

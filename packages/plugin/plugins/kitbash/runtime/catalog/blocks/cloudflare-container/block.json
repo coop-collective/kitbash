@@ -1,0 +1,506 @@
+{
+  "$schema": "https://kitbash.dev/schema/block.v1.json",
+  "name": "cloudflare-container",
+  "type": "registry:block",
+  "title": "Authenticated Cloudflare Containers in Bun, Go or Rust",
+  "description": "Installable Wrangler gateway and non-root Bun/Go/Rust container with tenant routing, bounded input, private temporary jobs, cleanup and runtime tests.",
+  "author": "Coop <coop@xavalabs.com>",
+  "version": "2.0.0",
+  "license": "MIT",
+  "categories": [
+    "containers",
+    "cloudflare",
+    "bun",
+    "go",
+    "rust"
+  ],
+  "meta": {
+    "maturity": "beta",
+    "origin": "original",
+    "est_hours_saved": 8
+  },
+  "stack": {
+    "runtime": "cloudflare-workers",
+    "framework": "hono",
+    "db": "d1",
+    "ui": "none",
+    "lang": "ts",
+    "test": "node"
+  },
+  "compat": {
+    "wrangler": ">=4.151.1",
+    "node": ">=22.18"
+  },
+  "variants": [
+    {
+      "id": "bun",
+      "default": true,
+      "root": "variants/bun",
+      "stack": {
+        "framework": "hono"
+      }
+    },
+    {
+      "id": "go",
+      "default": false,
+      "root": "variants/go",
+      "stack": {
+        "framework": "hono"
+      }
+    },
+    {
+      "id": "rust",
+      "default": false,
+      "root": "variants/rust",
+      "stack": {
+        "framework": "hono"
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "serviceName",
+      "type": "identifier",
+      "default": "hash",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "description": "Names the dedicated Worker config, container payload directory and verification files."
+    },
+    {
+      "name": "routePath",
+      "type": "path",
+      "default": "/hash",
+      "pattern": "^/[a-z][a-z0-9-]{0,39}$",
+      "description": "The one public POST operation; container path stays /hash."
+    },
+    {
+      "name": "authService",
+      "type": "identifier",
+      "default": "container-auth",
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "description": "Existing Worker service that authorizes this operation and returns a trusted tenantId."
+    },
+    {
+      "name": "maxInstances",
+      "type": "integer",
+      "default": 5,
+      "min": 1,
+      "max": 10,
+      "description": "Container fleet cap, separate from per-instance job concurrency."
+    }
+  ],
+  "files": [
+    {
+      "path": "shared/src/lib/cloudflare-container/worker.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cloudflare-container/worker.ts",
+      "role": "service"
+    },
+    {
+      "path": "shared/src/lib/cloudflare-container/gateway.ts",
+      "type": "registry:file",
+      "target": "{{paths.lib}}/cloudflare-container/gateway.ts",
+      "role": "service"
+    },
+    {
+      "path": "shared/test/gateway.test.mjs",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/{{kit.serviceName}}-gateway.test.mjs",
+      "role": "test"
+    },
+    {
+      "path": "shared/test/docker-smoke.mjs",
+      "type": "registry:file",
+      "target": "{{paths.tests}}/{{kit.serviceName}}-docker-smoke.mjs",
+      "role": "test"
+    },
+    {
+      "path": "shared/config/wrangler.patch.jsonc",
+      "type": "registry:file",
+      "target": "container.{{kit.serviceName}}.wrangler.jsonc",
+      "role": "config-patch",
+      "merge": "jsonc-deep"
+    },
+    {
+      "path": "SKILL.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/cloudflare-container/SKILL.md",
+      "role": "doc"
+    },
+    {
+      "path": "docs/README.md",
+      "type": "registry:file",
+      "target": ".kit/blocks/cloudflare-container/README.md",
+      "role": "doc"
+    },
+    {
+      "path": "container/.dockerignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.dockerignore",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/.gitignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.gitignore",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/Dockerfile",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/Dockerfile",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/package.json",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/package.json",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/src/app.ts",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/src/app.ts",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/src/scratch.ts",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/src/scratch.ts",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/src/server.ts",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/src/server.ts",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/test/app.test.ts",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/test/app.test.ts",
+      "role": "test",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/tsconfig.json",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/tsconfig.json",
+      "role": "lib",
+      "variant": "bun",
+      "template": false
+    },
+    {
+      "path": "container/.dockerignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.dockerignore",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/.gitignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.gitignore",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/Dockerfile",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/Dockerfile",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/cmd/service/main.go",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/cmd/service/main.go",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/go.mod",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/go.mod",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/internal/httpapi/scratch_linux.go",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/internal/httpapi/scratch_linux.go",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/internal/httpapi/scratch_other.go",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/internal/httpapi/scratch_other.go",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/internal/httpapi/server.go",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/internal/httpapi/server.go",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/internal/httpapi/server_test.go",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/internal/httpapi/server_test.go",
+      "role": "test",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/package.json",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/package.json",
+      "role": "lib",
+      "variant": "go",
+      "template": false
+    },
+    {
+      "path": "container/.dockerignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.dockerignore",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/.gitignore",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/.gitignore",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/Cargo.lock",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/Cargo.lock",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/Cargo.toml",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/Cargo.toml",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/Dockerfile",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/Dockerfile",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/crates/service/Cargo.toml",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/crates/service/Cargo.toml",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/crates/service/src/lib.rs",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/crates/service/src/lib.rs",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/crates/service/src/main.rs",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/crates/service/src/main.rs",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/crates/service/tests/http.rs",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/crates/service/tests/http.rs",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/package.json",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/package.json",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    },
+    {
+      "path": "container/rust-toolchain.toml",
+      "type": "registry:file",
+      "target": "containers/{{kit.serviceName}}/rust-toolchain.toml",
+      "role": "lib",
+      "variant": "rust",
+      "template": false
+    }
+  ],
+  "dependencies": [
+    "@cloudflare/containers@0.3.7"
+  ],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "envVars": {},
+  "env": [],
+  "secrets": [],
+  "bindings": [
+    {
+      "type": "durable_object",
+      "name": "HASH_CONTAINER",
+      "required": true,
+      "note": "Declared in the block dedicated Wrangler config; tenant-scoped container routing."
+    },
+    {
+      "type": "service",
+      "name": "AUTH",
+      "required": true,
+      "note": "Existing authorization service; no credentials are forwarded to the container."
+    }
+  ],
+  "migrations": [],
+  "tables": [],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "{{kit.routePath}}",
+      "auth": "bearer",
+      "description": "Dedicated Worker endpoint; authorize and hash up to 1 MiB."
+    }
+  ],
+  "exports": [
+    {
+      "symbol": "HashContainer",
+      "from": "shared/src/lib/cloudflare-container/worker.ts",
+      "kind": "durable-object"
+    },
+    {
+      "symbol": "gateway",
+      "from": "shared/src/lib/cloudflare-container/gateway.ts",
+      "kind": "function"
+    }
+  ],
+  "ui": [],
+  "tests": [
+    {
+      "file": "shared/test/gateway.test.mjs",
+      "runner": "node",
+      "covers": [
+        "authorization",
+        "tenant-routing",
+        "actual-byte-bounds",
+        "narrow-exposure",
+        "credential-stripping"
+      ]
+    },
+    {
+      "file": "shared/test/docker-smoke.mjs",
+      "runner": "node-docker",
+      "covers": [
+        "amd64-image",
+        "non-root",
+        "read-only",
+        "tmpfs",
+        "scratch-cleanup",
+        "shutdown"
+      ]
+    }
+  ],
+  "verify": {
+    "commands": [
+      "node --test {{paths.tests}}/{{kit.serviceName}}-gateway.test.mjs",
+      "npx tsc --noEmit"
+    ],
+    "expect": "all pass; native and Docker checks are explicit additional adoption commands"
+  },
+  "docs": "docs/README.md",
+  "skill": "SKILL.md",
+  "agent": {
+    "summary": "One installable runtime block with Bun, Go and Rust variants. Dedicated Wrangler config exposes one authorized tenant-scoped operation. Ships native sources, private package tasks, non-root Dockerfile, bounded scratch and tests. Host main is unchanged.",
+    "when_to_use": [
+      "A Worker needs a Linux process or native tool behind an authenticated narrow interface."
+    ],
+    "when_not_to_use": [
+      "Pure Worker code is sufficient.",
+      "A public arbitrary path/port proxy or an untrusted code execution sandbox is required."
+    ],
+    "adapt": [
+      {
+        "id": "auth-service",
+        "required": true,
+        "title": "Connect the operation authorization service",
+        "where": "container.{{kit.serviceName}}.wrangler.jsonc",
+        "do": "The AUTH service must validate credentials and permission for this operation and return {tenantId}. Return a non-2xx status to deny. Do not accept a tenant from caller-controlled headers.",
+        "check": "Unauthorized calls never start or reach a container."
+      },
+      {
+        "id": "runtime",
+        "required": true,
+        "title": "Install native dependencies and run runtime checks",
+        "where": "containers/{{kit.serviceName}}",
+        "do": "Run pnpm install and pnpm test/typecheck/build here. Use Node22.18+, Go1.26.4 or Rust1.96.0 as selected; pnpm manages the pinned Bun runtime. Commit the generated standalone pnpm lockfile. Run the installed Docker smoke explicitly with a working Docker engine.",
+        "check": "Native tests, amd64 image smoke and dedicated Wrangler dry-run pass."
+      },
+      {
+        "id": "deploy-config",
+        "required": true,
+        "title": "Use the dedicated Wrangler configuration",
+        "where": "container.{{kit.serviceName}}.wrangler.jsonc",
+        "do": "Run wrangler dev or deploy with -c container.{{kit.serviceName}}.wrangler.jsonc. Its main exports the Container class. The host root Worker config is not replaced.",
+        "check": "Wrangler reports AUTH and HASH_CONTAINER for this dedicated Worker."
+      }
+    ],
+    "author_notes": "Native payload source is not parameterized: port8080, 1MiB input and two concurrent jobs. Scratch prefers verified Linux tmpfs but falls back to writable ephemeral disk. Docker flags in the smoke are local checks, not promises about Cloudflare mount/rights configuration."
+  },
+  "provenance": {
+    "source": {
+      "repo": "local:~/Workspace/platform",
+      "commit": "8f8ed9c2a44507490912f8631806664c724be767",
+      "paths": [
+        "packages/playground/container/Dockerfile",
+        "packages/playground/container/src/get-container.ts",
+        "packages/persona/services/persona-radar-cache/src/index.ts"
+      ]
+    },
+    "origin": "original",
+    "harvested_by": "agent",
+    "harvested_at": "2026-10-19T00:00:00Z"
+  }
+}

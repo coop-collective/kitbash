@@ -1,0 +1,85 @@
+.kb-btn {
+  --btn-bg: var(--kb-panel);
+  --btn-ink: var(--kb-ink);
+  --btn-edge: var(--kb-line-strong);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--btn-edge);
+  border-radius: var(--kb-r-control);
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  font: inherit;
+  font-weight: var(--kb-w-medium);
+  cursor: pointer;
+  box-shadow: var(--kb-key);
+  transition: transform var(--kb-fast) var(--kb-glide), box-shadow var(--kb-fast) var(--kb-glide), background var(--kb-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.kb-btn:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--btn-bg) 92%, var(--btn-ink));
+}
+.kb-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--kb-pressed);
+}
+.kb-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.kb-btn[data-loading] {
+  opacity: 1;
+  cursor: progress;
+}
+
+.kb-btn[data-variant="primary"] {
+  --btn-bg: var(--kb-accent);
+  --btn-ink: var(--kb-accent-ink);
+  --btn-edge: color-mix(in oklab, var(--kb-accent) 88%, black);
+  --kb-bevel-hi: rgb(255 255 255 / 0.35);
+  --kb-bevel-lo: rgb(0 0 0 / 0.22);
+}
+.kb-btn[data-variant="danger"] {
+  --btn-bg: var(--kb-danger);
+  --btn-ink: var(--kb-danger-ink);
+  --btn-edge: color-mix(in oklab, var(--kb-danger) 70%, black);
+  --kb-bevel-hi: rgb(255 255 255 / 0.25);
+  --kb-bevel-lo: rgb(0 0 0 / 0.22);
+}
+.kb-btn[data-variant="ghost"] {
+  --btn-bg: transparent;
+  --btn-ink: var(--kb-ink-2);
+  border-color: transparent;
+  box-shadow: none;
+}
+.kb-btn[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--kb-panel-2);
+  color: var(--kb-ink);
+}
+
+.kb-btn[data-size="sm"] { height: 28px; padding: 0 10px; font-size: var(--kb-text-sm); border-radius: var(--kb-r-part); }
+.kb-btn[data-size="lg"] { height: 44px; padding: 0 18px; font-size: var(--kb-text-lg); }
+.kb-btn[data-icon-only][data-size="sm"] { width: 28px; padding: 0; }
+.kb-btn[data-icon-only][data-size="md"] { width: 36px; padding: 0; }
+.kb-btn[data-icon-only][data-size="lg"] { width: 44px; padding: 0; }
+
+.kb-btn-face,
+.kb-btn-busy {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+/* Loading: the label stays in the layout (width is kept) but fades out under the spinner */
+.kb-btn[data-loading] .kb-btn-face {
+  visibility: hidden;
+}
+.kb-btn-busy {
+  animation: kb-btn-in var(--kb-med) var(--kb-snap);
+}
+@keyframes kb-btn-in {
+  from { opacity: 0; transform: scale(0.85); }
+}

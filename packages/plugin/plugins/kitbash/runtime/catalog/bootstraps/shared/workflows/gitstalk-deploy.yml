@@ -1,0 +1,16 @@
+# Manual staging deployment. Clone as deploy-production.yml and replace staging
+# only after configuring a separate production machine identity and protections.
+name: Deploy staging Worker
+on: workflow_dispatch
+harness: shell
+permissions:
+  beans: read
+secrets: [INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET]
+timeout-minutes: 20
+memory: false
+run: |
+  set -eu
+  env -u INFISICAL_CLIENT_ID -u INFISICAL_CLIENT_SECRET corepack pnpm install --frozen-lockfile
+  env -u INFISICAL_CLIENT_ID -u INFISICAL_CLIENT_SECRET corepack pnpm check
+  env -u INFISICAL_CLIENT_ID -u INFISICAL_CLIENT_SECRET corepack pnpm build:staging
+  corepack pnpm run deploy --env staging

@@ -3,7 +3,51 @@
 Use one Bot to manage company service accounts through Agent Vault. Claude Code and
 other coding tools handle application changes and Infisical Secrets Manager access.
 Kitbash contributes the workflow and code changes through those tools; Grok does not
-need an Infisical MCP connection. This starter does not deploy or connect services.
+need an Infisical MCP connection. Grok can use the isolated Kitbash secrets broker's
+own remote MCP connector for approved secret setup. Use the template setup command to deploy your own connector; adding it to Grok remains a secure UI step.
+
+## Connect the secrets broker
+
+If the feature-registry tool reports a missing `KIT_SECRETS_BROKER_URL`, it is using
+the local client path. Connect the broker directly instead:
+
+1. Use your own copy of the repository and run `pnpm install`, then `pnpm run setup`
+   in your trusted terminal outside the bot computer. Follow [template setup](BROKER-SETUP.md) to configure the
+   hostname, Cloudflare Secrets Store or Infisical credentials, Worker deployment, and GitHub CI. Setup checks GitHub authentication
+   and starts the login prompt only if needed.
+2. Copy the generated MCP JSON from your terminal. Setup generates and deploys the scoped token for you;
+   a repeat run announces and replaces the existing remote token. The private file is `.kitbash/mcp.json`.
+3. Add `https://YOUR-BROKER/mcp` as a custom remote MCP connection named **Kitbash secrets**.
+   Use supported protected connection controls for its bearer credential. Confirm the
+   installed Grok Bot version can send the header; the service does not implement OAuth
+   login. Keep the capability out of chat, the bot filesystem, and URL query strings.
+4. Where your team's network restrictions apply, allow the broker hostname. Enable the
+   connection for the intended Bot and verify discovery lists `kitbash_secrets`. The Cloudflare Worker
+   also exposes `kitbash_register_secrets` for principals granted registration access.
+5. For a new project, call `kitbash_register_secrets` with its alias, target and secret names, then
+   call `status` through `kitbash_secrets`. Repeat registration for each target. No per-project policy
+   edit or broker restart is needed. See [registration](BROKER-SETUP.md#register-projects-through-mcp).
+   A successful response proves broker
+   access; missing names are expected in an existing source folder before setup. If the source environment/folder
+   does not exist yet, an authorized `setup` creates it first. An `unavailable` or `forbidden` result
+   is incomplete. Load the `kitbash-secrets` skill separately if the Bot needs workflow guidance.
+
+For the example policy, the initial read-only call is:
+
+```json
+{"operation":"status","project":"engine-box-runners","target":"staging"}
+```
+
+The broker serves the operations without a local Infisical login or broker environment
+variables on Grok's computer. `provision-github` configures Actions OIDC. For a new GitHub
+App, use [the manifest handoff](SECRETS-BROKER.md#new-github-app-credentials) through
+`provision-github-app`, then verify `presence`. Credentials captured on the Bot computer use `kitbash_upload_secrets` and its local-file helper; no human upload page is needed. Use `kitbash_secret_deliveries` for enrolled controller delivery. See [uploads](BROKER-SETUP.md#upload-secret-files-from-the-bot-computer).
+
+The implementation is covered by local MCP/provider-fixture tests. A live Grok connection,
+provider registration, and deployment still require the target environment's configuration
+and verification. See [Grok Bot connected apps](https://docs.x.ai/grok-bot/computer-and-apps)
+and [network controls](https://docs.x.ai/grok-bot/security); do not assume Grok.com, the xAI
+API, and Grok Bot expose identical authentication controls.
 
 ## Start in Grok
 
@@ -58,10 +102,11 @@ before publishing a reusable template. Keep the real account inventory private.
 | --- | --- |
 | Bot instructions, destination rules, readiness check, pilot procedure | Included in this starter |
 | Application secret generation and GitHub/Worker provisioning | Existing [Kitbash broker](SECRETS-BROKER.md), requires operator configuration |
+| Remote `kitbash_secrets` connector | Broker `/mcp` implemented; scoped auth, hosting, and Grok connection must be configured |
 | Agent Vault deployment and Grok connection | Must be configured and tested in the target environment |
-| Infisical access | Owned by Claude Code/other coding tools; no Grok Infisical MCP required |
+| Infisical access | Broker-owned; Grok can request scoped operations through Kitbash MCP; no general Infisical connector required |
 | Agent Vault password substitution in Grok's browser | Candidate integration; requires a synthetic browser test |
-| Provider-issued secret capture into Infisical | Requires a trusted adapter or operator input; absent from the current broker |
+| GitHub App credential capture | Generic MCP uploads from local credential files implemented; optional App manifest and controller delivery integrations |
 | Recurring signup/maintenance jobs | Not enabled by this starter |
 
 After the Bot is created, finish Agent Vault connection and check tagged mail delivery.

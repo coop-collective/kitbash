@@ -40,6 +40,9 @@ test("broker client sends only validated metadata to its configured origin and s
 
 test("status and connection results reconstruct only typed metadata", async () => {
   const cases = [
+    [{ operation: "presence", project: "scoreboard", target: "staging", name: "SESSION_SECRET" }, {
+      name: "SESSION_SECRET", status: "present", value: sentinel,
+    }, { name: "SESSION_SECRET", status: "present" }],
     [{ operation: "setup", project: "scoreboard", target: "staging" }, {
       status: "pending", secrets: [{ name: "SESSION_SECRET", status: "present", value: sentinel }, { name: "PAYMENT_API_KEY", status: "missing" }],
       github: { configured: true, token: sentinel }, workerSync: { configured: false },
@@ -80,6 +83,20 @@ test("broker responses with mismatched identity, status, names or shape fail wit
   const status = { operation: "status", project: "scoreboard", target: "staging" };
   for (const secrets of [[{ name: sentinel, status: "present" }], [{ name: "X", status: sentinel }], [{ name: "X", status: "missing" }, { name: "X", status: "present" }]]) {
     await assert.rejects(runSecrets(status, { env, fetch: async () => json({ ...status, status: "ready", secrets }) }));
+  }
+});
+
+test("GitHub App handoff accepts only approval links on the configured broker and filters provider data", async () => {
+  const request = { operation: "provision-github-app", project: "scoreboard", target: "staging" };
+  const body = { ...request, status: "pending", secrets: [{ name: "APP_PRIVATE_KEY", status: "missing", value: sentinel }],
+    approvalUrl: `https://broker.example.com/github-app/start/${"a".repeat(43)}`, secretValue: sentinel };
+  const result = await runSecrets(request, { env, fetch: async () => json(body) });
+  assert.equal(result.approvalUrl, body.approvalUrl);
+  assert.equal(JSON.stringify(result).includes(sentinel), false);
+  const scoped = `https://broker.example.com/github-app/scoreboard/staging/start/${"a".repeat(43)}`;
+  assert.equal((await runSecrets(request, { env, fetch: async () => json({ ...body, approvalUrl: scoped }) })).approvalUrl, scoped);
+  for (const approvalUrl of ["https://other.example.com/github-app/start/" + "a".repeat(43), body.approvalUrl + "?token=" + sentinel, "https://broker.example.com/other", scoped.replace('/staging/', '/production/'), scoped.replace('/scoreboard/', '/other-project/')]) {
+    await assert.rejects(runSecrets(request, { env, fetch: async () => json({ ...body, approvalUrl }) }), { code: "unavailable" });
   }
 });
 

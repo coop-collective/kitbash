@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const operations = ["setup", "status", "generate", "provision-github", "provision-worker-sync"];
+const operations = ["setup", "status", "presence", "generate", "provision-github", "provision-github-app", "provision-worker-sync"];
 const targets = ["local", "staging", "production"];
 const alias = /^[a-z][a-z0-9-]{0,62}$/;
 const secretName = /^[A-Z][A-Z0-9_]{0,127}$/;
@@ -22,15 +22,15 @@ export class BrokerError extends Error {
 
 export const SECRETS_TOOL = {
   name: "kitbash_secrets",
-  description: "Set up all registered application secrets and configured GitHub Actions OIDC / Worker sync access through an operator-configured broker in one call, or inspect metadata status and perform individual operations. Accepts project aliases and names only; never returns secret values. Setup, provisioning and generation mutate the configured external services. Requires KIT_SECRETS_BROKER_URL and a scoped KIT_SECRETS_BROKER_TOKEN in the plugin environment.",
+  description: "Set up registered application secrets and GitHub Actions OIDC / Worker sync access through an operator-configured broker, or check status/presence. provision-github-app starts a new GitHub App manifest handoff; give its approvalUrl to the human to open in their own browser. Accepts aliases and names only; never returns secret values. Setup, provisioning and generation mutate external services. This local client requires KIT_SECRETS_BROKER_URL and a scoped KIT_SECRETS_BROKER_TOKEN in the plugin environment; remote agents can connect directly to the broker's /mcp endpoint.",
   input: z.strictObject({
     operation: z.enum(operations),
     project: z.string().regex(alias),
     target: z.enum(targets),
     name: z.string().regex(secretName).optional(),
   }).superRefine((value, ctx) => {
-    if ((value.operation === "generate") !== (value.name !== undefined)) {
-      ctx.addIssue({ code: "custom", message: "name is required only for generate" });
+    if (["generate", "presence"].includes(value.operation) !== (value.name !== undefined)) {
+      ctx.addIssue({ code: "custom", message: "name is required only for generate and presence" });
     }
   }),
   // Source generation is create-only, but native sync can replace a same-name Worker binding.
@@ -78,16 +78,21 @@ function object(value) {
 }
 
 /** Reconstruct metadata instead of forwarding any broker object, including successful responses. */
-export function secretMetadata(value, request) {
+export function secretMetadata(value, request, brokerOrigin) {
   const reject = () => { throw new BrokerError("unavailable"); };
   if (!object(value) || ["operation", "project", "target"].some((key) => value[key] !== request[key])) reject();
   const result = { operation: request.operation, project: request.project, target: request.target };
+  if (request.operation === "presence") {
+    if (!["present", "missing"].includes(value.status) || value.name !== request.name) reject();
+    return { ...result, status: value.status, name: request.name };
+  }
   if (request.operation === "generate") {
     if (!["created", "already-exists"].includes(value.status) || value.name !== request.name) reject();
     return { ...result, status: value.status, name: request.name };
   }
   const provisioning = ["provision-github", "provision-worker-sync"].includes(request.operation);
-  const statuses = provisioning ? ["configured", "pending"] : request.operation === "setup" ? ["ready", "pending"] : ["ready"];
+  const app = request.operation === "provision-github-app";
+  const statuses = provisioning || app ? ["configured", "pending"] : request.operation === "setup" ? ["ready", "pending"] : ["ready"];
   if (!statuses.includes(value.status)) reject();
   result.status = value.status;
   if (!provisioning) {
@@ -99,6 +104,13 @@ export function secretMetadata(value, request) {
       names.add(secret.name);
       return { name: secret.name, status: secret.status };
     });
+  }
+  if (app && value.approvalUrl !== undefined) {
+    let url;
+    try { url = new URL(value.approvalUrl); } catch { reject(); }
+    if (value.status !== "pending" || url.origin !== brokerOrigin || url.username || url.password || url.search || url.hash ||
+        !new RegExp(`^/github-app/(?:${request.project}/${request.target}/)?start/[A-Za-z0-9_-]{43}$`).test(url.pathname)) reject();
+    result.approvalUrl = url.href;
   }
   for (const [field, operation] of [["github", "provision-github"], ["workerSync", "provision-worker-sync"]]) {
     if (!["status", "setup", operation].includes(request.operation)) continue;
@@ -124,7 +136,7 @@ export async function runSecrets(args, { env = process.env, fetch: request = glo
     if (response.redirected) throw new BrokerError("unavailable");
     const body = await responseJson(response);
     if (!response.ok) throw new BrokerError(body?.error?.code);
-    return secretMetadata(body, parsed.data);
+    return secretMetadata(body, parsed.data, url.origin);
   } catch (error) {
     if (error instanceof BrokerError) throw error;
     throw new BrokerError("unavailable");

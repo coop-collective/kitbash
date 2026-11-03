@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "name": "alternate-binding-class-paths-limits",
+      "params": {
+        "className": "ProjectChannel",
+        "bindingName": "CHANNELS",
+        "fileSlug": "project-channel",
+        "assetsDirectory": "static",
+        "assetSlug": "channel-ui",
+        "migrationTag": "channels-v7",
+        "routePrefix": "/live/channels",
+        "maxConnections": 3,
+        "historySize": 5,
+        "textChars": 80,
+        "messageBytes": 512,
+        "leaseSeconds": 60,
+        "rateBurst": 3,
+        "ratePerSecond": 1
+      }
+    }
+  ]
+}
