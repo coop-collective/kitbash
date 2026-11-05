@@ -1,0 +1,20 @@
+{
+  "name": "kitbash-recipe-playwright-worker-e2e",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/launcher.test.mjs",
+    "typecheck": "wrangler types && tsc --noEmit",
+    "test:launcher": "node --test test/launcher.test.mjs",
+    "test:e2e": "playwright test",
+    "browsers:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "wrangler": "4.137.0",
+    "typescript": "5.9.3",
+    "@types/node": "24.10.1"
+  },
+  "packageManager": "pnpm@12.14.0"
+}

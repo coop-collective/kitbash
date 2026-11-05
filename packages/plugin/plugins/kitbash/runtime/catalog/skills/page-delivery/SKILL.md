@@ -35,4 +35,6 @@ Use representative routes in the production build/runtime. For the affected beha
 
 Report source reads/aggregations, cache writes/refreshes, source timestamps, client requests and relevant latency/transfer measurements before and after. Public SEO/AEO review includes rendered content, status codes, indexing controls, canonicals and accurate metadata; do not claim ranking or answer-engine gains from a technical check alone.
 
+For repeatable checks, the repository's `recipes/browser-performance`, `recipes/vinext-diagnostics` and `recipes/cloudflare-performance` provide browser budgets, framework diagnostics and read-only Worker measurements. The installed plugin's `kitbash-performance` skill locates its bundled copies. Distinguish lab measurements from field percentiles and aggregate Worker metrics from route-level attribution. Record exact build identity and sanitize evidence before retaining it.
+
 Finish with the route's chosen strategy, evidence, verification limits and any deferred requirement. Stop after the assigned improvement. This skill does not schedule itself, merge or deploy.

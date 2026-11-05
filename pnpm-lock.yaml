@@ -394,6 +394,15 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1)
 
+  recipes/browser-performance:
+    devDependencies:
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
+      wrangler:
+        specifier: 4.137.0
+        version: 4.137.0(@types/node@26.6.5)
+
   recipes/cloudflare-ci:
     devDependencies:
       '@types/node':
@@ -405,6 +414,8 @@ importers:
       wrangler:
         specifier: 4.137.0
         version: 4.137.0(@types/node@24.10.1)
+
+  recipes/cloudflare-performance: {}
 
   recipes/playwright-worker-e2e:
     devDependencies:
@@ -462,6 +473,25 @@ importers:
 
   recipes/typescript-native-checks:
     devDependencies:
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  recipes/vinext-diagnostics:
+    dependencies:
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      web-vitals:
+        specifier: 6.2.3
+        version: 6.2.3
+    devDependencies:
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -4155,6 +4185,9 @@ packages:
       jsdom:
         optional: true
 
+  web-vitals@6.2.3:
+    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -7639,6 +7672,8 @@ snapshots:
       '@types/node': 26.6.5
     transitivePeerDependencies:
       - msw
+
+  web-vitals@6.2.3: {}
 
   which@2.0.2:
     dependencies:

@@ -1,0 +1,11 @@
+{
+  "name": "kitbash-recipe-cloudflare-performance",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "preflight": "node inspect.mjs"
+  }
+}

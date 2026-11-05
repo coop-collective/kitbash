@@ -1,6 +1,6 @@
 {
   "name": "kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bootstrap projects with blocks and Git hosting; verify features and manage secrets through a metadata-only broker.",
   "author": {
     "name": "Xava Labs"
@@ -40,7 +40,8 @@
       "Use $kitbash-use to find a block for rate limiting and install it.",
       "Use $kitbash-harvest to turn this feature into a block.",
       "Use $kitbash-harvest to prepare a reusable block contribution.",
-      "Use $kitbash-secrets to generate staging secrets through the configured broker."
+      "Use $kitbash-secrets to generate staging secrets through the configured broker.",
+      "Use $kitbash-performance to diagnose slow pages and add regression checks."
     ],
     "brandColor": "#F5A524"
   }

@@ -159,7 +159,7 @@ The plugin's `kitbash-ui` skill points agents at this catalog before they build 
 
 ## Recipes
 
-Recipes are runnable reference projects and scripts. Read their guides and copy the relevant pieces; they are not additional installable blocks.
+Recipes are runnable reference projects and scripts. The plugin bundles their source under `runtime/catalog/recipes/`; its `kitbash-performance` skill selects and adapts the performance recipes. Read their guides and copy the relevant pieces; they are not additional installable blocks.
 
 | Recipe | What it demonstrates |
 | --- | --- |
@@ -169,6 +169,9 @@ Recipes are runnable reference projects and scripts. Read their guides and copy 
 | [workerd-coverage](../recipes/workerd-coverage/README.md) | Workerd/D1 test coverage with an enforced floor |
 | [typescript-lint](../recipes/typescript-lint/README.md) | Shared TypeScript ESLint configuration |
 | [typescript-native-checks](../recipes/typescript-native-checks/README.md) | TypeScript 7 checks with bounded parallelism and changed-project selection |
+| [browser-performance](../recipes/browser-performance/README.md) | Cold/warm browser regression budgets and failure recovery against a local fixture |
+| [vinext-diagnostics](../recipes/vinext-diagnostics/README.md) | Direct web-vitals and opt-in React diagnostics for pinned vinext builds |
+| [cloudflare-performance](../recipes/cloudflare-performance/README.md) | Read-only Worker analytics and observability permission checks |
 | [vinext-guardrails](../recipes/vinext-guardrails/README.md) | Configuration, artifact, and build-budget checks for vinext on Workers |
 
 ## Secrets and CI access

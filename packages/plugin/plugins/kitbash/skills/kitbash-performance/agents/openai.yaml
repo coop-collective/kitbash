@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kitbash: performance checks"
+  short_description: "Measure browser and Worker performance regressions"
+  default_prompt: "Use $kitbash-performance to diagnose slow pages and add measured regression checks."

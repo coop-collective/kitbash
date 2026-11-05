@@ -1,0 +1,22 @@
+{
+  "name": "kitbash-recipe-typescript-lint",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "lint:cached": "eslint . --max-warnings=0 --cache --cache-strategy content --cache-location .cache/eslint",
+    "test": "node --test test/config.test.mjs"
+  },
+  "devDependencies": {
+    "eslint": "10.13.0",
+    "@eslint/js": "10.0.1",
+    "typescript-eslint": "8.71.2",
+    "typescript": "5.9.3",
+    "globals": "16.5.0"
+  },
+  "packageManager": "pnpm@12.14.0"
+}

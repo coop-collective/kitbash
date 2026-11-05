@@ -28,3 +28,5 @@ Consult [vinext's compatibility status](https://github.com/cloudflare/vinext#pro
 This guard intentionally supports a narrow configuration profile, not every vinext target. Static success does not prove auth, caching correctness, generated deployment bindings, browser hydration, or improved performance. The example versions in tests are parser fixtures, not a newly validated framework compatibility matrix.
 
 This recipe is a root pnpm workspace member. For a standalone copy, run `pnpm install` once and commit its generated lockfile; use `pnpm install --frozen-lockfile` in that project’s CI.
+
+For opt-in runtime diagnostics, see [React and vinext diagnostics](../vinext-diagnostics/README.md): direct `web-vitals` collection, Strict Mode-safe subscriptions, and an integration check against the pinned bootstrap's built Worker. `next/web-vitals` is currently a no-op in vinext. Keep browser performance evidence separate from static gzip budgets and React render timings.

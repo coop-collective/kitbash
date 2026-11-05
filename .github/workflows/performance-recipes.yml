@@ -1,0 +1,29 @@
+name: Performance recipes
+on:
+  pull_request:
+    paths: ['recipes/**', 'bootstraps/vinext/**', 'pnpm-lock.yaml', '.github/workflows/performance-recipes.yml']
+  push:
+    branches: [main]
+    paths: ['recipes/**', 'bootstraps/vinext/**', 'pnpm-lock.yaml', '.github/workflows/performance-recipes.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test performance measurement and permission failure cases
+        run: pnpm --filter kitbash-recipe-browser-performance --filter kitbash-recipe-cloudflare-performance --filter kit-recipe-vinext-diagnostics -r test
+      - run: pnpm --filter kit-recipe-vinext-diagnostics typecheck
+      - run: pnpm --filter kitbash-recipe-browser-performance exec playwright install --with-deps chromium
+      - name: Verify browser budgets against the local Worker
+        run: pnpm --filter kitbash-recipe-browser-performance test:e2e
+      - name: Verify diagnostics against the pinned vinext build
+        run: pnpm --filter kit-recipe-vinext-diagnostics test:compat

@@ -1,0 +1,20 @@
+{
+  "name": "kitbash-recipe-workerd-coverage",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --coverage",
+    "test:guard": "node --test test/coverage-guard.test.mjs",
+    "typecheck": "wrangler types && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@vitest/coverage-istanbul": "4.1.11",
+    "vitest": "4.1.11",
+    "wrangler": "4.137.0",
+    "typescript": "5.9.3",
+    "@types/node": "24.10.1"
+  },
+  "packageManager": "pnpm@12.14.0"
+}
