@@ -70,7 +70,7 @@ Claude Code also has `/kit:bootstrap`, `/kit:search`, and `/kit:install`. In Cod
 | Feature blocks | Auth, API keys, organizations, uploads, caching, WebSockets, containers | [Block catalog](docs/GUIDE.md#available-blocks) |
 | Project starters | Hono Worker, vinext React app, Rust/Axum server | [Presets](docs/GUIDE.md#start-a-project) |
 | React UI | Styrene components for agent and AI products | [UI package](packages/ui/README.md) |
-| Recipes | Cloudflare CI, Playwright, workerd coverage, linting, type checks | [Recipes](docs/GUIDE.md#recipes) |
+| Recipes | Browser performance, React/vinext diagnostics, Cloudflare observability, CI and workerd coverage | [Recipes](docs/GUIDE.md#recipes) |
 | Maintenance skills | TypeScript, Rust, page rendering and caching reviews | [Skills](skills/README.md) |
 | Optional secrets broker | Application secrets, CI access, remote agent connector | [Secrets broker](docs/SECRETS-BROKER.md) |
 

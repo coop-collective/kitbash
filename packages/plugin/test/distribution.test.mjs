@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { cp, mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
@@ -21,6 +22,19 @@ test('GitHub marketplaces resolve to a standalone, working MCP plugin', { timeou
   const client = new Client({ name: 'distribution-test', version: '0.1.0' });
   try {
     await cp(path.join(repo, source), installed, { recursive: true });
+    const skill = await readFile(path.join(installed, 'skills/kitbash-performance/SKILL.md'), 'utf8');
+    assert.match(skill, /runtime\/catalog\/recipes/);
+    for (const recipe of ['browser-performance', 'vinext-diagnostics', 'cloudflare-performance']) {
+      const recipeDir = path.join(installed, 'runtime/catalog/recipes', recipe);
+      assert.ok((await readFile(path.join(recipeDir, 'README.md'), 'utf8')).length > 100);
+      assert.ok(JSON.parse(await readFile(path.join(recipeDir, 'package.json'), 'utf8')).scripts.test);
+    }
+    // The dependency-free observability tests must run from an installed plugin copy.
+    const check = spawnSync(process.execPath, ['--test'], {
+      cwd: path.join(installed, 'runtime/catalog/recipes/cloudflare-performance'), encoding: 'utf8', timeout: 15000,
+      env: { PATH: process.env.PATH },
+    });
+    assert.equal(check.status, 0, check.stderr + check.stdout);
     await client.connect(new StdioClientTransport({
       command: process.execPath, args: [path.join(installed, 'scripts/kit-mcp.mjs')], cwd: dir,
       env: { PATH: process.env.PATH, KIT_HOME: dir, KIT_KEYCHAIN: '0', KIT_API_URL: 'http://127.0.0.1:9' }, stderr: 'pipe',

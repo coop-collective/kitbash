@@ -1,0 +1,5 @@
+{
+  "name": "kitbash-performance-fixture",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-09-28"
+}

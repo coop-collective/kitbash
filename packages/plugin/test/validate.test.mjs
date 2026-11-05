@@ -19,7 +19,7 @@ async function copy() {
 test("the plugin as shipped validates registry and bootstrap tools, skills, commands, and the SessionStart hook", () => {
   const r = run(pluginRoot);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /11 registry tools, 1 bootstrap tool, 1 secrets broker tool, 7 skills, 5 commands/);
+  assert.match(r.stdout, /11 registry tools, 1 bootstrap tool, 1 secrets broker tool, 8 skills, 5 commands/);
 });
 
 test("manifests: Claude Code and Codex agree; MCP is a stdio command in both; commands are /kit:*", () => {

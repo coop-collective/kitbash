@@ -1,0 +1,6 @@
+{
+  "projects": [
+    { "name": "shared", "path": "examples/shared", "dependsOn": [] },
+    { "name": "app", "path": "examples/app", "dependsOn": ["shared"] }
+  ]
+}
