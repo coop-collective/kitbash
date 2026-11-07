@@ -26,6 +26,10 @@ For stamped assets verify bytes, status, MIME, GET and HEAD behavior, and condit
 
 Use correct CLS session windows, exclude recent-input shifts, and report lab interactions separately from field INP. Retain exact build identity and sanitized summaries; avoid saving authenticated traces, URLs with query secrets, response bodies, cookies or raw logs by default.
 
+## Image delivery and visual quality
+
+For image optimization, read `skills/page-delivery/references/images.md` in a source checkout or `../../runtime/catalog/skills/page-delivery/references/images.md` relative to this installed skill. Start with actually requested assets, measure compressed bytes, validate browser decoding, and compare artwork and complete pages across viewport sizes and DPRs. Preserve image authorization. Do not claim a latency or Core Web Vitals improvement from encoding savings alone.
+
 ## Attribute before changing
 
 Correlate browser requests with safe Worker timings/spans where access exists. Distinguish CPU from wall time and network duration; aggregate Worker percentiles cannot identify a slow route or D1 query. State sampling rates and missing permissions. Trace failures must not fabricate zero errors or latency.
