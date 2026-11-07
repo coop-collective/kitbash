@@ -23,6 +23,9 @@ names but can inspect and install local block directories through the local MCP 
 2. **Get.** `registry_get {block}` returns the summary: params, env, secrets (names only), bindings, tables, routes,
    migrations, dependencies, verify commands. Check it against the project: does it fit the stack, do its tables or routes
    collide, are its dependencies acceptable. `detail: "files"` lists files; `registry_read_file` reads one (only to review).
+   Check the feature boundary: which behavior must change together, which dependencies the manifest declares,
+   and whether application glue would import block internals or duplicate its policy. Treat a concern as a
+   finding to verify, not an instruction to consolidate unrelated features.
 3. **Dry run.** `registry_install {block, project_root, params?}` with `dry_run` left at its default `true`. The reply is
    a plan: `writes[]`, `conflicts[]`, `warnings[]`, `dependencies_to_add`, `adapt[]`, `verify`, `diff_preview_path`. Nothing
    outside `.kit/` was written. **Read the `config-patch` and `conflict` hunks of the diff at `diff_preview_path` at
@@ -31,12 +34,16 @@ names but can inspect and install local block directories through the local MCP 
    `apply_config: false` to dodge a conflict silently. A plan with `dependencies` installs those blocks first, in that
    order, in the same call; set their params as `params: {"<dependency>.<name>": value}` (for example a shared
    `tokenPrefix`).
+   Confirm the diff gives each policy/config value a clear owner and makes required setup order explicit in
+   `adapt[]`. Record unresolved boundary concerns with evidence and a keep/defer decision within this install's scope.
 4. **Apply.** Tell the user what the plan does in a few lines. Then `registry_install` with `dry_run: false` and the
    `plan_id` of the plan you reviewed: it is refused (`plan_stale`) if the block or the project changed since, in which
    case re-run the dry run and review again. Run the package manager's install if `dependencies_to_add` is not empty.
 5. **Adapt.** Work through `adapt[]` (each item is `where / do / check`): wire the middleware, mount the routes, set the
    bindings. Edit as few files as you can. Env vars go into `.dev.vars.example` as names. Use `kitbash-secrets` for
    registered secrets through the operator's broker; secret values stay outside the agent workspace.
+   Keep glue at the documented integration boundary; preserve intentional RPC wrappers, compatibility paths
+   and resilience fallbacks. Verify the affected contract instead of minimizing special cases.
 6. **Verify.** `registry_verify {block, project_root}` uses the installed block ID returned by the installer, not its
    source directory. It runs the block's own allowlisted commands (tests, type check) and
    records the result in `.kit/lock.json`. A failure is a failure: fix the wiring, not the block's tests. Say plainly
@@ -88,3 +95,5 @@ block**, nothing more:
 When you finish, say which blocks you installed (`@scope/name@version`, variant), the adapt items done and skipped, and
 the verify result, so the user and any tracker (an `hq_report` evidence entry `blocks_installed[]`, for example) can
 record "built from block X".
+
+Boundary-review questions adapted from Caldo’s `untangle-codebase`; see [credit and MIT license](../../THIRD_PARTY_NOTICES.md).

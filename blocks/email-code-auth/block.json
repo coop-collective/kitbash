@@ -330,7 +330,7 @@
         "id": "set-secrets",
         "required": true,
         "title": "Set TOKEN_PEPPER",
-        "do": "TOKEN_PEPPER=<openssl rand -hex 32> in .dev.vars; wrangler secret put TOKEN_PEPPER for production.",
+        "do": "Provision TOKEN_PEPPER through the project-approved secret manager or Kitbash secrets broker. Keep only its name in .dev.vars.example; never place a real value in block files or adaptation output.",
         "check": "email/start does not answer 500 not_configured."
       },
       {
