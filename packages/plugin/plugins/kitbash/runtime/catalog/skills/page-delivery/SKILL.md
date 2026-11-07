@@ -23,6 +23,8 @@ Keep these decisions separate:
 
 A server-rendered page need not recompute its data per request. A static page cannot silently become fresh just because its underlying data changed. Browser query caching does not share results across visitors.
 
+For image delivery work, read [images.md](references/images.md): measure requested assets, compressed savings and visual quality before choosing responsive raster delivery or SVG optimization.
+
 ## Make a justified change
 
 Prefer the existing framework and cache capabilities. Do not add React Query, a queue, a Durable Object, a scheduler or a new cache layer unless the measured requirement needs it. Preserve auth and private/public separation. Evaluate deferred loading from actual transfer/render costs; retain useful initial content and avoid creating a request waterfall.
