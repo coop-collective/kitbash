@@ -18,3 +18,35 @@ For Workers/DO code, confirm behavior against the pinned platform/runtime and it
 Performance changes need a baseline: repeated requests, query count, typecheck duration, allocations, transferred bytes or latency. Do not infer a bottleneck from syntax alone. Page rendering, client state and shared data caches need their own page-specific review.
 
 Sources: [TypeScript satisfies](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html), [Knip reachability gaps](https://knip.dev/guides/handling-issues), [Durable Object concurrency](https://developers.cloudflare.com/durable-objects/api/state/#blockconcurrencywhile).
+
+## Review change boundaries
+
+For a structural finding within the assigned area, ask: **should these pieces change together?**
+Inspect callers and relevant Git history before proposing a boundary change. A shared commit alone is
+not proof of coupling; generated updates and broad formatting changes can move unrelated files together.
+
+- **Hidden links:** duplicated policy, shared mutable state, required initialization or cleanup order,
+  or feature pieces whose relationship is absent from imports, contracts and manifests.
+- **Needless links:** application glue depending on block internals, stable calculations importing
+  workflow orchestration, or a shared interface carrying options meaningful to only one caller.
+- **Surplus candidates:** unused extension points, unreachable code or forwarding helpers with no
+  independent contract. Verify consumers and runtime registration before treating them as removable.
+
+Special cases are investigation leads, not defects. Retries, cache-failure fallbacks, provider-specific
+accounting, compatibility paths, RPC adapters and independent verification may express necessary
+requirements. Record the invariant each protects. A manifest can make a feature boundary explicit even
+when its files span routes, services, tests and migrations. Fewer branches or files is not a success metric.
+
+Keep a short decision log for material findings:
+
+- Evidence: paths/symbols, callers and any relevant change history or reproduction.
+- Contract: behavior, ownership, persisted formats and failure handling that must remain intact.
+- Decision: smallest proposed boundary change, or keep/defer with a reason and missing evidence.
+- Verification: expected observable improvement, baseline and affected behavior checks.
+
+Do not turn this review into an inventory of everything imperfect. Follow the skill's existing task budget
+and stopping rules; retain tests and comments that explain or protect non-obvious contracts.
+
+This diagnostic lens is adapted from Caldo's [untangle-codebase](https://github.com/caldoai/skills/blob/f3cf47774975a7d9fca45730babf4ff7ad765ada/skills/untangle-codebase/SKILL.md).
+See [attribution and MIT license](../THIRD_PARTY_NOTICES.md). Kitbash retains its bounded, evidence-first
+workflow; this adaptation is not evidence of faster or cheaper agent performance.
