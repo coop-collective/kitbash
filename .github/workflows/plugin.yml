@@ -39,3 +39,20 @@ jobs:
       - run: pnpm --filter @kitbash/secrets-broker typecheck
       - run: pnpm --filter @kitbash/secrets-broker test
       - run: pnpm --filter @kitbash/secrets-broker test:worker
+  ci-templates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify generated PR and release workflow contracts
+        run: pnpm --filter @kitbash/cli exec vitest run test/bootstrap.test.ts
+      - name: Test migration ordering, PR guards and credential isolation
+        run: pnpm --filter kitbash-recipe-cloudflare-ci test
+      - name: Rehearse local D1 migrations and dry-run environment bundles
+        run: pnpm --filter kitbash-recipe-cloudflare-ci ci:dry-run
