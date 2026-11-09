@@ -128,3 +128,13 @@ checkout or `node_modules` to generate a project. `KIT_CATALOG_ROOT` explicitly 
 Pstack can supply the engineering workflow after generation. See [Pstack composition](PSTACK.md) for implementation,
 verification, and post-merge maintenance examples. Bootstrap neither installs pstack nor enables paid recurring
 agent jobs.
+
+## CI dry runs and migration releases
+
+Worker and vinext presets include `pnpm ci:dry-run` and `pnpm db:migrate --env staging|production`. Their generated GitHub check workflow runs migration rehearsals and Worker packaging without deployment credentials. Each configured environment gets an isolated local D1 database: fresh SQL, incremental upgrade from all but the newest migration, migration-history verification and replay checks. Wrangler has no SQL `--dry-run` flag: the rehearsal uses `--local`; Worker packaging uses `wrangler deploy --dry-run`. Feature tests must also verify preservation of actual application records across upgrades.
+
+The standard manual deploy template builds the selected environment before fetching credentials, records a D1 restore bookmark, applies pending migrations against the source config and same explicit environment, then deploys the checked Worker and allowlisted runtime secrets. PRs and non-main CI are refused by the migration helper itself. Failed bookmarks or migrations stop release. Worker rollbacks do not undo schema/data; use additive migrations compatible with the old Worker and shared previews.
+
+For projects where **PR Preview is test and main is production**, an optional complete GitHub Actions template is available at `bootstraps/shared/workflows/github-preview-production.yml`. Copy it instead of the default deploy workflow after project-specific adaptation. It runs unprivileged checks, deploys same-repository PRs as native Workers Previews, deploys production only from main, and removes named Previews on PR close. No persistent staging Worker is required. Configure separate GitHub/Infisical preview and production identities, explicit `env.production.previews` bindings in the source Wrangler config, and Preview Base secrets before enabling it. Preview URLs are public unless the application or Cloudflare Access protects them; preserve the project's authorization requirements for pages, static downloads and APIs. PR jobs never migrate a shared production database. An isolated Preview database needs its own project-specific migration/provisioning step.
+
+The same templates and scripts ship in the plugin's `runtime/catalog/bootstraps/` directory. Existing repositories can adopt the `recipes/cloudflare-ci` recipe; generated projects receive the default check and manual deploy templates automatically.

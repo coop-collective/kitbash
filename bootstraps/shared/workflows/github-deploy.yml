@@ -48,6 +48,10 @@ jobs:
           secret-path: /ci
           include-imports: 'false'
           recursive: 'false'
+      - name: Record restore bookmarks and apply migrations before deployment
+        env:
+          TARGET: ${{ inputs.target }}
+        run: pnpm db:migrate --env "$TARGET"
       - name: Fetch runtime secrets after build
         uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
         with:

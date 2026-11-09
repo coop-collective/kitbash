@@ -1,0 +1,199 @@
+# Optional replacement for deploy.yml: Preview is test; main deploys production.
+# Configure the preview/production GitHub + Infisical identities and explicit
+# Wrangler previews bindings before adopting. Preview URLs are public unless the
+# application or Cloudflare Access protects them. No remote PR migrations.
+name: Preview and production
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: preview-production-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  check:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install the Rust toolchain when this is a Rust project
+        if: hashFiles('Cargo.toml') != ''
+        run: rustup show
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Rehearse migrations and dry-run Worker deployments without credentials
+        if: hashFiles('wrangler.jsonc', 'wrangler.json', 'wrangler.toml') != ''
+        run: pnpm ci:dry-run
+      - run: pnpm smoke
+  preview:
+    needs: check
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: preview
+      url: ${{ steps.preview.outputs.url }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:production
+      - name: Require explicit Preview resource settings before fetching credentials
+        run: |
+          node --input-type=module <<'JS'
+          import {readTarget} from './scripts/ci-dry-run.mjs';
+          const config=await readTarget(process.cwd(),'production');
+          if(!config.previews)throw new Error('Configure explicit previews settings for this Worker before enabling PR deployments');
+          for(const binding of config.d1_databases??[]) {
+            if(!config.previews.d1_databases?.some(value=>value.binding===binding.binding))throw new Error('Declare Preview D1 bindings explicitly; PRs never migrate the production database');
+          }
+          JS
+      - name: Fetch Preview deployment credentials via GitHub OIDC
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || 'preview' }}
+          secret-path: /ci
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Deploy a stable named Worker Preview
+        id: preview
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          case "$PR" in ''|*[!0-9]*) exit 1;; esac
+          if [ -f dist/server/wrangler.json ]; then
+            pnpm exec wrangler preview --config dist/server/wrangler.json --name "pr-$PR" --json > "$RUNNER_TEMP/preview.json"
+          else
+            pnpm exec wrangler preview --env production --name "pr-$PR" --json > "$RUNNER_TEMP/preview.json"
+          fi
+          url=$(node --input-type=module -e '
+            import {readFileSync} from "node:fs";
+            const raw=readFileSync(process.argv[1],"utf8"), start=raw.search(/\{\s*"preview"\s*:/);
+            if(start<0)throw new Error("No Preview metadata returned");
+            const url=JSON.parse(raw.slice(start)).preview.urls?.find(value=>value.startsWith("https://"));
+            if(!url)throw new Error("No Preview URL returned");
+            process.stdout.write(url);
+          ' "$RUNNER_TEMP/preview.json")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "PR Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+  production:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: worker-deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Build the selected environment before fetching secrets
+        env:
+          TARGET: production
+        run: pnpm "build:$TARGET"
+      - name: Fetch deployment credentials via GitHub OIDC
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || 'production' }}
+          secret-path: /ci
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Record restore bookmarks and apply migrations before deployment
+        env:
+          TARGET: production
+        run: pnpm db:migrate --env "$TARGET"
+      - name: Fetch runtime secrets after build
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || 'production' }}
+          secret-path: ${{ vars.INFISICAL_SECRET_PATH || '/app' }}
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Deploy code and allowlisted Worker secrets together
+        env:
+          TARGET: production
+        run: pnpm run deploy --env "$TARGET" --from-env
+  cleanup-preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: preview
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fetch Preview cleanup credentials via GitHub OIDC
+        uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          env-slug: ${{ vars.INFISICAL_ENVIRONMENT_SLUG || 'preview' }}
+          secret-path: /ci
+          include-imports: 'false'
+          recursive: 'false'
+      - name: Remove only this PR's named Preview
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          case "$PR" in ''|*[!0-9]*) exit 1;; esac
+          pnpm exec wrangler preview delete --env production --name "pr-$PR" --skip-confirmation

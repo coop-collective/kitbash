@@ -22,4 +22,7 @@ jobs:
         run: rustup show
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Rehearse migrations and dry-run Worker deployments without credentials
+        if: hashFiles('wrangler.jsonc', 'wrangler.json', 'wrangler.toml') != ''
+        run: pnpm ci:dry-run
       - run: pnpm smoke

@@ -4,9 +4,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "node --test test/deploy.test.mjs",
+    "test": "node --test test/*.test.mjs",
     "typecheck": "wrangler types --env staging && tsc --noEmit",
-    "build": "wrangler deploy --dry-run"
+    "build": "wrangler deploy --dry-run",
+    "ci:dry-run": "node scripts/ci-dry-run.mjs",
+    "build:staging": "wrangler deploy --dry-run --env staging",
+    "build:production": "wrangler deploy --dry-run --env production"
   },
   "devDependencies": {
     "wrangler": "4.137.0",
