@@ -29,6 +29,15 @@ test('GitHub marketplaces resolve to a standalone, working MCP plugin', { timeou
       assert.ok((await readFile(path.join(recipeDir, 'README.md'), 'utf8')).length > 100);
       assert.ok(JSON.parse(await readFile(path.join(recipeDir, 'package.json'), 'utf8')).scripts.test);
     }
+    for (const relative of [
+      'bootstraps/shared/files/scripts/ci-dry-run.mjs',
+      'bootstraps/shared/files/scripts/migrate.mjs',
+      'bootstraps/shared/workflows/github-preview-production.yml',
+      'bootstraps/worker/files/AGENTS.md',
+      'bootstraps/vinext/files/AGENTS.md',
+    ]) {
+      assert.equal(await readFile(path.join(installed, 'runtime/catalog', relative), 'utf8'), await readFile(path.join(repo, relative), 'utf8'), `installed plugin includes current CI rules and templates: ${relative}`);
+    }
     // The dependency-free observability tests must run from an installed plugin copy.
     const check = spawnSync(process.execPath, ['--test'], {
       cwd: path.join(installed, 'runtime/catalog/recipes/cloudflare-performance'), encoding: 'utf8', timeout: 15000,

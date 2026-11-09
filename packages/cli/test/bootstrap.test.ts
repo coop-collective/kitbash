@@ -129,6 +129,13 @@ describe("project bootstrap", () => {
     const deployment = await readFile(path.join(cwd, "my-api/.github/workflows/deploy.yml"), "utf8");
     expect(deployment).toContain("method: oidc");
     expect(deployment).toContain("pnpm run deploy");
+    expect(deployment.indexOf('pnpm db:migrate')).toBeLessThan(deployment.indexOf('pnpm run deploy'));
+    const checks = await readFile(path.join(cwd, "my-api/.github/workflows/check.yml"), "utf8");
+    expect(checks).toContain('pnpm ci:dry-run');
+    expect(checks).not.toContain('secrets.');
+    expect((await readJson(path.join(cwd, "my-api/package.json"))).scripts['ci:dry-run']).toBe('node scripts/ci-dry-run.mjs');
+    expect(await readFile(path.join(cwd, "my-api/scripts/migrate.mjs"), "utf8")).toContain('Remote migrations are forbidden in PR CI');
+    expect(await readFile(path.join(cwd, "my-api/AGENTS.md"), "utf8")).toContain('disposable local databases');
   });
 
   it("generates Gitstalk checks and staging deployment with its supported authentication", async () => {

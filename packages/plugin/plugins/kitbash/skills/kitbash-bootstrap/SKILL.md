@@ -20,7 +20,8 @@ available through `kit bootstrap` and the plugin's `scripts/bootstrap.mjs` launc
    `gitstalk_url` identify the Git host. Set `create_repo: true` only when creating the named remote is in the user's
    request; visibility defaults to private. Existing authorization is sufficient, without another confirmation.
    `install: true` explicitly installs dependencies. Neither option deploys the app.
-4. Read `pending_adapt` and `next_steps` in the result. Preinstallation copies reusable implementations; bindings,
+4. Generated Worker/vinext GitHub checks run `pnpm ci:dry-run`: disposable local D1 fresh/upgrade/replay checks and credential-free Worker packaging for each environment. Keep PRs away from remote migration commands and production/shared-preview databases. Trusted main releases record restore bookmarks, apply migrations and stop on failure before deploying. Add application-specific migration preservation tests; use preview as test when the project does not need persistent staging. The optional `runtime/catalog/bootstraps/shared/workflows/github-preview-production.yml` supplies that flow; adapt explicit Preview bindings, auth and environment identities before enabling it.
+5. Read `pending_adapt` and `next_steps` in the result. Preinstallation copies reusable implementations; bindings,
    route mounting, resource IDs, auth policy, and real credentials may still need project-specific setup. Work through
    those items before reporting a feature as working. Use `registry_verify` for installed blocks and the project's
    check command for the whole app; report any checks not run.

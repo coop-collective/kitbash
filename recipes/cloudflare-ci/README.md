@@ -31,3 +31,13 @@ The fixture's tests prove command ordering and failure handling; dry runs only v
 Compatibility date 2026-09-28 matches the maximum supported by the pinned Wrangler runtime. Upgrade and test the toolchain before advancing the date.
 
 This recipe is a root pnpm workspace member. For a standalone copy, run `pnpm install` once and commit its generated lockfile; use `pnpm install --frozen-lockfile` in that project’s CI.
+
+## PR migration and deployment dry runs
+
+`pnpm ci:dry-run` is a reusable, credential-free check. It rehearses SQL in disposable local D1 databases (fresh, incremental upgrade and repeat application), builds staging/production and packages each Worker with `wrangler deploy --dry-run`. It never invokes remote SQL migrations. The child process environment excludes Cloudflare, Infisical and forge credentials. The fixture's real rehearsal was tested locally as well as its command/credential guards. Add application-specific migration preservation tests alongside this generic history check.
+
+New Worker/vinext bootstraps automatically include this command in GitHub checks. Their shared `scripts/migrate.mjs` requires an explicit trusted main release, records a restore bookmark and applies migrations before deployment; no-op vinext projects without D1 do not create a database.
+
+Optional GitHub template: [`github-preview-production.yml`](../../bootstraps/shared/workflows/github-preview-production.yml) implements same-repository PR Previews and main-to-production with no persistent test/staging Worker. See the [bootstrap CI guide](../../docs/BOOTSTRAP.md#ci-dry-runs-and-migration-releases) for explicit Preview bindings, runtime secrets, authorization and identity setup. Do not enable both deployment templates for the same production Worker. These optional templates are syntax/contract-tested here; hosted deployment remains an adoption check.
+
+Provenance: the dry-run/release pattern was exercised in `coop-collective/sticks`, commit `5a71b1b6`, paths `.github/workflows/marketing.yml` and `packages/marketing/scripts/{check-migrations,migrate-production}.mjs`. The reusable implementation contains no source-project account/database IDs, domains, emails or secret values.

@@ -22,3 +22,7 @@ For staging, run `pnpm build:staging` followed by `pnpm run deploy --env staging
 The compatibility date is pinned to 2026-08-22 because the registry-compatible `@cloudflare/vitest-pool-workers` 0.23.0 embeds a runtime with that maximum date. This legacy package has been renamed upstream to `@cloudflare/vitest-plugin`; update the registry block tests and runtime together before advancing the compatibility date.
 
 `pnpm test` runs workerd TypeScript tests and installed `test/**/*.test.mjs` / `.test.cjs` Node suites. Native container builds and Docker smoke checks remain explicit steps in the container block adaptation checklist.
+
+`pnpm ci:dry-run` rehearses D1 migrations in disposable local databases and packages each configured environment without deployment credentials. GitHub PR checks run it automatically. The trusted release workflow runs `pnpm db:migrate --env staging|production` after build and before deployment: it records a restore bookmark and stops on migration failure. Application-specific upgrade tests should verify preservation of existing records.
+
+The Kitbash catalog also includes an optional `github-preview-production.yml` workflow for PR Previews as test and automatic production deployment from main. Adopt it after configuring explicit Preview bindings and authorization; keep shared remote database migrations out of PR jobs.

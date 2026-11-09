@@ -18,7 +18,9 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "build": "vite build",
     "build:staging": "CLOUDFLARE_ENV=staging vite build",
-    "build:production": "CLOUDFLARE_ENV=production vite build"
+    "build:production": "CLOUDFLARE_ENV=production vite build",
+    "ci:dry-run": "node scripts/ci-dry-run.mjs",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
