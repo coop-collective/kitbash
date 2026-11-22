@@ -48,5 +48,5 @@ Do not turn this review into an inventory of everything imperfect. Follow the sk
 and stopping rules; retain tests and comments that explain or protect non-obvious contracts.
 
 This diagnostic lens is adapted from Caldo's [untangle-codebase](https://github.com/caldoai/skills/blob/f3cf47774975a7d9fca45730babf4ff7ad765ada/skills/untangle-codebase/SKILL.md).
-See [attribution and MIT license](../THIRD_PARTY_NOTICES.md). Kitbash retains its bounded, evidence-first
+See [attribution and MIT license](../THIRD_PARTY_NOTICES.md). w3bstack retains its bounded, evidence-first
 workflow; this adaptation is not evidence of faster or cheaper agent performance.

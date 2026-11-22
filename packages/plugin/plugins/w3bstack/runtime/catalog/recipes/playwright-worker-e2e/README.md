@@ -15,7 +15,7 @@ To adopt, copy the config and launcher; retain your own Wrangler config, migrati
 
 In Linux CI use `pnpm exec playwright install --with-deps chromium`, then `pnpm test:e2e`, and upload `playwright-report/` and `test-results/` with `if: always()`. This fixture only configures local bindings. Adapting a project with `remote: true` bindings requires reviewing and removing those settings for this test environment. No remote deployment is performed.
 
-This is a recipe, since browser setup/startup and Playwright commands cannot be expressed by Kitbash's current verify allowlist. It complements `test-e2e/install.test.mjs`, which validates block installation rather than browser behavior.
+This is a recipe, since browser setup/startup and Playwright commands cannot be expressed by w3bstack's current verify allowlist. It complements `test-e2e/install.test.mjs`, which validates block installation rather than browser behavior.
 
 The sample compatibility date is 2026-09-28, the maximum supported by the pinned Wrangler 4.137.0 runtime. Today's date was tested and rejected at startup; upgrade the toolchain and reverify before advancing it.
 

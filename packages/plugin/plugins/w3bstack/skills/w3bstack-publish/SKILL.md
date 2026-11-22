@@ -21,7 +21,7 @@ this conversation, and say what will be published (name, version, visibility, li
 3. **License** is an SPDX id (`MIT`, `Apache-2.0`, `UNLICENSED` for private blocks). A block harvested from open-source
    code carries that license and attribution; do not relicense it.
 4. **Price.** The CLI does not support paid blocks yet; `registry_publish` refuses a `price` until payments exist.
-5. Sign-in: `kit login` (a token from the web UI or `pnpm kit:token`), or `KIT_TOKEN` in the environment. Never ask the
+5. Sign-in: `kit login` (a token from the web UI or `pnpm -F @w3bstack/api kit:token` in a w3bstack checkout), or `KIT_TOKEN` in the environment. Never ask the
    user to paste a token into the chat, and never write one into a file in the project.
 
 ## What the scanner rejects

@@ -3,10 +3,10 @@
 A dependency-free, read-only Node recipe for checking observability access before drawing conclusions about a slow page. It reads a Worker's observability settings, aggregate invocation metrics and account telemetry-key access. It never changes logging, sampling, deployments or application data. POST is used only for GraphQL queries and telemetry key discovery.
 
 ```sh
-pnpm --filter kitbash-recipe-cloudflare-performance test
+pnpm --filter w3bstack-recipe-cloudflare-performance test
 # Supply the three required variables through your approved secret injector or CI environment:
 # CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_WORKER
-pnpm --filter kitbash-recipe-cloudflare-performance preflight
+pnpm --filter w3bstack-recipe-cloudflare-performance preflight
 ```
 
 No token argument is accepted. Do not paste credentials into commands, artifacts or chat. The script does not search local Wrangler credentials or discover accounts automatically. Optional `PERF_WINDOW_MINUTES` selects 1–1440 minutes (default 60); `PERF_END` fixes the end of the UTC interval for repeatable comparisons. The default end is now. Account ID and Worker name are used only in requests and are not printed; record the intended environment and deployed commit separately beside the report.

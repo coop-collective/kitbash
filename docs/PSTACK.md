@@ -1,8 +1,8 @@
-# Kitbash with pstack
+# w3bstack with pstack
 
-Kitbash owns runtime presets, feature blocks, stack-specific review guidance, and project setup. Pstack is a separate
+w3bstack owns runtime presets, feature blocks, stack-specific review guidance, and project setup. Pstack is a separate
 optional dependency that can own the engineering workflow. One task owner selects the necessary capabilities;
-there is no competing Kitbash orchestration loop or required pstack extension API.
+there is no competing w3bstack orchestration loop or required pstack extension API.
 
 The examples below were checked against [pstack 0.15.26](https://github.com/cursor/plugins/tree/0b8e952052d482ee6de06deebf14d590d77b1b34/pstack).
 Upstream exposes task playbooks and a generator for project-local verification skills. Its full plugin and
@@ -10,10 +10,10 @@ Ideator's vendored subset differ; an installed adapter's own execution and appro
 
 ## Starting a project
 
-First use [Kitbash bootstrap](BOOTSTRAP.md), selecting the preset and only the blocks the app needs:
+First use [w3bstack bootstrap](BOOTSTRAP.md), selecting the preset and only the blocks the app needs:
 
 ```text
-Use $kitbash-bootstrap to create ../scoreboard with vinext,
+Use $w3bstack-bootstrap to create ../scoreboard with vinext,
 public-edge-cache and tiered-result-cache. Keep the Git repository local.
 ```
 
@@ -25,12 +25,12 @@ is `/poteto-mode`; the upstream Claude plugin exposes `/pstack:poteto-mode`. For
 
 ```text
 /poteto-mode Build the global leaderboard in this generated project.
-Use the installed Kitbash cache blocks and resolve their pending adaptation items.
+Use the installed w3bstack cache blocks and resolve their pending adaptation items.
 Choose page rendering and cache freshness from the product requirements.
 Verify the visible leaderboard, refresh behavior, and source-query counts.
 ```
 
-Kitbash also works without pstack. To install pstack separately, follow its [upstream installation instructions](https://github.com/cursor/plugins/blob/0b8e952052d482ee6de06deebf14d590d77b1b34/pstack/README.md#install)
+w3bstack also works without pstack. To install pstack separately, follow its [upstream installation instructions](https://github.com/cursor/plugins/blob/0b8e952052d482ee6de06deebf14d590d77b1b34/pstack/README.md#install)
 for the chosen harness; bootstrapping an app does not change global agent settings.
 
 ## Verification during work

@@ -1,7 +1,8 @@
 # Secrets without values in the agent workspace
 
-Kitbash's `kitbash_secrets` tool runs routine setup through a separate trusted broker. Remote agents connect directly
-to its authenticated `/mcp` endpoint; the local plugin uses `/v1/operations`. One `setup` call generates
+The w3bstack plugin's `w3bstack_secrets` tool runs routine setup through a separate trusted broker. Remote agents connect directly
+to its authenticated `/mcp` endpoint, where the same operations are the tool `kitbash_secrets`; the local plugin uses `/v1/operations`.
+The broker is a deployed service, so its Worker name, MCP tool names (`kitbash_*`) and connector entry kept the product's earlier name, Kitbash. One `setup` call generates
 every allowed missing application key in the configured store, preserves existing values, and registers the configured GitHub
 Actions and Cloudflare Worker connections. The agent receives names and status, plus a human approval link when
 registering a new GitHub App; it never supplies or receives
@@ -13,7 +14,7 @@ the generated values. The equivalent plugin command is `/kit:secrets setup my-ap
 
 ```mermaid
 flowchart LR
-  A[Agent: alias and target] --> P[Kitbash plugin]
+  A[Agent: alias and target] --> P[w3bstack plugin]
   A -->|remote MCP and scoped auth| B[Isolated broker]
   P -->|scoped request| B[Isolated broker]
   B -->|generate application keys| I[Infisical]
@@ -40,12 +41,12 @@ The Infisical OIDC/native-sync integrations below apply only to Infisical polici
 Infisical supports [GitHub Actions OIDC authentication](https://infisical.com/docs/documentation/platform/identities/oidc-auth/general)
 and [Worker secret sync](https://infisical.com/docs/integrations/secret-syncs/cloudflare-workers). GitHub does not need
 a long-lived Infisical secret: its workflow obtains a temporary identity token and exchanges it for scoped access.
-The broker registers this access and sets the non-secret GitHub environment variables used by Kitbash's workflow.
+The broker registers this access and sets the non-secret GitHub environment variables used by w3bstack's workflow.
 
 [Infisical Agent Vault](https://infisical.com/platform/agent-vault), currently advertised as a preview, already offers
 credential proxying for agents. For broader authenticated API use, evaluate its service access bundles and
 [agent protocol](https://github.com/Infisical/agent-vault/blob/main/docs/agents/protocol.mdx) instead of building another
-general credential proxy. Kitbash's broker is narrower: generate application keys internally and orchestrate fixed
+general credential proxy. w3bstack's broker is narrower: generate application keys internally and orchestrate fixed
 setup operations while filtering provider responses. It exposes no raw Infisical CRUD or arbitrary HTTP proxy route.
 
 ## Agent operations
@@ -150,13 +151,13 @@ The broker exchanges the temporary code and sends those values directly to Infis
    Then run `setup` to finish other configured integrations.
 
 Existing complete credentials are preserved. Partial credentials, a lost conversion/write response, or an opened
-handoff lost through expiry, broker-key rotation, or a standalone Node restart require operator reconciliation; Kitbash does not create a second App or rotate
+handoff lost through expiry, broker-key rotation, or a standalone Node restart require operator reconciliation; w3bstack does not create a second App or rotate
 keys automatically. The operator checks GitHub registration and Infisical state before clearing a checkpoint.
 Cloudflare durable storage preserves handoffs across ordinary Worker eviction. GitHub App installation and runtime authentication checks remain separate from credential creation.
 
 Existing provider credentials use the general `kitbash_upload_secrets` MCP tool. It creates a scoped upload
 ticket and supplies a Python helper for the bot's computer. The helper reads local files and sends their bytes
-directly to Kitbash, returning names/status only. There is no human upload page or secret-value MCP argument.
+directly to w3bstack, returning names/status only. There is no human upload page or secret-value MCP argument.
 See [local-file uploads](BROKER-SETUP.md#upload-secret-files-from-the-bot-computer).
 
 For native controller delivery, `kitbash_secret_deliveries` lists the enrolled destinations and required public
@@ -199,7 +200,7 @@ The operator configures:
 The trusted policy maps aliases to destination metadata and secret policies. Start with
 [`policy.example.json`](../packages/secrets-broker/policy.example.json) on the broker host, replace its project/repository
 metadata, and keep the reviewed copy outside the agent workspace. New application bootstraps emit
-`.kitbash/secrets-broker.request.json` as an **untrusted proposal** for this policy; it cannot authorize its own
+`.w3bstack/secrets-broker.request.json` as an **untrusted proposal** for this policy; it cannot authorize its own
 repository, target, names, or grants. The operator adopts only intended destinations and permissions.
 
 Each principal's token hash maps to explicit projects, targets, and operations. A `setup` grant authorizes the entire
@@ -223,7 +224,7 @@ Start the service from a trusted installation, with credentials supplied through
 injection rather than command-line arguments:
 
 ```sh
-pnpm --filter @kitbash/secrets-broker start \
+pnpm --filter @w3bstack/secrets-broker start \
   --config /operator/policy.json \
   --state /operator/private/state.json
 ```
@@ -257,11 +258,11 @@ synced. `autoSync` is an operator policy choice. Registration requires an
 existing Worker; first deployment remains a separate operation. Keep `/ci` infrastructure credentials out of `/app`
 and never sync them into the Worker as application secrets.
 
-Before registering or revalidating a Worker sync, Kitbash rejects source-folder names absent from the broker's app
+Before registering or revalidating a Worker sync, w3bstack rejects source-folder names absent from the broker's app
 allowlist. Native sync then owns the entire dedicated folder, so later writes to that folder must also be trusted;
 Infisical's background sync does not call the broker's validator. Keep unrelated credentials in separate folders.
 
-Kitbash's existing deployment helper can upload code and allowlisted secrets together through Wrangler. Native
+w3bstack's existing deployment helper can upload code and allowlisted secrets together through Wrangler. Native
 Worker sync is useful when changes should propagate independently of code deployment. Decide which path owns secret
 updates for each environment; avoid concurrent independent writes. A provider rotation can update Infisical and then
 propagate through native sync, but safe application signing-key rollover still requires overlap and migration logic.

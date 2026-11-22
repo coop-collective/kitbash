@@ -1,15 +1,15 @@
-# Kitbash
+# w3bstack
 
-**An MIT-licensed, open-source toolkit for coding agents building and maintaining applications.** Kitbash combines reusable feature blocks, project bootstraps, tested recipes, and focused maintenance skills, with a plugin for Claude Code and Codex.
+**An MIT-licensed, open-source toolkit for coding agents building and maintaining applications.** w3bstack combines reusable feature blocks, project bootstraps, tested recipes, and focused maintenance skills, with a plugin for Claude Code and Codex.
 
-The catalog ships in this repository. Install its source into your project, adapt the wiring, and run its checks. You do not need a Kitbash account, subscription, or hosted registry. Your application owns the copied code.
+The catalog ships in this repository. Install its source into your project, adapt the wiring, and run its checks. You do not need a w3bstack account, subscription, or hosted registry. Your application owns the copied code.
 
 | Part | What it supplies |
 | --- | --- |
 | [17 blocks](#available-blocks) | Feature code, tests, migrations, configuration, and adaptation instructions |
 | [3 project presets](#start-a-project) | A runnable Worker, vinext app, or local Rust server, with compatible blocks selected at bootstrap |
 | [81 UI components](#ui-components) | Styrene-themed React parts for agent and AI products, browsable in Storybook |
-| [7 recipes](#recipes) | Working examples for CI, integration tests, coverage, linting, and build checks |
+| [10 recipes](#recipes) | Working examples for CI, integration tests, coverage, linting, and build checks |
 | [3 maintenance skills](#maintenance-and-pstack) | Explicit TypeScript, Rust, and page-delivery reviews after merge or before release |
 | [Agent plugin](#use-the-plugin) | Local MCP tools and skills for discovery, installation, verification, and secret setup |
 
@@ -20,28 +20,28 @@ For installation from GitHub without a local build, see the [quick start](../REA
 Use Node.js 22.18 or later and the repository's pinned pnpm version, currently 12.14.0.
 
 ```sh
-git clone https://github.com/coop-collective/kitbash.git
-cd kitbash
+git clone https://github.com/coop-collective/w3bstack.git
+cd w3bstack
 pnpm install
-pnpm --filter @kitbash/cli build
-pnpm --filter @kitbash/plugin build
-export KITBASH_ROOT="$PWD"
+pnpm --filter @w3bstack/cli build
+pnpm --filter @w3bstack/plugin build
+export W3BSTACK_ROOT="$PWD"
 ```
 
 Build before loading the plugin: it bundles its runtime and local catalog so an installed copy can work without this checkout's dependencies. After updating the checkout, rebuild and reload or reinstall the plugin. Native container development also needs the relevant Bun, Go, Rust, and Docker tooling; see [workspace setup](../docs/WORKSPACE.md).
 
 ## Use the plugin
 
-The plugin is named `kit`; its local MCP server is named `kitbash`.
+The plugin is named `kit`; its local MCP server is named `w3bstack`. Before plugin 0.2.0 the product, marketplace and server were named Kitbash; see [Renamed from Kitbash](../README.md#renamed-from-kitbash) to move an existing install.
 
-For company signups and OAuth app setup, use the [Grok Bot account-manager starter](../docs/GROK-BOT.md) or the plugin skill `$kitbash-accounts`. Grok manages provider accounts through Agent Vault; Claude Code and other coding tools handle application changes and Infisical credentials. Browser password filling and provider-secret capture require separately verified integrations.
+For company signups and OAuth app setup, use the [Grok Bot account-manager starter](../docs/GROK-BOT.md) or the plugin skill `$w3bstack-accounts`. Grok manages provider accounts through Agent Vault; Claude Code and other coding tools handle application changes and Infisical credentials. Browser password filling and provider-secret capture require separately verified integrations.
 
 ### Claude Code
 
 From the project you want to work on, launch Claude with the built plugin:
 
 ```sh
-claude --plugin-dir "$KITBASH_ROOT/packages/plugin/plugins/kitbash"
+claude --plugin-dir "$W3BSTACK_ROOT/packages/plugin/plugins/w3bstack"
 ```
 
 Then use a command or describe the task:
@@ -49,7 +49,7 @@ Then use a command or describe the task:
 ```text
 /kit:bootstrap Create a Worker in ../my-api with jwt-session-cookie and r2-private-uploads.
 /kit:search Find a block for tenant-scoped WebSocket rooms.
-/kit:install /absolute/path/to/kitbash/blocks/hibernating-websocket
+/kit:install /absolute/path/to/w3bstack/blocks/hibernating-websocket
 /kit:secrets setup my-api staging
 ```
 
@@ -60,25 +60,25 @@ Then use a command or describe the task:
 Register the built local plugin catalog, install `kit`, and start a new session in your application:
 
 ```sh
-codex plugin marketplace add "$KITBASH_ROOT/packages/plugin"
-codex plugin add kit@kitbash
+codex plugin marketplace add "$W3BSTACK_ROOT/packages/plugin"
+codex plugin add kit@w3bstack
 ```
 
-Here, “marketplace” is the CLI's name for the local plugin catalog. These commands do not connect to a Kitbash service. See [OpenAI's plugin documentation](https://learn.chatgpt.com/docs/plugins) for plugin discovery and management.
+Here, “marketplace” is the CLI's name for the local plugin catalog. These commands do not connect to a w3bstack service. See [OpenAI's plugin documentation](https://learn.chatgpt.com/docs/plugins) for plugin discovery and management.
 
 ```text
-Use $kitbash-bootstrap to create a vinext app in ../my-web with public-edge-cache.
-Use $kitbash-use to install /absolute/path/to/kitbash/blocks/member-profiles into this Worker, adapt it, and verify it.
-Use $kitbash-secrets to set up staging secrets for the registered my-api project.
-Use $kitbash-accounts to check readiness for company account and OAuth app setup.
-Use $kitbash-ui to build the run-approval screen from the Styrene components.
+Use $w3bstack-bootstrap to create a vinext app in ../my-web with public-edge-cache.
+Use $w3bstack-use to install /absolute/path/to/w3bstack/blocks/member-profiles into this Worker, adapt it, and verify it.
+Use $w3bstack-secrets to set up staging secrets for the registered my-api project.
+Use $w3bstack-accounts to check readiness for company account and OAuth app setup.
+Use $w3bstack-ui to build the run-approval screen from the Styrene components.
 ```
 
-For a harness that only supports MCP, configure a stdio server running `node /absolute/path/to/kitbash/packages/plugin/plugins/kitbash/scripts/kit-mcp.mjs`. MCP-only setup exposes tools; it does not install the plugin's skills or commands.
+For a harness that only supports MCP, configure a stdio server running `node /absolute/path/to/w3bstack/packages/plugin/plugins/w3bstack/scripts/kit-mcp.mjs`. MCP-only setup exposes tools; it does not install the plugin's skills or commands.
 
 ### How block installation works
 
-The agent finds a block in this README, the local `blocks/` directory, or the installed plugin's `runtime/catalog/blocks/`. The `kitbash_bootstrap` tool with `list: true` lists presets; add `preset: "worker"` or `"vinext"` to list compatible blocks.
+The agent finds a block in this guide, the local `blocks/` directory, or the installed plugin's `runtime/catalog/blocks/`. The `w3bstack_bootstrap` tool with `list: true` lists presets; add `preset: "worker"` or `"vinext"` to list compatible blocks.
 
 For an existing project, inspect and install using the block's **absolute local directory** and the application's `project_root`. Use the installed block ID returned by the installer for subsequent verification and maintenance:
 
@@ -134,32 +134,32 @@ Presets provide the application shell; blocks provide reusable features.
 The CLI works without an agent:
 
 ```sh
-node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap --list --preset worker
-node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-api \
+node "$W3BSTACK_ROOT/packages/cli/dist/kit.js" bootstrap --list --preset worker
+node "$W3BSTACK_ROOT/packages/cli/dist/kit.js" bootstrap ../my-api \
   --preset worker --blocks jwt-session-cookie,r2-private-uploads --install --yes
-node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-web \
+node "$W3BSTACK_ROOT/packages/cli/dist/kit.js" bootstrap ../my-web \
   --preset vinext --blocks public-edge-cache --yes
-node "$KITBASH_ROOT/packages/cli/dist/kit.js" bootstrap ../my-server \
+node "$W3BSTACK_ROOT/packages/cli/dist/kit.js" bootstrap ../my-server \
   --preset rust-server --host 127.0.0.1 --port 8080 --yes
 ```
 
 Run `bootstrap` interactively to choose a preset and blocks. Select a container variant with `--blocks cloudflare-container:go` (or `:bun`, `:rust`). Add `--git-host github --repo owner/name --create-repo` to create a GitHub repository; Gitstalk is also supported. Remote creation and dependency installation are explicit options.
 
-For an existing application, the CLI supports `init`, local-path `get` and `install`, then `status` and `verify`. Use `--root /absolute/path/to/app` to select the target. See [bootstrap and installation details](../docs/BOOTSTRAP.md) and `node "$KITBASH_ROOT/packages/cli/dist/kit.js" --help`.
+For an existing application, the CLI supports `init`, local-path `get` and `install`, then `status` and `verify`. Use `--root /absolute/path/to/app` to select the target. See [bootstrap and installation details](../docs/BOOTSTRAP.md) and `node "$W3BSTACK_ROOT/packages/cli/dist/kit.js" --help`.
 
 ## UI components
 
-[`packages/ui`](../packages/ui/README.md) is a Storybook of 81 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, multiplayer presence, analytics, users and profiles, inputs and charts. The newer data components (and the context window, agent lanes, trace waterfall and KPI chart) ship skeleton, empty, error and freshness states, with a stale-while-revalidate cache hook and lazy mounting to drive them. They share Styrene, Kitbash's own visual language: flat panels, molded keys only where you press, one meaning per color, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React, importable on its own as `@kitbash/ui/<name>` and safe to render from React Server Components.
+[`packages/ui`](../packages/ui/README.md) is a Storybook of 81 original React components for agent and AI products: approvals, tool calls, plans, traces, chat, multiplayer presence, analytics, users and profiles, inputs and charts. The newer data components (and the context window, agent lanes, trace waterfall and KPI chart) ship skeleton, empty, error and freshness states, with a stale-while-revalidate cache hook and lazy mounting to drive them. They share Styrene, w3bstack's own visual language: flat panels, molded keys only where you press, one meaning per color, and snap-fit motion. Each one is a single component file plus its stylesheet, with no dependencies beyond React, importable on its own as `@w3bstack/ui/<name>` and safe to render from React Server Components.
 
 ```sh
 pnpm storybook   # http://localhost:6006, light and dark from the toolbar
 ```
 
-The plugin's `kitbash-ui` skill points agents at this catalog before they build UI, and the plugin bundles the component sources under `runtime/catalog/ui/`. The component list follows [affectUI](https://www.affectui.com/components)'s public catalog as a brief; every implementation here is written independently.
+The plugin's `w3bstack-ui` skill points agents at this catalog before they build UI, and the plugin bundles the component sources under `runtime/catalog/ui/`. The component list follows [affectUI](https://www.affectui.com/components)'s public catalog as a brief; every implementation here is written independently.
 
 ## Recipes
 
-Recipes are runnable reference projects and scripts. The plugin bundles their source under `runtime/catalog/recipes/`; its `kitbash-performance` skill selects and adapts the performance recipes. Read their guides and copy the relevant pieces; they are not additional installable blocks.
+Recipes are runnable reference projects and scripts. The plugin bundles their source under `runtime/catalog/recipes/`; its `w3bstack-performance` skill selects and adapts the performance recipes. Read their guides and copy the relevant pieces; they are not additional installable blocks.
 
 | Recipe | What it demonstrates |
 | --- | --- |
@@ -178,7 +178,7 @@ Recipes are runnable reference projects and scripts. The plugin bundles their so
 
 With an isolated broker and an authorized project policy configured, `/kit:secrets setup my-api staging` generates missing application keys with at least 256 bits of randomness, preserves existing values, registers GitHub OIDC access, and configures Infisical's Worker secret sync. Agents receive names and status only. Provider-issued credentials come from authorized provider connections, not random substitute strings.
 
-The broker is an optional service you operate separately from the agent's filesystem and process access. It is not a hosted Kitbash account. Bootstrap emits a policy proposal; it does not provision live accounts or deploy the application. See [secret setup, trust boundaries, and rotation limits](../docs/SECRETS-BROKER.md).
+The broker is an optional service you operate separately from the agent's filesystem and process access. It is not a hosted w3bstack account. Bootstrap emits a policy proposal; it does not provision live accounts or deploy the application. See [secret setup, trust boundaries, and rotation limits](../docs/SECRETS-BROKER.md).
 
 For company signups and OAuth app setup, the [Grok Bot account-manager starter](../docs/GROK-BOT.md) keeps automation access in Agent Vault and application credentials in Infisical. It includes a reusable skill and a readiness check; browser password filling and provider-secret capture require separately verified integrations.
 
@@ -196,11 +196,11 @@ Copy selected skills or vendor the `skills/` tree into a project; generated proj
 
 ### Core rule: tests must be deterministic
 
-One rule is not optional and not explicit-only. The plugin adds [`rules/deterministic-tests.md`](../packages/plugin/plugins/kitbash/rules/deterministic-tests.md) to every session through its SessionStart hook, in every project, whether or not the project uses Kitbash blocks: no wall-clock assertions, no sleeping to wait, private temp directories and port 0, no shared global or environment state, no assumed ordering, seeded randomness, a repeated run before review, and a flaky test is fixed or removed from the gating suite, never retried until green. The [deterministic-tests](../skills/deterministic-tests/SKILL.md) skill, shipped as a plugin skill, has the checklist and fix recipes.
+One rule is not optional and not explicit-only. The plugin adds [`rules/deterministic-tests.md`](../packages/plugin/plugins/w3bstack/rules/deterministic-tests.md) to every session through its SessionStart hook, in every project, whether or not the project uses w3bstack blocks: no wall-clock assertions, no sleeping to wait, private temp directories and port 0, no shared global or environment state, no assumed ordering, seeded randomness, a repeated run before review, and a flaky test is fixed or removed from the gating suite, never retried until green. The [deterministic-tests](../skills/deterministic-tests/SKILL.md) skill, shipped as a plugin skill, has the checklist and fix recipes.
 
 Claude Code runs the hook as soon as the plugin is enabled. Codex skips a plugin hook until you review and trust it: run `/hooks` once after installing or updating the plugin. Until then a Codex session still sees the rule in the `deterministic-tests` skill's description.
 
-[Pstack](../docs/PSTACK.md) is an optional, separately installed engineering workflow. Use it to plan, implement, debug, and verify a feature; use Kitbash for the stack-specific blocks, recipes, and maintenance checks. Verification should exercise real user journeys and backend assertions, with recordings where useful.
+[Pstack](../docs/PSTACK.md) is an optional, separately installed engineering workflow. Use it to plan, implement, debug, and verify a feature; use w3bstack for the stack-specific blocks, recipes, and maintenance checks. Verification should exercise real user journeys and backend assertions, with recordings where useful.
 
 ## Develop and contribute
 

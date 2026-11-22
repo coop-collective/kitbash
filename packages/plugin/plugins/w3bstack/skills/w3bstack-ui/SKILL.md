@@ -55,7 +55,7 @@ The aim is UI that is recognizably considered and distinct from the default shad
 
 ## Quality bar
 
-- Set `.kb-root` on the app container (font, color, tabular numerals) and `data-theme="dark"` on `<html>` for dark mode.
+- Set `.kb-root` on the app container (font and color) and `data-theme="dark"` on `<html>` for dark mode.
 - Every interaction keeps a keyboard path. Reduced motion shows end states instead of animating.
 - Replace demo data with the project's real data. A component's demo timers and `autoplay` props are for the
   catalog; turn them off in the product.

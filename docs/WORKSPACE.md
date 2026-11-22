@@ -1,6 +1,6 @@
 # Root workspace
 
-Kitbash pins **pnpm 12.14.0**. Use Node 22.18 or later, Go 1.26.4 and a C compiler for Go's race detector. `pnpm bootstrap` installs JavaScript dependencies, the Bun 1.4.3 runtime, Rust 1.96.0 with fmt/clippy, Cargo dependencies, and then invokes `go mod download` for the container payload.
+w3bstack pins **pnpm 12.14.0**. Use Node 22.18 or later, Go 1.26.4 and a C compiler for Go's race detector. `pnpm bootstrap` installs JavaScript dependencies, the Bun 1.4.3 runtime, Rust 1.96.0 with fmt/clippy, Cargo dependencies, and then invokes `go mod download` for the container payload.
 
 ## Package map
 
@@ -8,7 +8,8 @@ Reusable application setups are blocks. There is no public `templates/` tree. Ru
 
 | Path | Purpose | Dependency ownership |
 | --- | --- | --- |
-| `packages/*` | Registry core, API, CLI and plugin | Root JS lock; explicit workspace links |
+| `packages/*` | Registry core, API, CLI, plugin, secrets broker and UI components | Root JS lock; explicit workspace links |
+| `bootstraps` | Project presets and their shared files, with tests | Root JS lock |
 | `blocks/*` | Installable features with manifests, parameters, provenance and traveling tests | Installed into a host with the kit CLI/MCP |
 | `blocks/cloudflare-container/variants/{bun,go,rust}/container` | Native payloads of one container block; runnable pnpm workspace members | Root JS lock, native Cargo.lock and go.mod |
 | `recipes/*` | Lint, coverage, browser, deployment and compiler references | Root JS lock; independent tested toolchains |
@@ -16,7 +17,7 @@ Reusable application setups are blocks. There is no public `templates/` tree. Ru
 | `test-e2e` | Block validation, real installation and Docker checks | Explicit longer-running checks |
 | `docs/examples` | Executable registry contract examples | Root JS lock |
 
-The [Cloudflare container block](../blocks/cloudflare-container/docs/README.md) installs a dedicated Wrangler configuration and Worker gateway plus a chosen Bun, Go or Rust service, Dockerfile and tests. Its native sources are directly runnable; Worker files with Kitbash parameters are rendered by installation. [Hibernating WebSockets](../blocks/hibernating-websocket/docs/README.md) installs a Durable Object, authorized upgrade handler and browser client into a host Worker.
+The [Cloudflare container block](../blocks/cloudflare-container/docs/README.md) installs a dedicated Wrangler configuration and Worker gateway plus a chosen Bun, Go or Rust service, Dockerfile and tests. Its native sources are directly runnable; Worker files with w3bstack parameters are rendered by installation. [Hibernating WebSockets](../blocks/hibernating-websocket/docs/README.md) installs a Durable Object, authorized upgrade handler and browser client into a host Worker.
 
 ## Commands
 
@@ -27,7 +28,7 @@ The [Cloudflare container block](../blocks/cloudflare-container/docs/README.md) 
 | `pnpm workspace:map` | Executable workspace package names and locations |
 | `pnpm check` | Lint, typecheck, tests and validation, stopping on failure |
 | `pnpm test` | Registry/recipe/fixture tests plus Bun, Cargo and Go race tests |
-| `pnpm test:core` | Registry's four original packages |
+| `pnpm test:core` | Tests for every package under `packages/*` |
 | `pnpm typecheck` | TS checks, generated Worker binding types, Cargo check and Go build checks |
 | `pnpm lint` | ESLint recipe, Rust fmt/clippy and Go vet |
 | `pnpm validate` | Registry schemas, plugin structure and every block's scanner |
@@ -36,15 +37,15 @@ The [Cloudflare container block](../blocks/cloudflare-container/docs/README.md) 
 | `pnpm test:coverage-guard` | Prove an unimported source file fails the coverage gate |
 | `pnpm test:docker` | Install each container variant, then build/run its traveling Docker smoke tests |
 
-Docker tests require a running Docker engine. They check non-root execution, a local read-only root filesystem, bounded tmpfs and cleanup; these Docker flags are not claims about Cloudflare production configuration. Install Chromium once with `pnpm --filter kitbash-recipe-playwright-worker-e2e browsers:install` (Linux CI adds `--with-deps`). Browser, install and Docker suites are explicit because of their host requirements and duration. Recursive ordinary tasks use two concurrent projects; e2e projects run one at a time.
+Docker tests require a running Docker engine. They check non-root execution, a local read-only root filesystem, bounded tmpfs and cleanup; these Docker flags are not claims about Cloudflare production configuration. Install Chromium once with `pnpm --filter w3bstack-recipe-playwright-worker-e2e browsers:install` (Linux CI adds `--with-deps`). Browser, install and Docker suites are explicit because of their host requirements and duration. Recursive ordinary tasks use two concurrent projects; e2e projects run one at a time.
 
 ```sh
 pnpm --filter @kitbash/container-rust test
 pnpm --filter @kitbash/container-go build
 pnpm --filter @kitbash/container-bun dev
 pnpm --filter './recipes/*' -r --if-present run typecheck
-KIT_E2E_ONLY=cloudflare-container pnpm --filter @kitbash/test-e2e test:e2e
-KIT_E2E_ONLY=hibernating-websocket pnpm --filter @kitbash/test-e2e test:e2e
+KIT_E2E_ONLY=cloudflare-container pnpm --filter @w3bstack/test-e2e test:e2e
+KIT_E2E_ONLY=hibernating-websocket pnpm --filter @w3bstack/test-e2e test:e2e
 ```
 
 ## Native resolution

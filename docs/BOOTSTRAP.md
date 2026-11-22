@@ -1,6 +1,6 @@
 # Bootstrap a project
 
-Kitbash creates a new project from a small runtime preset and preinstalls compatible feature blocks. Presets own
+w3bstack creates a new project from a small runtime preset and preinstalls compatible feature blocks. Presets own
 entrypoints, local development, checks, and deployment configuration. Blocks continue to own reusable feature code;
 a preset does not fork every block into a separate template.
 
@@ -15,11 +15,11 @@ does not copy their application-specific behavior or claim to reproduce Omniscie
 
 ## CLI
 
-From a Kitbash checkout, build the CLI once. Its generated `dist/catalog` accompanies the executable, so generation
+From a w3bstack checkout, build the CLI once. Its generated `dist/catalog` accompanies the executable, so generation
 does not need a live registry. Dependency installation and Git-host operations need their respective network access.
 
 ```sh
-pnpm --filter @kitbash/cli build
+pnpm --filter @w3bstack/cli build
 node packages/cli/dist/kit.js bootstrap --list
 node packages/cli/dist/kit.js bootstrap --list --preset vinext
 node packages/cli/dist/kit.js bootstrap ../scoreboard --preset vinext --blocks public-edge-cache,tiered-result-cache --yes
@@ -87,7 +87,7 @@ The generated project records:
 - `.kit/catalog/blocks/`: local source snapshots for later block verification and updates.
 - `.kit/skills/`: explicit maintenance reviews, kept out of ordinary feature-agent instructions.
 - `.kit/verification/README.md`: project verification entrypoint to extend as actual user journeys are added.
-- `.kitbash/secrets-broker.request.json`: names and destination metadata proposed to the separately controlled broker; no credentials or grants.
+- `.w3bstack/secrets-broker.request.json`: names and destination metadata proposed to the separately controlled broker; no credentials or grants.
 
 After generation, resolve `pending_adapt`, run the project's check command, and drive the app's actual behavior.
 The bootstrap JSON result includes `next_steps`; scripts can consume it with `--json`.
@@ -95,7 +95,7 @@ The bootstrap JSON result includes `next_steps`; scripts can consume it with `--
 ## Infisical
 
 Provide `--infisical-project <project-id>` and optionally `--infisical-domain <url>` to configure the generated
-project's Infisical connection. `.kitbash/secrets.json` lists secret names and environment paths. The generated
+project's Infisical connection. `.w3bstack/secrets.json` lists secret names and environment paths. The generated
 `scripts/secrets.mjs` helper supports local materialization, importing values through stdin, random generation,
 and configured provider-native rotation.
 
@@ -108,7 +108,7 @@ and status. Existing secrets are preserved; missing required provider-issued cre
 {"operation":"setup","project":"my-api","target":"staging"}
 ```
 
-The plugin command is `/kit:secrets setup my-api staging`. Source declarations in `.kitbash/secrets.json` become a
+The plugin command is `/kit:secrets setup my-api staging`. Source declarations in `.w3bstack/secrets.json` become a
 broker policy proposal, not authority to access another account. Local materialization/import/run helpers remain
 available for trusted operators; an agent with local filesystem or process access could read those values, so use
 non-sensitive fixtures locally when requiring secret isolation.
@@ -120,9 +120,9 @@ provider support and a configured rotation; JWT signing keys and peppers need an
 
 ## Plugin and pstack
 
-The same operation is available as `/kit:bootstrap`, `$kitbash-bootstrap`, the MCP tool `kitbash_bootstrap`, and the
-plugin's `scripts/bootstrap.mjs` launcher. Build the plugin with `pnpm --filter @kitbash/plugin build` before packaging
-it: the runtime and `runtime/catalog/` must travel together. An installed bundle needs no neighboring Kitbash
+The same operation is available as `/kit:bootstrap`, `$w3bstack-bootstrap`, the MCP tool `w3bstack_bootstrap`, and the
+plugin's `scripts/bootstrap.mjs` launcher. Build the plugin with `pnpm --filter @w3bstack/plugin build` before packaging
+it: the runtime and `runtime/catalog/` must travel together. An installed bundle needs no neighboring w3bstack
 checkout or `node_modules` to generate a project. `KIT_CATALOG_ROOT` explicitly selects another local catalog.
 
 Pstack can supply the engineering workflow after generation. See [Pstack composition](PSTACK.md) for implementation,

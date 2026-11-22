@@ -1,26 +1,26 @@
 # kit-api HTTP contract (MVP, WP-02)
 
 The Worker in `packages/api`. This is what the `kit` CLI (WP-03), the plugin (WP-04) and the remote `/mcp` clients
-call. Shapes named `Card`, `Summary`, `FileEntry`, `Error` are the zod types of `@kitbash/core/contract`
+call. Shapes named `Card`, `Summary`, `FileEntry`, `Error` are the zod types of `@w3bstack/core/contract`
 (`packages/core/src/contract.ts`, JSON Schema in `packages/core/schema/contract.v1.json`); this document only adds
 the REST framing around them. Owner: WP-02. Local only, default `http://localhost:8787`:
 
 ```
-pnpm -F @kitbash/api kit:dev-vars   # .dev.vars with a random TOKEN_PEPPER and a fresh registry key (gitignored)
-pnpm -F @kitbash/api kit:seed       # applies migrations to the local D1, creates @coop and its owner
-pnpm -F @kitbash/api kit:token      # prints export KIT_TOKEN=kit_… (shown once)
-pnpm -F @kitbash/api dev            # wrangler dev
+pnpm -F @w3bstack/api kit:dev-vars   # .dev.vars with a random TOKEN_PEPPER and a fresh registry key (gitignored)
+pnpm -F @w3bstack/api kit:seed       # applies migrations to the local D1, creates @coop and its owner
+pnpm -F @w3bstack/api kit:token      # prints export KIT_TOKEN=kit_… (shown once)
+pnpm -F @w3bstack/api dev            # wrangler dev
 ```
 
 ## 1. Conventions
 
 - **Auth.** Every route except `GET /health` needs `Authorization: Bearer kit_<43 base64url chars>`. Tokens are opaque;
-  the server stores only `HMAC-SHA256(TOKEN_PEPPER, token)` (hex). MVP tokens are minted with `pnpm kit:token`
+  the server stores only `HMAC-SHA256(TOKEN_PEPPER, token)` (hex). MVP tokens are minted with `pnpm -F @w3bstack/api kit:token`
   (`packages/api/scripts/token.mjs`). A missing, malformed, unknown or revoked token is `401 unauthorized` with
   `WWW-Authenticate: Bearer realm="kit"`.
 - **Scopes are orgs.** A scope in a path is the org slug, with or without the `@`: `/api/blocks/coop/email-code-auth`
   and `/api/blocks/@coop/email-code-auth` are the same block `@coop/email-code-auth`. MVP seeds one personal org
-  `@coop` (`pnpm kit:seed`). Private blocks are visible only to members of their org; a private block of another org
+  `@coop` (`pnpm -F @w3bstack/api kit:seed`). Private blocks are visible only to members of their org; a private block of another org
   answers `404 not_found` (never 403, so existence does not leak).
 - **Versions.** `:version` in a path is an exact semver (`1.3.0`) or a tag (`latest`, `stable`, any `[a-z][a-z0-9-]*`).
   Tags never resolve to a yanked version. An exact yanked version answers `410 version_yanked` unless the request has

@@ -18,7 +18,7 @@ Run the fast cache and installation-policy regressions with
 
 What each case does:
 
-1. Copies the cached, installed template to a fresh temp dir. The cache (`$TMPDIR/kitbash-e2e-template-<hash>`) fingerprints
+1. Copies the cached, installed template to a fresh temp dir. The cache (`$TMPDIR/w3bstack-e2e-template-<hash>`) fingerprints
    copied source paths, contents and modes plus the standalone pnpm/Node versions, platform and architecture. Generated
    types, dependency/runtime/build/test caches and local secrets are excluded from both copying and hashing; checked-in
    examples and `.kit/project.json` remain. The first install uses `pnpm install --no-frozen-lockfile --offline`, falling

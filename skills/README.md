@@ -1,6 +1,6 @@
 # Explicit maintenance skills
 
-Kitbash's first maintenance skills replace broad Clean Code prescriptions with evidence-led, bounded work after merge or at an explicitly requested readiness checkpoint.
+w3bstack's first maintenance skills replace broad Clean Code prescriptions with evidence-led, bounded work after merge or at an explicitly requested readiness checkpoint.
 
 | Skill | Task |
 |---|---|
@@ -11,7 +11,7 @@ Kitbash's first maintenance skills replace broad Clean Code prescriptions with e
 
 The language names preserve existing Gitstalk invocations. These are maintenance procedures, not style guides that every feature agent should read. Research and its limits live in the skills' targeted references. No universal function/file-size limits or performance savings are claimed.
 
-`deterministic-tests` is the exception to the explicit-only rule below. "Tests must be deterministic" is a core rule for every coding agent in every project, so the skill stays implicitly invocable and the `kit` plugin ships it twice: the short rule in `packages/plugin/plugins/kitbash/rules/deterministic-tests.md`, which the plugin's SessionStart hook adds to every session, and this skill as a plugin skill (a copy the plugin build generates from this directory) for the checklist and fix recipes. The two Clean Code skills refer to it for any test they add or change.
+`deterministic-tests` is the exception to the explicit-only rule below. "Tests must be deterministic" is a core rule for every coding agent in every project, so the skill stays implicitly invocable and the `kit` plugin ships it twice: the short rule in `packages/plugin/plugins/w3bstack/rules/deterministic-tests.md`, which the plugin's SessionStart hook adds to every session, and this skill as a plugin skill (a copy the plugin build generates from this directory) for the checklist and fix recipes. The two Clean Code skills refer to it for any test they add or change.
 
 ## Installation and invocation
 
