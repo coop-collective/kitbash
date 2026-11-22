@@ -18,9 +18,12 @@ export const NOW = "2026-10-20T10:11:12.000Z";
 const dirs: string[] = [];
 const DEFAULT_HOME = path.join(os.tmpdir(), `kit-cli-home-${process.pid}`);
 dirs.push(DEFAULT_HOME);
+// The time this takes depends on the files left behind, not on the code under test: template-e2e leaves a project with
+// an installed node_modules. Under vitest's default 10 s hook limit a busy disk failed that suite after its test had
+// passed, so the cleanup gets the same budget as the slowest test instead.
 afterAll(async () => {
   await Promise.all(dirs.map((d) => rm(d, { recursive: true, force: true })));
-});
+}, 300_000);
 
 export async function tmpDir(prefix = "kit-cli-"): Promise<string> {
   const d = await mkdtemp(path.join(os.tmpdir(), prefix));
