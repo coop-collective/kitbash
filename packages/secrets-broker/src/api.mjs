@@ -72,7 +72,7 @@ export function makeProviders({ env = process.env, request = fetch } = {}) {
     }
     if (typeof token !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) fail('unavailable');
     const github = env.GITHUB_TOKEN
-      ? providerApi('https://api.github.com', env.GITHUB_TOKEN, request, { accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'kitbash-secrets-broker' })
+      ? providerApi('https://api.github.com', env.GITHUB_TOKEN, request, { accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'w3bstack-secrets-broker' })
       : async () => fail('unavailable');
     return { infisical: providerApi(domain, token, request), github };
   };

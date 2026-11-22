@@ -1,5 +1,5 @@
 /**
- * Kitbash e2e: install real block directories into a copy of test-e2e/fixtures/hono-d1 with the kit CLI (local path, no server),
+ * w3bstack e2e: install real block directories into a copy of test-e2e/fixtures/hono-d1 with the kit CLI (local path, no server),
  * apply, run each block's verify.commands through `kit verify`, and assert they pass.
  *
  *   node --test test-e2e/install.test.mjs            (from the repo root; also: node test-e2e/install.test.mjs)
@@ -50,7 +50,7 @@ after(() => Promise.all(tmpDirs.map((d) => rm(d, { recursive: true, force: true 
 /* ---------------------------------------------------------------- environment checks */
 
 async function toolingProblem() {
-  if (!(await exists(path.join(repo, "node_modules", "@kitbash")) ) && !(await exists(path.join(repo, "packages", "cli", "node_modules", "@kitbash")))) {
+  if (!(await exists(path.join(repo, "node_modules", "@w3bstack")) ) && !(await exists(path.join(repo, "packages", "cli", "node_modules", "@w3bstack")))) {
     return "workspace dependencies are missing: run `pnpm install` at the repo root";
   }
   const r = await sh("node", [KIT, "--help"], { cwd: repo, timeout: 60_000 });
@@ -66,13 +66,13 @@ function installedTemplate() {
   cachePromise ??= (async () => {
     // Copy the current source before looking up the cache. The version must be resolved in
     // this standalone copy: a root packageManager pin may select a different pnpm version.
-    const staging = await tmp("kitbash-e2e-template-stage-");
+    const staging = await tmp("w3bstack-e2e-template-stage-");
     await cp(TEMPLATE, staging, { recursive: true, filter: source => templateSourceFilter(TEMPLATE, source) });
     const version = await sh("pnpm", ["--version"], { cwd: staging, timeout: 60_000 });
     assert.equal(version.code, 0, `could not determine standalone pnpm version: ${fmt(version)}`);
     assert.ok(version.out.trim(), "standalone pnpm returned no version");
     const fingerprint = await templateCacheIdentity(staging, { pnpmVersion: version.out.trim() });
-    const dir = path.join(os.tmpdir(), `kitbash-e2e-template-${fingerprint.slice(0, 20)}`);
+    const dir = path.join(os.tmpdir(), `w3bstack-e2e-template-${fingerprint.slice(0, 20)}`);
     const marker = path.join(dir, ".e2e-ready");
     if (await exists(marker)) {
       await rm(staging, { recursive: true, force: true });
@@ -91,7 +91,7 @@ function installedTemplate() {
 
 /** A fresh project: the cached installed template copied (symlinks kept) with a clean git-free tree. */
 async function freshProject(base) {
-  const dir = await tmp("kitbash-e2e-proj-");
+  const dir = await tmp("w3bstack-e2e-proj-");
   await cp(base, dir, { recursive: true, verbatimSymlinks: true, filter: (s) => !SKIP_COPY.test(path.relative(base, s).split(path.sep).join("/")) });
   await rm(path.join(dir, ".e2e-ready"), { force: true });
   return dir;
@@ -176,14 +176,14 @@ async function installAddedDependencies(dir, base) {
 const problem = await toolingProblem();
 const plan = await loadPlan();
 
-describe("kitbash e2e: blocks installed into test-e2e/fixtures/hono-d1 and verified", () => {
+describe("w3bstack e2e: blocks installed into test-e2e/fixtures/hono-d1 and verified", () => {
   if (plan.length === 0) it("has cases", { skip: "no blocks found (blocks/* is empty and cases.json lists none)" }, () => {});
   for (const c of plan) {
     it(c.title, { timeout: 900_000 }, async () => {
       assert.equal(problem, null, problem ?? undefined);
       const base = await installedTemplate();
       const dir = await freshProject(base.dir);
-      const home = await tmp("kitbash-e2e-home-");
+      const home = await tmp("w3bstack-e2e-home-");
       const steps = c.steps.map((s) => ({ ...s }));
 
       if (c.conflict) {

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://kitbash.dev/schema/contract.v1.draft.json",
-  "title": "Kitbash registry_* contract v1 (DRAFT, WP-07)",
+  "title": "w3bstack registry_* contract v1 (DRAFT, WP-07)",
   "description": "Draft. WP-01 owns the final packages/core/schema/contract.v1.json generated from contract.ts. Each tool has <tool>_input and <tool>_output in $defs; Error is the failure envelope for every tool.",
   "$defs": {
     "Version": {

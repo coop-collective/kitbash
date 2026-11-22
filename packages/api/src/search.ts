@@ -1,7 +1,7 @@
 // registry_search (DESIGN §6.3, MVP): D1 FTS5 over each block's `latest` version, scoped to what the caller may
 // see, ranked by bm25 plus a stack boost. Cards are precomputed at publish (one per variant, sized for a two-decimal
 // score), so a search is one query plus JSON parsing.
-import type { CardT } from "@kitbash/core";
+import type { CardT } from "@w3bstack/core";
 import { z } from "zod";
 import type { Bindings, Caller } from "./types";
 

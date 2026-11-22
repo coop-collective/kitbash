@@ -32,7 +32,7 @@ export const demoSetupGroups: SetupGroup[] = [
     id: "connect",
     title: "Connect your workspace",
     tasks: [
-      { id: "gh", label: "Install the GitHub app", detail: "Read access to kitbash/feature-registry." },
+      { id: "gh", label: "Install the GitHub app", detail: "Read access to w3bstack/feature-registry." },
       { id: "slack", label: "Connect Slack", detail: "Atlas posts summaries to #eng-updates." },
       { id: "model", label: "Choose a default model" },
     ],

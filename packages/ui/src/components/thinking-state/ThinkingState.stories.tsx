@@ -34,7 +34,7 @@ export const CodeTask: Story = {
   name: "Code task",
   args: {
     sources: [
-      { domain: "github.com", title: "kitbash/api#1184 flaky auth test", color: "#24292f" },
+      { domain: "github.com", title: "w3bstack/api#1184 flaky auth test", color: "#24292f" },
       { domain: "sentry.io", title: "TokenExpiredError, 341 events", color: "#362d59" },
       { domain: "nodejs.org", title: "Timers and fake clocks", color: "#3c873a" },
     ],

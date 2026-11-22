@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SECRETS_TOOL, runSecrets } from "../plugins/kitbash/scripts/secrets-tool.mjs";
+import { SECRETS_TOOL, runSecrets } from "../plugins/w3bstack/scripts/secrets-tool.mjs";
 import { call, connect } from "./helpers.mjs";
 
 const sentinel = "do-not-return-provider-content";
@@ -138,16 +138,16 @@ test("MCP secrets never runs project commands and filters successes, failures, a
   let response = () => json({ ...created, token: sentinel });
   let calls = 0;
   const client = await connect({ env, fetch: async () => { calls++; return response(); }, runner: async () => { throw new Error("Must not execute project commands"); } });
-  const success = await call(client, "kitbash_secrets", input);
+  const success = await call(client, "w3bstack_secrets", input);
   assert.equal(success.isError, false);
   assert.deepEqual(success.raw.structuredContent, created);
   assert.equal(JSON.stringify(success).includes(sentinel), false);
   response = () => json({ error: { code: "forbidden", message: sentinel } }, 403);
-  const failed = await call(client, "kitbash_secrets", input);
+  const failed = await call(client, "w3bstack_secrets", input);
   assert.equal(failed.isError, true);
   assert.equal(failed.data.error.code, "forbidden");
   assert.equal(JSON.stringify(failed).includes(sentinel), false);
-  const invalid = await call(client, "kitbash_secrets", { ...input, [sentinel]: sentinel });
+  const invalid = await call(client, "w3bstack_secrets", { ...input, [sentinel]: sentinel });
   assert.equal(invalid.isError, true);
   assert.equal(JSON.stringify(invalid).includes(sentinel), false);
   assert.equal(calls, 2);

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createApi } from "../src/api.ts";
 import { parse, params, stack, UsageError } from "../src/args.ts";
 import { sanitize, untrusted, untrustedEnvelope, UNTRUSTED_END } from "../src/io.ts";
+import { keychainBackend } from "../src/keys.ts";
 import { execRunner, runVerifyCommands, scrubbedEnv, type Runner } from "../src/verify.ts";
 import { tmpDir } from "./helpers.ts";
 
@@ -149,5 +150,32 @@ describe("api client", () => {
     expect(await api.resolveVersion("@coop/x@stable")).toEqual({ id: "@coop/x", version: "1.0.0" });
     expect(await api.resolveVersion("@coop/x@2.0.0")).toEqual({ id: "@coop/x", version: "2.0.0" });
     expect(seen[0]).toEqual({ url: "https://r.example/api/blocks/coop/x", auth: "Bearer kit_x" });
+  });
+});
+
+describe("publisher key in the OS keychain", () => {
+  const stored = (items: Record<string, string>) => {
+    const calls: string[][] = [];
+    const run = async (_file: string, args: string[]) => {
+      calls.push(args);
+      const value = items[args[args.indexOf("-s") + 1]!];
+      return args[0] === "find-generic-password" ? { code: value ? 0 : 44, stdout: value ?? "" } : { code: 0, stdout: "" };
+    };
+    return { calls, backend: keychainBackend({ env: {}, platform: "darwin" }, run)! };
+  };
+
+  it("reads the item stored under the old product name when the current one is absent", async () => {
+    const legacy = stored({ "kitbash-publisher": "old-key\n" });
+    expect(await legacy.backend.load()).toBe("old-key");
+    expect(legacy.calls.map((args) => args[args.indexOf("-s") + 1])).toEqual(["w3bstack-publisher", "kitbash-publisher"]);
+  });
+
+  it("prefers the current item and saves new keys under the current name", async () => {
+    const both = stored({ "w3bstack-publisher": "new-key", "kitbash-publisher": "old-key" });
+    expect(await both.backend.load()).toBe("new-key");
+    expect(both.calls).toHaveLength(1);
+    expect(await both.backend.save("secret")).toBe(true);
+    expect(both.calls.at(-1)).toContain("w3bstack-publisher");
+    expect(both.calls.at(-1)).not.toContain("kitbash-publisher");
   });
 });

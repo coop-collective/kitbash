@@ -228,7 +228,7 @@ export function StepperForm({ initial, initialStep = 0, initialDone = false, onC
                   "slug",
                   "Address",
                   <div className="kb-sf-affix-well">
-                    <span className="kb-sf-affix">kitbash.run/</span>
+                    <span className="kb-sf-affix">w3bstack.run/</span>
                     <input className="kb-sf-input kb-sf-bare" value={data.slug} onChange={(e) => { setSlugEdited(true); set("slug", e.target.value.toLowerCase()); }} placeholder="northwind-support" spellCheck={false} {...aria("slug")} />
                   </div>,
                   "Filled in from the name. Change it if you like.",
@@ -275,7 +275,7 @@ export function StepperForm({ initial, initialStep = 0, initialDone = false, onC
               <dl className="kb-sf-review">
                 {[
                   ["Workspace", `${data.name}`, 0],
-                  ["Address", `kitbash.run/${data.slug}`, 0],
+                  ["Address", `w3bstack.run/${data.slug}`, 0],
                   ["Default model", model.name, 1],
                   ["Budget", `$${Number(data.budget).toLocaleString("en-US")} a month`, 1],
                   ["Invites", invites.length ? invites.join(", ") : "Nobody yet", 2],

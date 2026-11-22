@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kitbash.dev/schema/contract.v1.json",
-  "title": "Kitbash registry_* tool contract v1",
+  "title": "w3bstack registry_* tool contract v1",
   "description": "One $defs entry per tool input/output (registry_<tool>_input|_output) plus shared shapes. Author-written prose only ever appears inside untrusted_author_text (or the length-capped Card.summary).",
   "$defs": {
     "Version": {

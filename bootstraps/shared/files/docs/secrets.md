@@ -1,16 +1,16 @@
 # Infisical secrets and deployment
 
-The generated project uses Infisical as the source of application secrets. `.kitbash/secrets.json` contains identifiers and policy, never values. Bootstrap records selected blocks' secret names; complete their adaptation checklist before enabling a deployment. Optional names use `required: false`.
+The generated project uses Infisical as the source of application secrets. `.w3bstack/secrets.json` contains identifiers and policy, never values. Bootstrap records selected blocks' secret names; complete their adaptation checklist before enabling a deployment. Optional names use `required: false`.
 
 ## Agent automation
 
-Use the Kitbash plugin's `kitbash_secrets` tool with `operation: "setup"`, the registered project alias, and an explicit target. The isolated broker generates all missing application keys with cryptographic randomness, creates configured environment/folders, registers GitHub OIDC access, and connects the native Worker sync. It preserves existing keys and returns names/status only. `.kitbash/secrets-broker.request.json` is a proposal for the broker operator; it cannot authorize itself. See [broker setup and boundaries](https://github.com/coop-collective/kitbash/blob/main/docs/SECRETS-BROKER.md).
+Use the w3bstack plugin's `w3bstack_secrets` tool with `operation: "setup"`, the registered project alias, and an explicit target. The isolated broker generates all missing application keys with cryptographic randomness, creates configured environment/folders, registers GitHub OIDC access, and connects the native Worker sync. It preserves existing keys and returns names/status only. `.w3bstack/secrets-broker.request.json` is a proposal for the broker operator; it cannot authorize itself. See [broker setup and boundaries](https://github.com/coop-collective/w3bstack/blob/main/docs/SECRETS-BROKER.md).
 
 Agents must not use the local materialization or arbitrary `run` commands below when secret isolation is required. Those commands put values in files or application process memory accessible to the local user. Use non-sensitive test fixtures locally and an isolated trusted runtime for real secrets. Provider-issued credentials come from authorized provider APIs/connections, never random application strings.
 
 ## Trusted operator fallback
 
-1. Create or select an Infisical project and set its UUID and HTTPS domain in `.kitbash/secrets.json`. `kit bootstrap --infisical-project UUID --infisical-domain https://your-vault.example` can record these existing identifiers. Bootstrap does not create a vault project, identities, provider credentials, environments, or rotation jobs.
+1. Create or select an Infisical project and set its UUID and HTTPS domain in `.w3bstack/secrets.json`. `kit bootstrap --infisical-project UUID --infisical-domain https://your-vault.example` can record these existing identifiers. Bootstrap does not create a vault project, identities, provider credentials, environments, or rotation jobs.
 2. Create `dev`, `staging`, and `production` environments and `/app` folders. `local` maps to `dev`; staging and production remain separate. An operation must name its target. Put application values in `/app`; put only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in each deployment environment's `/ci` folder. Use account-scoped deployment tokens with the necessary Worker/resource permissions. The rotation administrator credential belongs in an Infisical app connection, not `/ci`.
 3. Give developers and CI identities access only to the environments and folders they need. Use a separate identity for rotation administration. Log in locally with `infisical login --domain https://your-vault.example`. The helper captures the logged-in token without displaying it. The CLI login-token command was checked against Infisical CLI 0.43.130; network operations use the documented API v4, not CLI export caches.
 
@@ -59,7 +59,7 @@ The generated check workflow needs no secrets. Commit the generated `pnpm-lock.y
 Create GitHub environments `staging` and `production`, configure their branch/reviewer protections, and set these non-secret variables in each:
 
 - `INFISICAL_IDENTITY_ID`: that environment's machine identity.
-- `INFISICAL_PROJECT_SLUG`: the project matching `.kitbash/secrets.json`.
+- `INFISICAL_PROJECT_SLUG`: the project matching `.w3bstack/secrets.json`.
 - `INFISICAL_DOMAIN`: the same HTTPS origin as the project config; the default is US Cloud.
 
 Configure the Infisical identity's OIDC issuer as `https://token.actions.githubusercontent.com`, restrict its subject to `repo:OWNER/REPO:environment:staging` (or production), and bind appropriate repository/audience claims. Grant read access to exactly `/ci` and `/app` in that environment. The official Infisical action is pinned to v1.0.9's commit. No permanent Infisical client secret is stored in GitHub. Do not add shell or platform-control variables to `/app`; it contains application names registered in the config. If you change environment slugs or paths, update the workflow alongside the config.

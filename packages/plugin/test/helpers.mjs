@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { after } from "node:test";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
-import { createKitServer } from "../plugins/kitbash/scripts/server.mjs";
+import { createKitServer } from "../plugins/w3bstack/scripts/server.mjs";
 
 export const here = path.dirname(fileURLToPath(import.meta.url));
 export const pluginRoot = path.resolve(here, "..");

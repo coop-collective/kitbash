@@ -1,5 +1,5 @@
 // Bindings, the authenticated caller, and the API error type.
-import { KitError, type ToolErrorCode } from "@kitbash/core";
+import { KitError, type ToolErrorCode } from "@w3bstack/core";
 
 export interface Bindings {
   DB: D1Database;

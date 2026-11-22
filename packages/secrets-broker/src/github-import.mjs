@@ -39,7 +39,7 @@ export function githubJwt(clientId, pem, now = Date.now()) {
 
 export async function authenticatedApp(config, clientId, pem, request = fetch) {
   const jwt = githubJwt(clientId, pem);
-  const headers = { authorization: `Bearer ${jwt}`, accept: 'application/vnd.github+json', 'x-github-api-version': '2026-03-10', 'user-agent': 'kitbash-secrets' };
+  const headers = { authorization: `Bearer ${jwt}`, accept: 'application/vnd.github+json', 'x-github-api-version': '2026-03-10', 'user-agent': 'w3bstack-secrets' };
   const app = await requestJson('https://api.github.com/app', { headers, request });
   if (!ALIAS.test(app.slug ?? '') || (config.slug !== undefined && app.slug !== config.slug) || app.owner?.login?.toLowerCase() !== config.owner.toLowerCase() || app.client_id !== clientId || !Number.isSafeInteger(app.id) || app.id <= 0) fail('forbidden');
   return { app: { id: app.id, clientId, slug: app.slug, owner: app.owner.login }, headers };

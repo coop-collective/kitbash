@@ -7,7 +7,7 @@ const meta = {
     layout: "padded",
     docs: {
       description: {
-        component: "How to use @kitbash/ui in a React app: imports, server components, lazy loading, caching and loading states.",
+        component: "How to use @w3bstack/ui in a React app: imports, server components, lazy loading, caching and loading states.",
       },
     },
   },
@@ -28,7 +28,7 @@ export const Guide: Story = {
         <p>Import the tokens once at the root of the app, and put <code>kb-root</code> on the element that holds the UI. Dark mode follows <code>data-theme="dark"</code> on <code>html</code>.</p>
         <Code>{`
 // app/layout.tsx (vinext or Next app router)
-import "@kitbash/ui/tokens.css";
+import "@w3bstack/ui/tokens.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,9 +43,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <h2>Import a component</h2>
         <p>Every component is its own import path, named after its folder. The package root re-exports everything for convenience, but the per-component path keeps bundles small and is what <code>React.lazy</code> needs.</p>
         <Code>{`
-import { ApprovalCard } from "@kitbash/ui/approval-card";
-import { ChatThread, type ChatMessage } from "@kitbash/ui/chat-thread";
-import { useCachedLoader, LazyMount } from "@kitbash/ui/shared";`}</Code>
+import { ApprovalCard } from "@w3bstack/ui/approval-card";
+import { ChatThread, type ChatMessage } from "@w3bstack/ui/chat-thread";
+import { useCachedLoader, LazyMount } from "@w3bstack/ui/shared";`}</Code>
       </section>
 
       <section>
@@ -53,7 +53,7 @@ import { useCachedLoader, LazyMount } from "@kitbash/ui/shared";`}</Code>
         <p>Interactive components start with <code>"use client"</code>, so a server component can render them and pass serializable props. Fetch on the server and hand the data down; event handlers belong in a client component of your own.</p>
         <Code>{`
 // app/team/page.tsx (a server component)
-import { UserTable } from "@kitbash/ui/user-table";
+import { UserTable } from "@w3bstack/ui/user-table";
 
 export default async function TeamPage() {
   const members = await db.members.list();
@@ -66,8 +66,8 @@ export default async function TeamPage() {
         <p><code>useCachedLoader</code> shows cached data at once and refreshes it in the background when it is older than <code>maxAge</code>. Pass its <code>status</code> and <code>updatedAt</code> straight into a component: <code>loading</code> draws the skeleton, and a <code>FreshnessBadge</code> says how old the numbers are.</p>
         <Code>{`
 "use client";
-import { useCachedLoader } from "@kitbash/ui/shared";
-import { StatGrid, type StatMetric } from "@kitbash/ui/stat-grid";
+import { useCachedLoader } from "@w3bstack/ui/shared";
+import { StatGrid, type StatMetric } from "@w3bstack/ui/stat-grid";
 
 export function Overview({ workspace }: { workspace: string }) {
   const stats = useCachedLoader<StatMetric[]>(\`stats:\${workspace}\`, () => fetch(\`/api/\${workspace}/stats\`).then((r) => r.json()), {
@@ -92,9 +92,9 @@ export function Overview({ workspace }: { workspace: string }) {
         <p>Split heavy components into their own chunk with <code>React.lazy</code>, and mount them only when they near the viewport with <code>LazyMount</code>. Use the component's own <code>loading</code> state as the fallback so nothing jumps.</p>
         <Code>{`
 import { lazy, Suspense } from "react";
-import { LazyMount } from "@kitbash/ui/shared";
+import { LazyMount } from "@w3bstack/ui/shared";
 
-const TraceWaterfall = lazy(() => import("@kitbash/ui/trace-waterfall").then((m) => ({ default: m.TraceWaterfall })));
+const TraceWaterfall = lazy(() => import("@w3bstack/ui/trace-waterfall").then((m) => ({ default: m.TraceWaterfall })));
 
 <LazyMount fallback={<TraceWaterfall loading />} rootMargin="300px">
   <Suspense fallback={<TraceWaterfall loading />}>
@@ -116,7 +116,7 @@ const TraceWaterfall = lazy(() => import("@kitbash/ui/trace-waterfall").then((m)
 
       <section>
         <h2>Checks</h2>
-        <p><code>pnpm -F @kitbash/ui test</code> renders every component with <code>react-dom/server</code> to prove it is safe to render on the server; <code>validate</code> checks the catalog, the entry points and the agent skill reference.</p>
+        <p><code>pnpm -F @w3bstack/ui test</code> renders every component with <code>react-dom/server</code> to prove it is safe to render on the server; <code>validate</code> checks the catalog, the entry points and the agent skill reference.</p>
       </section>
     </div>
   ),

@@ -1,5 +1,5 @@
 {
-  "name": "@kitbash/recipe-tiered-result-cache-do",
+  "name": "@w3bstack/recipe-tiered-result-cache-do",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -19,6 +19,6 @@
     "typescript": "5.9.3",
     "vitest": "4.1.12",
     "wrangler": "4.151.1",
-    "@kitbash/core": "workspace:*"
+    "@w3bstack/core": "workspace:*"
   }
 }

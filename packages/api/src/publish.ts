@@ -24,7 +24,7 @@ import {
   type CardT,
   type Finding,
   type Manifest,
-} from "@kitbash/core";
+} from "@w3bstack/core";
 import semver from "semver";
 import { z } from "zod";
 import { blobKey, event, latestOf, tagsOf } from "./blocks";

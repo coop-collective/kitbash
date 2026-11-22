@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { readBlockDir } from '@kitbash/core/node';
-import { validateBlock } from '@kitbash/core';
+import { readBlockDir } from '@w3bstack/core/node';
+import { validateBlock } from '@w3bstack/core';
 
 const root = new URL('../blocks/', import.meta.url);
 const entries = (await readdir(root, { withFileTypes: true })).filter(entry => entry.isDirectory()).sort((a, b) => a.name.localeCompare(b.name));

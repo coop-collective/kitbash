@@ -1,4 +1,0 @@
-interface:
-  display_name: "Kitbash: use a block"
-  short_description: "Find, install, adapt, and verify local feature blocks"
-  default_prompt: "Use $kitbash-use to add email sign-in to this project from a block."

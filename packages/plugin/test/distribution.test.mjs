@@ -22,7 +22,7 @@ test('GitHub marketplaces resolve to a standalone, working MCP plugin', { timeou
   const client = new Client({ name: 'distribution-test', version: '0.1.0' });
   try {
     await cp(path.join(repo, source), installed, { recursive: true });
-    const skill = await readFile(path.join(installed, 'skills/kitbash-performance/SKILL.md'), 'utf8');
+    const skill = await readFile(path.join(installed, 'skills/w3bstack-performance/SKILL.md'), 'utf8');
     assert.match(skill, /runtime\/catalog\/recipes/);
     for (const recipe of ['browser-performance', 'vinext-diagnostics', 'cloudflare-performance']) {
       const recipeDir = path.join(installed, 'runtime/catalog/recipes', recipe);
@@ -40,7 +40,7 @@ test('GitHub marketplaces resolve to a standalone, working MCP plugin', { timeou
       env: { PATH: process.env.PATH, KIT_HOME: dir, KIT_KEYCHAIN: '0', KIT_API_URL: 'http://127.0.0.1:9' }, stderr: 'pipe',
     }));
     assert.equal((await client.listTools()).tools.length, 13);
-    const presets = await client.callTool({ name: 'kitbash_bootstrap', arguments: { list: true } });
+    const presets = await client.callTool({ name: 'w3bstack_bootstrap', arguments: { list: true } });
     assert.ok(!presets.isError, JSON.stringify(presets));
     assert.match(JSON.stringify(presets), /rust-server/);
     const block = await client.callTool({ name: 'registry_get', arguments: { block: path.join(installed, 'runtime/catalog/blocks/crypto-utils') } });

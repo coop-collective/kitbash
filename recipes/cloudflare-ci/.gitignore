@@ -4,4 +4,5 @@ dist/
 worker-configuration.d.ts
 .dev.vars*
 .env.local
+.w3bstack-secrets-*
 .kitbash-secrets-*

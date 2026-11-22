@@ -5,8 +5,8 @@
  */
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import { KitError, loadOrDetectProfile, readText, writeProfile, writeText, type KitFs, type ProjectProfile } from "@kitbash/core";
-import { nodeFs } from "@kitbash/core/node";
+import { KitError, loadOrDetectProfile, readText, writeProfile, writeText, type KitFs, type ProjectProfile } from "@w3bstack/core";
+import { nodeFs } from "@w3bstack/core/node";
 import type { Io } from "./io.ts";
 
 export interface Project {

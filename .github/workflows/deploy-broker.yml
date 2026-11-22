@@ -31,9 +31,9 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @kitbash/secrets-broker run typecheck
-      - run: pnpm --filter @kitbash/secrets-broker test
-      - run: pnpm --filter @kitbash/secrets-broker run test:worker
+      - run: pnpm --filter @w3bstack/secrets-broker run typecheck
+      - run: pnpm --filter @w3bstack/secrets-broker test
+      - run: pnpm --filter @w3bstack/secrets-broker run test:worker
       - name: Fetch the deployment token from Infisical using GitHub OIDC
         if: vars.KIT_BROKER_CI_PROVIDER == 'infisical'
         uses: Infisical/secrets-action@8a06c1bdcd5b8635d510c52d4b57a92c1ccef785 # v1.0.9

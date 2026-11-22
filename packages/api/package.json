@@ -1,10 +1,10 @@
 {
-  "name": "@kitbash/api",
+  "name": "@w3bstack/api",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "kit-api: the Kitbash registry Worker (Hono + D1 + R2): publish, search, bundles, remote MCP.",
+  "description": "kit-api: the w3bstack registry Worker (Hono + D1 + R2): publish, search, bundles, remote MCP.",
   "scripts": {
     "dev": "wrangler dev",
     "types": "wrangler types --strict-vars=false",
@@ -16,7 +16,7 @@
     "kit:token": "node scripts/token.mjs"
   },
   "dependencies": {
-    "@kitbash/core": "workspace:*",
+    "@w3bstack/core": "workspace:*",
     "@modelcontextprotocol/server": "2.0.0",
     "agents": "^0.24.0",
     "hono": "^4.13.9",

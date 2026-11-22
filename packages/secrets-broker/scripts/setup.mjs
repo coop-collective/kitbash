@@ -40,7 +40,7 @@ async function api(url, token, { request, method = 'GET', body } = {}) {
   let response;
   try {
     response = await request(url, {
-      method, headers: { authorization: `Bearer ${token}`, accept: 'application/json', 'content-type': 'application/json', 'user-agent': 'kitbash-setup' },
+      method, headers: { authorization: `Bearer ${token}`, accept: 'application/json', 'content-type': 'application/json', 'user-agent': 'w3bstack-setup' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }), redirect: 'error', signal: AbortSignal.timeout(30_000),
     });
     const result = await response.json();
@@ -137,13 +137,13 @@ export async function setup({ root = repoDir, supplied = process.env, ask, login
   const directory = await privateDirectory(root);
   let store;
   try { store = openState(path.join(directory, 'setup-state.json')); }
-  catch { throw new Error('Cannot open private setup state. Another setup may be running; inspect .kitbash/setup-state.json and its lock before retrying.'); }
+  catch { throw new Error('Cannot open private setup state. Another setup may be running; inspect .w3bstack/setup-state.json and its lock before retrying.'); }
   try {
     const checkpoint = (key, binding) => {
       const state = store.data.entries[key] ??= {};
       if (binding) {
         const fingerprint = hash(JSON.stringify(binding));
-        if (state.binding && state.binding !== fingerprint) throw new Error('The setup destination changed. Reconcile .kitbash/setup-state.json before moving its managed resources.');
+        if (state.binding && state.binding !== fingerprint) throw new Error('The setup destination changed. Reconcile .w3bstack/setup-state.json before moving its managed resources.');
         state.binding = fingerprint;
       }
       return { state, save: store.save };

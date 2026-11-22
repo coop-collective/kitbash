@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "w3bstack": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/kit-mcp.mjs"]
+    }
+  }
+}

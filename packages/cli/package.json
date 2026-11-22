@@ -1,10 +1,10 @@
 {
-  "name": "@kitbash/cli",
+  "name": "@w3bstack/cli",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "kit: the Kitbash CLI (bootstrap, login, init, search, get, install, apply, verify, upgrade, diff, harvest, validate, publish, propose, status, heartbeat).",
+  "description": "kit: the w3bstack CLI (bootstrap, login, init, search, get, install, apply, verify, upgrade, diff, harvest, validate, publish, propose, status, heartbeat).",
   "bin": { "kit": "./dist/kit.js" },
   "exports": {
     ".": "./src/index.ts"
@@ -16,7 +16,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@kitbash/core": "workspace:*"
+    "@w3bstack/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

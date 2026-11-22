@@ -1,0 +1,4 @@
+interface:
+  display_name: "w3bstack: Styrene UI"
+  short_description: "Borrow from the w3bstack Storybook before building React UI"
+  default_prompt: "Use $w3bstack-ui to build the approval screen for this agent app from the Styrene catalog."

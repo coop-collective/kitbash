@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { selectSecrets, selectTarget, withSecretsFile } from "./secrets.mjs";
+import { selectSecrets, selectTarget, settingsFile, withSecretsFile } from "./secrets.mjs";
 
 export function plan(target, secretsFile) {
   if (!["staging", "production"].includes(target)) throw new Error("Target must be staging or production");
@@ -34,7 +34,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   else if (mode === "--execute") {
     const root = fileURLToPath(new URL("../", import.meta.url));
     preflight(JSON.parse(readFileSync(path.join(root, "wrangler.json"), "utf8")), process.env);
-    const secretConfig = JSON.parse(readFileSync(path.join(root, ".kitbash/secrets.json"), "utf8"));
+    const secretConfig = JSON.parse(readFileSync(settingsFile(root), "utf8"));
     selectTarget(secretConfig, target);
     withSecretsFile(selectSecrets(secretConfig, process.env), (secretsFile) => {
       execute(target, (args) => {

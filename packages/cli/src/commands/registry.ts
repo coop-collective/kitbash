@@ -15,8 +15,8 @@ import {
   validateBlock,
   validateManifest,
   type CardT,
-} from "@kitbash/core";
-import { readBlockDir } from "@kitbash/core/node";
+} from "@w3bstack/core";
+import { readBlockDir } from "@w3bstack/core/node";
 import path from "node:path";
 import { createApi } from "../api.ts";
 import { bool, int, list, need, oneOf, stack, str, type Parsed } from "../args.ts";

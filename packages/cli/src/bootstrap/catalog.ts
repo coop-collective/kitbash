@@ -1,7 +1,7 @@
 import { lstat, readdir, readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { KitError, ProjectProfileSchema, type ProjectProfile } from "@kitbash/core";
+import { KitError, ProjectProfileSchema, type ProjectProfile } from "@w3bstack/core";
 
 export const PRESETS = ["worker", "vinext", "rust-server"] as const;
 export type PresetId = typeof PRESETS[number];
@@ -30,7 +30,7 @@ export async function catalogRoot(explicit?: string): Promise<string> {
   for (const dir of candidates) {
     if (await lstat(path.join(dir, "bootstraps", "worker", "bootstrap.json")).then(s => s.isFile(), () => false)) return dir;
   }
-  throw new KitError("not_found", "Bootstrap catalog missing. Build the CLI/plugin or set KIT_CATALOG_ROOT to a Kitbash checkout.");
+  throw new KitError("not_found", "Bootstrap catalog missing. Build the CLI/plugin or set KIT_CATALOG_ROOT to a w3bstack checkout.");
 }
 
 export async function loadPreset(root: string, id: string): Promise<Preset> {

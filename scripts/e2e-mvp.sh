@@ -5,7 +5,7 @@
 #      file; nothing under packages/api is written), seeds @coop and mints an owner token;
 #   2. `kit login` (temp KIT_HOME) and `kit publish` of every blocks/* (private, dependencies first);
 #   3. copies test-e2e/fixtures/hono-d1 to a temp dir, installs its npm dependencies, commits a git baseline;
-#   4. runs a headless Claude Code session with the kitbash plugin and the prompt "add email-code sign-in, CLI OAuth
+#   4. runs a headless Claude Code session with the w3bstack plugin and the prompt "add email-code sign-in, CLI OAuth
 #      login and orgs using the registry" (time- and budget-capped, push/deploy forbidden);
 #   5. asserts the lock has the three blocks, runs `kit verify` for each, and counts the agent's edits outside block
 #      files (≤ 3);
@@ -36,7 +36,7 @@ for a in "$@"; do
   esac
 done
 
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/kitbash-mvp.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/w3bstack-mvp.XXXXXX")"
 export KIT_PERSIST="$WORK/state" KIT_HOME="$WORK/kit-home" KIT_KEYCHAIN=0 WRANGLER_SEND_METRICS=false
 export KIT_API_URL="http://127.0.0.1:$PORT"
 mkdir -p "$KIT_PERSIST" "$KIT_HOME"
@@ -150,7 +150,7 @@ check_project() { # $1: project dir, $2: label
   return $((1 - ok))
 }
 
-PROMPT='Add email-code sign-in, CLI OAuth login and orgs to this Hono + D1 Worker using the registry (the kitbash registry_* tools): search, get, install the blocks (dry run first, then apply), install npm dependencies if a plan adds any, do each block'"'"'s required adapt steps in src/index.ts, and run registry_verify for every installed block until they pass. Work only inside this directory. Never push, deploy, publish, or call wrangler deploy/secret/kv/d1 against Cloudflare.'
+PROMPT='Add email-code sign-in, CLI OAuth login and orgs to this Hono + D1 Worker using the registry (the w3bstack registry_* tools): search, get, install the blocks (dry run first, then apply), install npm dependencies if a plan adds any, do each block'"'"'s required adapt steps in src/index.ts, and run registry_verify for every installed block until they pass. Work only inside this directory. Never push, deploy, publish, or call wrangler deploy/secret/kv/d1 against Cloudflare.'
 
 STATUS=0
 if [ "$AGENT" = 0 ]; then
@@ -168,13 +168,13 @@ else
   log "Claude Code (headless, plugin from packages/plugin, budget \$$BUDGET, ${TIMEOUT_S}s) in $P"
   START=$(date +%s)
   (cd "$P" && with_timeout "$TIMEOUT_S" claude -p "$PROMPT" \
-      --plugin-dir "$REPO/packages/plugin/plugins/kitbash" \
+      --plugin-dir "$REPO/packages/plugin/plugins/w3bstack" \
       --output-format stream-json --verbose \
       --max-budget-usd "$BUDGET" \
       ${KIT_E2E_MODEL:+--model "$KIT_E2E_MODEL"} \
       --setting-sources project,local \
       --permission-mode acceptEdits \
-      --allowedTools mcp__plugin_kit_kitbash Read Edit Write MultiEdit Glob Grep TodoWrite \
+      --allowedTools mcp__plugin_kit_w3bstack Read Edit Write MultiEdit Glob Grep TodoWrite \
         "Bash(pnpm install:*)" "Bash(pnpm test:*)" "Bash(pnpm typecheck:*)" "Bash(npx vitest:*)" "Bash(npx tsc:*)" \
         "Bash(npx wrangler types:*)" "Bash(ls:*)" "Bash(cat:*)" \
       --disallowedTools "Bash(git push:*)" "Bash(wrangler deploy:*)" "Bash(npx wrangler deploy:*)" "Bash(*deploy*)" \
@@ -211,9 +211,9 @@ if [ "$CODEX" = 1 ]; then
     log "Codex (exec, workspace-write sandbox) in $P"
     START=$(date +%s)
     (cd "$P" && with_timeout "$TIMEOUT_S" codex exec --json --sandbox workspace-write --skip-git-repo-check \
-        -c "mcp_servers.kitbash.command=\"node\"" -c "mcp_servers.kitbash.args=[\"$REPO/packages/plugin/plugins/kitbash/scripts/kit-mcp.mjs\"]" \
-        -c "mcp_servers.kitbash.env={KIT_HOME=\"$KIT_HOME\",KIT_KEYCHAIN=\"0\",KIT_API_URL=\"$KIT_API_URL\"}" \
-        -c 'mcp_servers.kitbash.default_tools_approval_mode="approve"' \
+        -c "mcp_servers.w3bstack.command=\"node\"" -c "mcp_servers.w3bstack.args=[\"$REPO/packages/plugin/plugins/w3bstack/scripts/kit-mcp.mjs\"]" \
+        -c "mcp_servers.w3bstack.env={KIT_HOME=\"$KIT_HOME\",KIT_KEYCHAIN=\"0\",KIT_API_URL=\"$KIT_API_URL\"}" \
+        -c 'mcp_servers.w3bstack.default_tools_approval_mode="approve"' \
         "$PROMPT" < /dev/null > "$WORK/codex.jsonl" 2> "$WORK/codex.err") || echo "codex exited $?"
     echo "codex wall seconds: $(( $(date +%s) - START ))"
     grep -o '"type":"turn.completed","usage":{[^}]*}' "$WORK/codex.jsonl" | tail -1 || true

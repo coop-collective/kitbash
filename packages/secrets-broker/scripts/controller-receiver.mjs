@@ -109,4 +109,4 @@ export async function main(argv) {
   if (argv.length !== 2 || !['enroll', 'receive'].includes(argv[0])) throw new Error('Usage: controller-receiver.mjs enroll|receive /private/directory');
   return argv[0] === 'enroll' ? enrollReceiver(argv[1]) : receiveOnce(argv[1]);
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main(process.argv.slice(2)).then(result => console.log(JSON.stringify(result))).catch(() => { console.error('Kitbash controller delivery failed; credentials and provider responses were omitted.'); process.exitCode = 1; });
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main(process.argv.slice(2)).then(result => console.log(JSON.stringify(result))).catch(() => { console.error('w3bstack controller delivery failed; credentials and provider responses were omitted.'); process.exitCode = 1; });

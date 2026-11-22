@@ -115,7 +115,7 @@ function seedPromise(host: string) {
   toast.promise(wait(1200).then(() => "3 files"), {
     toaster: host,
     loading: "Indexing repository",
-    description: "kitbash/feature-registry on main",
+    description: "w3bstack/feature-registry on main",
     success: (n) => `Indexed ${n}, 2,184 chunks`,
     error: "Indexing failed",
   });

@@ -4,7 +4,7 @@
  */
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { base64Encode, generateSigningKeyPair } from "@kitbash/core";
+import { base64Encode, generateSigningKeyPair } from "@w3bstack/core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMockRegistry, type MockRegistry } from "./mock-registry.ts";
 import { FIXTURE_BLOCK, FIXTURE_ID, fixtureCopy, kit, planIdFrom, readJson, snapshot, templateCopy, tmpDir } from "./helpers.ts";

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const helper = fileURLToPath(new URL('../shared/files/scripts/test-node.mjs', import.meta.url));
 test('generated check discovers nested Node suites and propagates a failed assertion', t => {
-  const root = mkdtempSync(path.join(os.tmpdir(), 'kitbash-node-tests-'));
+  const root = mkdtempSync(path.join(os.tmpdir(), 'w3bstack-node-tests-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(path.join(root, 'test/nested'), { recursive: true });
   writeFileSync(path.join(root, 'test/worker.test.ts'), 'throw new Error("belongs to workerd");');

@@ -1,0 +1,4 @@
+interface:
+  display_name: "w3bstack: performance checks"
+  short_description: "Measure browser and Worker performance regressions"
+  default_prompt: "Use $w3bstack-performance to diagnose slow pages and add measured regression checks."

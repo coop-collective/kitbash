@@ -27,7 +27,7 @@ export const SECRET_PATTERNS: readonly { kind: string; re: RegExp; check?: (m: s
   { kind: "ideator-token", re: /\bhq_[A-Za-z0-9_-]{20,}/g , check: randomTail },
   { kind: "xinf-key", re: /\bxk_(?:live|test)_[A-Za-z0-9_-]{16,}/g , check: randomTail },
   { kind: "mailcheap-token", re: /\bmc_[A-Za-z0-9_-]{20,}/g , check: randomTail },
-  { kind: "kitbash-token", re: /\bkit_[A-Za-z0-9_-]{20,}/g , check: randomTail },
+  { kind: "w3bstack-token", re: /\bkit_[A-Za-z0-9_-]{20,}/g , check: randomTail },
   { kind: "github-token", re: /\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,})/g },
   { kind: "slack-token", re: /\bxox[abprs]-[A-Za-z0-9-]{10,}/g },
   { kind: "google-api-key", re: /\bAIza[0-9A-Za-z_-]{35}\b/g },

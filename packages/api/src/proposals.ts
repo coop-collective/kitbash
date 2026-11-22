@@ -1,6 +1,6 @@
 // Proposals (DESIGN §3.5, MVP): a patch against a block version, stored in R2 with status `draft`. Review and
 // accept/decline are WP-21.
-import { findSecrets, parseBlockRef } from "@kitbash/core";
+import { findSecrets, parseBlockRef } from "@w3bstack/core";
 import { z } from "zod";
 import { resolveVersion, event } from "./blocks";
 import { ApiError, type Bindings, type Caller } from "./types";

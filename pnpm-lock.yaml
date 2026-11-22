@@ -217,12 +217,12 @@ importers:
 
   packages/api:
     dependencies:
-      '@kitbash/core':
-        specifier: workspace:*
-        version: link:../core
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
+      '@w3bstack/core':
+        specifier: workspace:*
+        version: link:../core
       agents:
         specifier: ^0.24.0
         version: 0.24.0(@babel/core@8.0.7)(@babel/runtime@7.29.10)(@modelcontextprotocol/client@2.0.0)(@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.7))(@modelcontextprotocol/server@2.0.0)(react@19.3.1)(rolldown@1.2.14)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1))(zod@4.6.7)
@@ -260,7 +260,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@kitbash/core':
+      '@w3bstack/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -313,15 +313,15 @@ importers:
 
   packages/plugin:
     dependencies:
-      '@kitbash/cli':
-        specifier: workspace:*
-        version: link:../cli
-      '@kitbash/core':
-        specifier: workspace:*
-        version: link:../core
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
+      '@w3bstack/cli':
+        specifier: workspace:*
+        version: link:../cli
+      '@w3bstack/core':
+        specifier: workspace:*
+        version: link:../core
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -437,12 +437,12 @@ importers:
       '@cloudflare/vitest-plugin':
         specifier: 1.4.4
         version: 1.4.4(@types/node@24.10.1)(vitest@4.1.12)
-      '@kitbash/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@types/node':
         specifier: 24.10.1
         version: 24.10.1
+      '@w3bstack/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -525,7 +525,7 @@ importers:
 
   test-e2e:
     devDependencies:
-      '@kitbash/core':
+      '@w3bstack/core':
         specifier: workspace:*
         version: link:../packages/core
 

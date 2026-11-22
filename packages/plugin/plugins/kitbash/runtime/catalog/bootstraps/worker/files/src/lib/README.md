@@ -1,1 +1,0 @@
-Reusable block modules live in this directory. Install through Kitbash so imports, bindings, dependency additions, and migrations are planned together. Files in this directory do not register routes automatically.

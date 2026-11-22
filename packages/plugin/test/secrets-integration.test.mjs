@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createService } from '../../secrets-broker/src/service.mjs';
 import { createBrokerServer } from '../../secrets-broker/src/server.mjs';
-import { runSecrets } from '../plugins/kitbash/scripts/secrets-tool.mjs';
+import { runSecrets } from '../plugins/w3bstack/scripts/secrets-tool.mjs';
 
 test('plugin → HTTP → isolated broker generates once and returns no secret through success or failure', async t => {
   const token = 'test_only_broker_capability_01234567890123456789';

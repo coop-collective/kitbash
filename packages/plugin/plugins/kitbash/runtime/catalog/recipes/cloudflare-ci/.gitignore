@@ -1,7 +1,0 @@
-node_modules/
-.wrangler/
-dist/
-worker-configuration.d.ts
-.dev.vars*
-.env.local
-.kitbash-secrets-*

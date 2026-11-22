@@ -20,10 +20,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Test performance measurement and permission failure cases
-        run: pnpm --filter kitbash-recipe-browser-performance --filter kitbash-recipe-cloudflare-performance --filter kit-recipe-vinext-diagnostics -r test
+        run: pnpm --filter w3bstack-recipe-browser-performance --filter w3bstack-recipe-cloudflare-performance --filter kit-recipe-vinext-diagnostics -r test
       - run: pnpm --filter kit-recipe-vinext-diagnostics typecheck
-      - run: pnpm --filter kitbash-recipe-browser-performance exec playwright install --with-deps chromium
+      - run: pnpm --filter w3bstack-recipe-browser-performance exec playwright install --with-deps chromium
       - name: Verify browser budgets against the local Worker
-        run: pnpm --filter kitbash-recipe-browser-performance test:e2e
+        run: pnpm --filter w3bstack-recipe-browser-performance test:e2e
       - name: Verify diagnostics against the pinned vinext build
         run: pnpm --filter kit-recipe-vinext-diagnostics test:compat

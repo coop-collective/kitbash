@@ -62,7 +62,7 @@ export interface ChatComposerProps {
  */
 export function ChatComposer({
   defaultValue = "",
-  placeholder = "Ask Kitbash to do something",
+  placeholder = "Ask w3bstack to do something",
   apps: initialApps = DEFAULT_COMPOSER_APPS,
   attachments: initialFiles = [{ name: "p1-bugs-oct.csv", size: "18 KB" }],
   defaultModel = "Kestrel",
@@ -177,11 +177,11 @@ export function ChatComposer({
     const prompt = value.trim();
     setApproval(null);
     if (decision === "deny") {
-      setReceipt(`Not sent. Kitbash won't ${approval.action}.`);
+      setReceipt(`Not sent. w3bstack won't ${approval.action}.`);
       window.setTimeout(() => setReceipt(null), 2600);
       area.current?.focus();
     } else {
-      finishSend(prompt, `Sent. Kitbash may ${approval.action}.`);
+      finishSend(prompt, `Sent. w3bstack may ${approval.action}.`);
     }
   };
 
@@ -208,7 +208,7 @@ export function ChatComposer({
         <div className="kb-cc-approval" role="alertdialog" aria-label="Approval needed" inert={!approval}>
           <span className="kb-cc-approval-icon" aria-hidden><Icon name="shield" size={16} /></span>
           <span className="kb-cc-approval-text">
-            <strong>Kitbash wants to {approval?.action ?? "act"}</strong>
+            <strong>w3bstack wants to {approval?.action ?? "act"}</strong>
             <span>Using {approval?.app ?? "an app"} on your behalf</span>
           </span>
           <span className="kb-cc-approval-actions">

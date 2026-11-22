@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, writeFile, readdir, rm, stat, symlink } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, readdir, rm, stat, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setup, remoteKeyExists } from '../scripts/setup.mjs';
@@ -10,7 +10,7 @@ import { BOOTSTRAP_TOKEN, DEPLOY_TOKEN, setupProviders } from './helpers/setup-p
 import { parseEnrollment } from '../scripts/enroll-controller.mjs';
 
 test('controller enrollment rejects shell input, unexpected options and invalid destinations', () => {
-  const args = ['--ssh', 'controller-host', '--directory', '/opt/kitbash', '--project', 'enginebox', '--target', 'production',
+  const args = ['--ssh', 'controller-host', '--directory', '/opt/w3bstack', '--project', 'enginebox', '--target', 'production',
     '--integration', 'enginebox-runners', '--owner', 'test-org', '--kind', 'runners', '--prefix', 'ENGINEBOX_GITHUB_RUNNERS'];
   assert.equal(parseEnrollment(args).integration, 'enginebox-runners');
   for (const value of ['-oProxyCommand=evil', 'host;id', 'host$(id)', 'host\ncommand']) assert.throws(() => parseEnrollment(args.with(1, value)));
@@ -35,7 +35,7 @@ test('deployment and repeat setup retain only explicitly configured delivery bin
 });
 
 async function fixture(t) {
-  const root = await mkdtemp(path.join(tmpdir(), 'kitbash-setup-test-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'w3bstack-setup-test-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const supplied = {
     KIT_BROKER_HOSTNAME: 'secrets.example.test', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32),
@@ -97,9 +97,9 @@ test('template setup deploys only a strong key digest and prints standard MCP JS
   assert.equal(local.CLOUDFLARE_API_TOKEN, undefined);
   assert.equal(local.CLOUDFLARE_TOKEN_PROVISIONING_TOKEN, undefined);
   assert.equal(JSON.stringify(local).includes(token), false);
-  for (const file of [first.recovery, first.config, path.join(f.root, '.env'), path.join(f.root, '.kitbash/mcp.json')]) assert.equal((await stat(file)).mode & 0o777, 0o600);
-  assert.equal((await stat(path.join(f.root, '.kitbash'))).mode & 0o777, 0o700);
-  assert.equal((await readdir(path.join(f.root, '.kitbash'))).some(name => name.startsWith('deploy-secrets-')), false);
+  for (const file of [first.recovery, first.config, path.join(f.root, '.env'), path.join(f.root, '.w3bstack/mcp.json')]) assert.equal((await stat(file)).mode & 0o777, 0o600);
+  assert.equal((await stat(path.join(f.root, '.w3bstack'))).mode & 0o777, 0o700);
+  assert.equal((await readdir(path.join(f.root, '.w3bstack'))).some(name => name.startsWith('deploy-secrets-')), false);
   delete f.supplied.CLOUDFLARE_TOKEN_PROVISIONING_TOKEN;
   await setup(f.opts);
   const secondToken = JSON.parse(f.output[1]).mcpServers.kitbash_secrets.headers.Authorization.slice(7);
@@ -110,7 +110,7 @@ test('template setup deploys only a strong key digest and prints standard MCP JS
   assert.equal(JSON.stringify(f.events).includes(token), false);
   assert.equal(f.records.tokens.length, 1, 'rerun reuses the Cloudflare token');
   assert.equal(Object.keys(f.records.identities).length, 2, 'rerun reuses both OIDC identities');
-  const checkpoint = await readFile(path.join(f.root, '.kitbash/setup-state.json'), 'utf8');
+  const checkpoint = await readFile(path.join(f.root, '.w3bstack/setup-state.json'), 'utf8');
   assert.equal(checkpoint.includes(DEPLOY_TOKEN), false);
   assert.equal(checkpoint.includes(BOOTSTRAP_TOKEN), false);
 });
@@ -122,7 +122,7 @@ test('remote access errors and unclassified 404s stop before generating or rotat
     await assert.rejects(setup(f.opts), /Cannot inspect remote Worker secrets/);
     assert.equal(f.deployments.length, 0);
     assert.equal(f.output.length, 0);
-    assert.equal((await readdir(path.join(f.root, '.kitbash'))).some(name => name.startsWith('mcp')), false);
+    assert.equal((await readdir(path.join(f.root, '.w3bstack'))).some(name => name.startsWith('mcp')), false);
   }
 });
 
@@ -131,7 +131,7 @@ test('ambiguous deployment failure keeps private recovery JSON and deletes the p
   f.mode.failDeploy = true;
   await assert.rejects(setup(f.opts), /key may already have changed/);
   assert.equal(f.output.length, 0);
-  const files = await readdir(path.join(f.root, '.kitbash'));
+  const files = await readdir(path.join(f.root, '.w3bstack'));
   assert.equal(files.filter(name => /^mcp-.*\.json$/.test(name)).length, 1);
   assert.equal(files.some(name => name.startsWith('deploy-secrets-')), false);
   assert.equal(files.includes('mcp.json'), false);
@@ -159,12 +159,22 @@ test('missing GitHub environment is created and unattended policy creation requi
   await assert.rejects(setup(f.opts), /Existing Infisical project ID/);
 });
 
+test('a checkout set up under the old product name keeps its private directory', async t => {
+  const f = await fixture(t);
+  await mkdir(path.join(f.root, '.kitbash'), { mode: 0o700 });
+  const file = await writeDeploymentConfig(f.supplied, { root: f.root });
+  assert.equal(path.dirname(file), path.join(f.root, '.kitbash'));
+  assert.deepEqual(await readdir(f.root).then(names => names.filter(name => name.startsWith('.w3bstack'))), []);
+  await rm(path.join(f.root, '.kitbash'), { recursive: true });
+  assert.equal(path.dirname(await writeDeploymentConfig(f.supplied, { root: f.root })), path.join(f.root, '.w3bstack'));
+});
+
 test('invalid hostnames and symlinked private output paths are rejected', async t => {
   const f = await fixture(t);
   for (const hostname of ['https://example.test', 'example.test/path', '*.example.test', 'example.test:443', '127.0.0.1', 'example.test\nTOKEN=x']) {
     assert.throws(() => deploymentSettings({ ...f.supplied, KIT_BROKER_HOSTNAME: hostname }), /hostname/);
   }
-  await symlink(tmpdir(), path.join(f.root, '.kitbash'));
+  await symlink(tmpdir(), path.join(f.root, '.w3bstack'));
   await assert.rejects(writeDeploymentConfig(f.supplied, { root: f.root }), /real directory/);
   await assert.rejects(remoteKeyExists(f.supplied, 'fixture', async () => Response.json({ success: true, result: [{}] })), /Cannot inspect/);
 });
@@ -230,7 +240,7 @@ test('noninteractive setup requires a bootstrap credential only for the first to
   f.supplied.CLOUDFLARE_TOKEN_PROVISIONING_TOKEN = BOOTSTRAP_TOKEN;
   await setup(f.opts);
   assert.equal(Object.keys(f.records.identities).length, 2);
-  for (const file of ['.env', '.kitbash/setup-state.json']) {
+  for (const file of ['.env', '.w3bstack/setup-state.json']) {
     const text = await readFile(path.join(f.root, file), 'utf8');
     assert.equal(text.includes(BOOTSTRAP_TOKEN), false);
     assert.equal(text.includes(DEPLOY_TOKEN), false);

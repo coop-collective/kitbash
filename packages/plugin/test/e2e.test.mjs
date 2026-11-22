@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
-import { execRunner } from "@kitbash/cli";
+import { execRunner } from "@w3bstack/cli";
 import { FIXTURE_BLOCK, call, connect, execFileP, readJson, templateCopy } from "./helpers.mjs";
 
 async function preparedTemplate() {

@@ -66,13 +66,13 @@ const maya: ActivityActor = { id: "maya", name: "Maya Chen", kind: "person" };
 const dev: ActivityActor = { id: "dev", name: "Dev Patel", kind: "person" };
 const priya: ActivityActor = { id: "priya", name: "Priya Raman", kind: "person" };
 const jonas: ActivityActor = { id: "jonas", name: "Jonas Berg", kind: "person" };
-const kitbash: ActivityActor = { id: "kitbash", name: "Kitbash", kind: "agent" };
+const w3bstack: ActivityActor = { id: "w3bstack", name: "w3bstack", kind: "agent" };
 const reviewer: ActivityActor = { id: "reviewer", name: "Review agent", kind: "agent" };
 
 const doc = (label: string) => ({ label, href: `#${label.toLowerCase().replace(/\W+/g, "-")}` });
 
 export const defaultActivity: ActivityItem[] = [
-  { id: "a1", actor: kitbash, verb: "ran", object: doc("Weekly churn report"), at: base - 3 * MIN, outcome: { state: "ok", text: "Finished in 42s" } },
+  { id: "a1", actor: w3bstack, verb: "ran", object: doc("Weekly churn report"), at: base - 3 * MIN, outcome: { state: "ok", text: "Finished in 42s" } },
   {
     id: "a2",
     actor: maya,
@@ -94,7 +94,7 @@ export const defaultActivity: ActivityItem[] = [
   },
   { id: "a7", actor: priya, verb: "edited", object: doc("Rollout plan"), at: base - 2 * HOUR, detail: "Moved week two to November 19" },
   { id: "a8", actor: priya, verb: "requested", object: doc("Rollout plan"), at: base - 26 * HOUR },
-  { id: "a9", actor: kitbash, verb: "ran", object: doc("Import from Linear"), at: base - 27 * HOUR, outcome: { state: "ok", text: "Imported 38 issues" } },
+  { id: "a9", actor: w3bstack, verb: "ran", object: doc("Import from Linear"), at: base - 27 * HOUR, outcome: { state: "ok", text: "Imported 38 issues" } },
   {
     id: "a10",
     actor: jonas,
@@ -110,14 +110,14 @@ export const defaultActivity: ActivityItem[] = [
 export const olderActivity: ActivityItem[] = [
   { id: "o1", actor: maya, verb: "edited", object: doc("Launch plan"), at: base - 50 * HOUR, detail: "Added the pricing section" },
   { id: "o2", actor: dev, verb: "approved", object: doc("Billing page copy"), at: base - 52 * HOUR },
-  { id: "o3", actor: kitbash, verb: "ran", object: doc("Competitor price scan"), at: base - 53 * HOUR, outcome: { state: "ok", text: "Found 6 changes" } },
+  { id: "o3", actor: w3bstack, verb: "ran", object: doc("Competitor price scan"), at: base - 53 * HOUR, outcome: { state: "ok", text: "Found 6 changes" } },
   { id: "o4", actor: priya, verb: "joined", object: doc("Launch plan"), at: base - 74 * HOUR },
 ];
 
 /** What arrives while the demo runs */
 export const incomingActivity: Array<Omit<ActivityItem, "at">> = [
   { id: "n1", actor: dev, verb: "commented", object: doc("Rollout plan"), detail: "10% feels small for week one. Can we start at 20?" },
-  { id: "n2", actor: kitbash, verb: "ran", object: doc("Draft launch FAQ"), outcome: { state: "ok", text: "Finished in 1m 12s" } },
+  { id: "n2", actor: w3bstack, verb: "ran", object: doc("Draft launch FAQ"), outcome: { state: "ok", text: "Finished in 1m 12s" } },
   { id: "n3", actor: maya, verb: "approved", object: doc("Pricing table") },
 ];
 

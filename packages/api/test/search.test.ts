@@ -1,4 +1,4 @@
-import { estimateJsonTokens } from "@kitbash/core";
+import { estimateJsonTokens } from "@w3bstack/core";
 import { describe, expect, it } from "vitest";
 import { call, member, publishFixture } from "./helpers";
 

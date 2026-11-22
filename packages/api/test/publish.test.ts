@@ -1,4 +1,4 @@
-import { base64Encode, estimateJsonTokens, generateSigningKeyPair, sha256Hex, toBytes } from "@kitbash/core";
+import { base64Encode, estimateJsonTokens, generateSigningKeyPair, sha256Hex, toBytes } from "@w3bstack/core";
 import { describe, expect, it } from "vitest";
 import { call, E, member, publishBody, publishFixture } from "./helpers";
 

@@ -37,10 +37,10 @@ for (const c of components) {
 // Imports resolve the way an app writes them: through package.json "exports" by package name
 if (!only.length) {
   const probe = [
-    ["@kitbash/ui", "ChatThread"],
-    ["@kitbash/ui/chat-thread", "ChatThread"],
-    ["@kitbash/ui/shared", "useCachedLoader"],
-    ["@kitbash/ui/trace-waterfall", "TraceWaterfall"],
+    ["@w3bstack/ui", "ChatThread"],
+    ["@w3bstack/ui/chat-thread", "ChatThread"],
+    ["@w3bstack/ui/shared", "useCachedLoader"],
+    ["@w3bstack/ui/trace-waterfall", "TraceWaterfall"],
   ];
   for (const [spec, name] of probe) {
     try {

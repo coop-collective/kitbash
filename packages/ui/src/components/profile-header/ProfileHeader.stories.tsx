@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The top of a profile page on one flat panel: avatar, name, role and team, location and local time, a short bio, and the person's record under a seam. Follow is the one orange key; once you follow, it latches down in gunmetal like a switch. The agent variant swaps the disc for a square part with the Kitbash mark and shows the model, the owner, and a permissions summary in three trays: what it can read, what it does on its own, and what it asks a person about first.",
+          "The top of a profile page on one flat panel: avatar, name, role and team, location and local time, a short bio, and the person's record under a seam. Follow is the one orange key; once you follow, it latches down in gunmetal like a switch. The agent variant swaps the disc for a square part with the w3bstack mark and shows the model, the owner, and a permissions summary in three trays: what it can read, what it does on its own, and what it asks a person about first.",
       },
     },
   },

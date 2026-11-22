@@ -1,0 +1,4 @@
+interface:
+  display_name: "w3bstack: use a block"
+  short_description: "Find, install, adapt, and verify local feature blocks"
+  default_prompt: "Use $w3bstack-use to add email sign-in to this project from a block."

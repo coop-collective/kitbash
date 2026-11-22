@@ -1,5 +1,5 @@
 // Small helpers shared by the routes.
-import { base64UrlEncode } from "@kitbash/core";
+import { base64UrlEncode } from "@w3bstack/core";
 
 export function newId(prefix: string): string {
   return `${prefix}_${base64UrlEncode(crypto.getRandomValues(new Uint8Array(12))).replace(/[-_]/g, "x").slice(0, 16)}`;

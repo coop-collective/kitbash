@@ -1,4 +1,4 @@
-// Single-file build: dist/kit.js bundles the CLI and @kitbash/core (with its npm deps), runnable with plain node.
+// Single-file build: dist/kit.js bundles the CLI and @w3bstack/core (with its npm deps), runnable with plain node.
 import { build } from "rolldown";
 import { chmod, cp, rm } from "node:fs/promises";
 import path from "node:path";

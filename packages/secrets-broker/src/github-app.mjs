@@ -119,7 +119,7 @@ export function createGitHubAppFlow({ publicOrigin, now = Date.now, entropy = ra
       receipt.state.pending = true;
       await receipt.save();
       const result = await requestJson(`https://api.github.com/app-manifests/${code}/conversions`, {
-        method: 'POST', request, headers: { accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'kitbash-secrets-broker' },
+        method: 'POST', request, headers: { accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'w3bstack-secrets-broker' },
       });
       const values = credentials(result, app);
       await createSecrets(infisical, scope, APP_FIELDS.map(field => ({ name: app.secrets[field], value: values[field] })));

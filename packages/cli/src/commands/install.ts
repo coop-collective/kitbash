@@ -18,7 +18,7 @@ import {
   type AppliedPlanT,
   type InstallPlan,
   type OnConflict,
-} from "@kitbash/core";
+} from "@w3bstack/core";
 import path from "node:path";
 import { bool, need, oneOf, params as parseParams, str, type Parsed } from "../args.ts";
 import { apiFor, assertPlanPinned } from "../context.ts";
@@ -26,7 +26,7 @@ import { json, line, sanitize, sanitizeLine, untrustedEnvelope, type Io } from "
 import { ensureProfile, openProject, recordSource, type BlockSource, type Project } from "../project.ts";
 import { fetchRegistryBlock, isLocalSpec, loadLocalBlock, type ResolvedBlock } from "../source.ts";
 import { overlayFs, resolveDependencies, splitParams, type DependencyStep } from "../deps.ts";
-import type { KitFs, ProjectProfile } from "@kitbash/core";
+import type { KitFs, ProjectProfile } from "@w3bstack/core";
 
 export const installOptions = {
   version: { type: "string" },

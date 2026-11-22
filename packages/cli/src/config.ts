@@ -4,7 +4,7 @@
  */
 import { chmod, mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { KitError } from "@kitbash/core";
+import { KitError } from "@w3bstack/core";
 import type { Io } from "./io.ts";
 
 export const DEFAULT_API_URL = "http://127.0.0.1:8787";

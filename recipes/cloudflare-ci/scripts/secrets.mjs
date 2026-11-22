@@ -23,15 +23,22 @@ export function childEnvironment(env, deployment = false) {
     (deployment || !name.startsWith('CLOUDFLARE_'))));
 }
 
+// Projects created under the old product name keep their settings in .kitbash/; read them when .w3bstack/ is absent.
+export function settingsFile(root) {
+  const current = path.join(root, '.w3bstack/secrets.json');
+  const legacy = path.join(root, '.kitbash/secrets.json');
+  return !existsSync(current) && existsSync(legacy) ? legacy : current;
+}
+
 export function selectTarget(config, target) {
-  if (config?.version !== 1 || !UUID.test(config.projectId ?? '')) fail('Set a valid Infisical projectId in .kitbash/secrets.json.');
+  if (config?.version !== 1 || !UUID.test(config.projectId ?? '')) fail('Set a valid Infisical projectId in .w3bstack/secrets.json.');
   let domain;
   try { domain = new URL(config.domain); } catch { fail('Infisical domain must be an HTTPS origin.'); }
   if (domain.protocol !== 'https:' || domain.username || domain.password || domain.search || domain.hash || domain.pathname !== '/') fail('Infisical domain must be an HTTPS origin.');
   if (!['local', 'staging', 'production'].includes(target)) fail('Choose --env local, staging, or production explicitly.');
   const scope = config.targets?.[target];
   if (!scope || !/^[a-z][a-z0-9_-]*$/.test(scope.environment ?? '') || !validPath(scope.path)) fail('Target needs an explicit Infisical environment and path.');
-  if (!config.secrets || Array.isArray(config.secrets) || typeof config.secrets !== 'object') fail('Declare application secret names in .kitbash/secrets.json.');
+  if (!config.secrets || Array.isArray(config.secrets) || typeof config.secrets !== 'object') fail('Declare application secret names in .w3bstack/secrets.json.');
   for (const [name, policy] of Object.entries(config.secrets)) {
     if (!NAME.test(name) || RESERVED.test(name) || !policy || typeof policy !== 'object' || !['manual', 'migration-required', 'provider'].includes(policy.rotation)) fail('Invalid application secret policy; infrastructure credentials belong in /ci.');
   }
@@ -151,7 +158,7 @@ export function rotationPlan(config, target, name) {
 }
 
 export function withSecretsFile(values, use) {
-  const directory = mkdtempSync(path.join(os.tmpdir(), 'kitbash-secrets-'));
+  const directory = mkdtempSync(path.join(os.tmpdir(), 'w3bstack-secrets-'));
   chmodSync(directory, 0o700);
   const file = path.join(directory, 'secrets.json');
   try {
@@ -163,16 +170,19 @@ export function withSecretsFile(values, use) {
 export function writeLocal(root, scope, values) {
   if (scope.target !== 'local' || !['.dev.vars', '.env.local'].includes(scope.localFile)) fail('Local materialization only accepts --env local and .dev.vars or .env.local.');
   const destination = path.join(root, scope.localFile);
-  const marker = `# Kitbash Infisical project=${scope.projectId} env=${scope.environment} path=${scope.path}`;
+  const source = `Infisical project=${scope.projectId} env=${scope.environment} path=${scope.path}`;
+  const marker = `# w3bstack ${source}`;
   if (existsSync(destination)) {
-    if (!lstatSync(destination).isFile() || !readFileSync(destination, 'utf8').startsWith(`${marker}\n`)) fail('Local file already exists and is not owned by this Infisical source. Reconcile it before refreshing.');
+    // A file written before the rename carries the old product name in its marker; it is still ours to refresh.
+    const owned = text => [marker, `# Kitbash ${source}`].some(line => text.startsWith(`${line}\n`));
+    if (!lstatSync(destination).isFile() || !owned(readFileSync(destination, 'utf8'))) fail('Local file already exists and is not owned by this Infisical source. Reconcile it before refreshing.');
   }
   // Wrangler/Node dotenv support quoted multiline strings. Reject ambiguous quoting instead of changing values.
   const lines = Object.entries(values).map(([name, value]) => {
     if (value.includes("'") || value.includes('\r')) fail('Local dotenv cannot preserve this value exactly; use secrets run for process environment injection.');
     return `${name}='${value}'`;
   });
-  const directory = mkdtempSync(path.join(root, '.kitbash-secrets-'));
+  const directory = mkdtempSync(path.join(root, '.w3bstack-secrets-'));
   chmodSync(directory, 0o700);
   try {
     const temporary = path.join(directory, 'local');
@@ -219,7 +229,7 @@ export async function main(argv, { root = process.cwd(), env = process.env, log 
     else if (args[i].startsWith('-')) fail('Unknown secrets option.');
     else names.push(args[i]);
   }
-  const config = parse(readFileSync(path.join(root, '.kitbash/secrets.json'), 'utf8'));
+  const config = parse(readFileSync(settingsFile(root), 'utf8'));
   const scope = selectTarget(config, options.target);
   if (names.length > 1 || (child.length && command !== 'run') || (options.fromEnv && command !== 'deploy') || (options.execute && command !== 'rotate')) fail('Options do not apply to this command.');
   const provider = client ?? makeClient(scope, { env, spawn });
@@ -230,7 +240,7 @@ export async function main(argv, { root = process.cwd(), env = process.env, log 
       values = parse(input());
     } else {
       const name = names[0];
-      if (!name || !Object.hasOwn(config.secrets, name)) fail('Register the secret name in .kitbash/secrets.json first.');
+      if (!name || !Object.hasOwn(config.secrets, name)) fail('Register the secret name in .w3bstack/secrets.json first.');
       if (command === 'generate' && (config.secrets[name].generate !== true || config.secrets[name].rotation === 'provider')) fail('Generation is only allowed for registered application keys, never provider credentials.');
       values = { [name]: command === 'generate' ? randomBytes(32).toString('base64url') : input() };
     }

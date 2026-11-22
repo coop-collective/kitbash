@@ -74,7 +74,7 @@ export const DEMO_CROP_SRC =
 
 const HANDLE = /^[a-z0-9_]{3,20}$/;
 const BIO_MAX = 160;
-const TAKEN = ["admin", "support", "priyashah", "kitbash", "agent", "root", "team"];
+const TAKEN = ["admin", "support", "priyashah", "w3bstack", "agent", "root", "team"];
 
 export function demoCheckHandle(handle: string): Promise<boolean> {
   return new Promise((ok) => setTimeout(() => ok(!TAKEN.includes(handle)), 650));

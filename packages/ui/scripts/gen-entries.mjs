@@ -1,5 +1,5 @@
 // Writes src/components/<slug>/index.ts for every catalog entry, so each component is its own import path
-// (@kitbash/ui/<slug>) and can be code-split with React.lazy. `--check` fails if any entry is missing or stale.
+// (@w3bstack/ui/<slug>) and can be code-split with React.lazy. `--check` fails if any entry is missing or stale.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const src = new URL("../src/", import.meta.url);
@@ -16,7 +16,7 @@ for (const c of components) {
 }
 
 if (stale.length) {
-  console.error(`component entry points are missing or stale: ${stale.join(", ")}; run pnpm -F @kitbash/ui gen-entries`);
+  console.error(`component entry points are missing or stale: ${stale.join(", ")}; run pnpm -F @w3bstack/ui gen-entries`);
   process.exit(1);
 }
 console.log(check ? `entry points current: ${components.length}` : `wrote entry points for ${components.length} components`);

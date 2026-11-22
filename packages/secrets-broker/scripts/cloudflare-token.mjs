@@ -6,7 +6,7 @@ const ID = /^[a-f0-9]{32}$/i;
 const TOKEN = /^[A-Za-z0-9_-]{16,256}$/;
 const names = ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'];
 const digest = value => createHash('sha256').update(value).digest('hex');
-const reconcile = () => { throw new Error('Cloudflare token provisioning needs reconciliation. Inspect .kitbash/setup-state.json, the named Cloudflare token, and the configured credential destination before retrying: a provider write may already have succeeded.'); };
+const reconcile = () => { throw new Error('Cloudflare token provisioning needs reconciliation. Inspect .w3bstack/setup-state.json, the named Cloudflare token, and the configured credential destination before retrying: a provider write may already have succeeded.'); };
 
 // Cloudflare documents these template keys. The dashboard still requires the
 // operator to choose resource scopes and finish creation; there is no callback.

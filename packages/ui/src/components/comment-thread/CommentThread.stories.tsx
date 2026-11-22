@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "One comment with replies on a molded spine. The assistant reports what it did in a work receipt that folds down on a hinge; anything waiting on a person carries a decal-yellow stripe. Type @ in the reply box to mention someone, and @Kitbash answers in the thread.",
+          "One comment with replies on a molded spine. The assistant reports what it did in a work receipt that folds down on a hinge; anything waiting on a person carries a decal-yellow stripe. Type @ in the reply box to mention someone, and @w3bstack answers in the thread.",
       },
     },
   },

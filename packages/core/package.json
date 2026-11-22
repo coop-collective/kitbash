@@ -1,10 +1,10 @@
 {
-  "name": "@kitbash/core",
+  "name": "@w3bstack/core",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Kitbash core: block schema, renderer, planner, lock, signing, client scanner, harvest heuristics, contract types.",
+  "description": "w3bstack core: block schema, renderer, planner, lock, signing, client scanner, harvest heuristics, contract types.",
   "exports": {
     ".": "./src/index.ts",
     "./contract": "./src/contract.ts",
