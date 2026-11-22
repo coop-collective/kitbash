@@ -31,10 +31,10 @@ const MAYA: Typer = { id: "maya", name: "Maya Chen", kind: "person" };
 const DEV: Typer = { id: "dev", name: "Dev Patel", kind: "person" };
 const PRIYA: Typer = { id: "priya", name: "Priya Raman", kind: "person" };
 const JONAS: Typer = { id: "jonas", name: "Jonas Berg", kind: "person" };
-const KITBASH: Typer = { id: "kitbash", name: "Kitbash", kind: "agent" };
+const W3BSTACK: Typer = { id: "w3bstack", name: "w3bstack", kind: "agent" };
 
 /** The demo walks these in turn: one person, two, a crowd, an agent, and people with an agent */
-export const typingDemoStates: Typer[][] = [[MAYA], [MAYA, DEV], [MAYA, DEV, PRIYA, JONAS], [KITBASH], [DEV, KITBASH]];
+export const typingDemoStates: Typer[][] = [[MAYA], [MAYA, DEV], [MAYA, DEV, PRIYA, JONAS], [W3BSTACK], [DEV, W3BSTACK]];
 
 const first = (name: string) => name.split(" ")[0] ?? name;
 
@@ -68,7 +68,7 @@ function Keys() {
   );
 }
 
-/** The Kitbash mark with its four gates lighting in turn: an agent composing */
+/** The w3bstack mark with its four gates lighting in turn: an agent composing */
 function Gates() {
   return (
     <svg className="kb-ti-gates" viewBox="0 0 24 24" width="16" height="16" aria-hidden>
@@ -82,7 +82,7 @@ function Gates() {
 }
 
 /**
- * Who is composing a message. People get three keys pressing in turn; an agent gets the Kitbash mark with its gates
+ * Who is composing a message. People get three keys pressing in turn; an agent gets the w3bstack mark with its gates
  * lighting in cobalt, so "a person is typing" and "an agent is writing" never look alike. Names collapse past
  * `maxNames` ("Maya and 3 others"). The sentence is a polite live region; the animation is decoration.
  */

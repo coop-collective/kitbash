@@ -1,7 +1,7 @@
 import { lstat, mkdir, mkdtemp, readdir, readFile, rename, rmdir, rm, writeFile, copyFile, appendFile } from "node:fs/promises";
 import path from "node:path";
-import { KitError, newProjectId, readLock, writeProfile, type ProjectProfile } from "@kitbash/core";
-import { nodeFs } from "@kitbash/core/node";
+import { KitError, newProjectId, readLock, writeProfile, type ProjectProfile } from "@w3bstack/core";
+import { nodeFs } from "@w3bstack/core/node";
 import { bool, int, list, oneOf, params, str, type Parsed } from "../args.ts";
 import { json, line, type Io } from "../io.ts";
 import { install } from "./install.ts";
@@ -66,7 +66,7 @@ async function blockCatalog(root: string, preset: Preset) {
 }
 
 async function configureSecrets(stage: string, ids: string[], root: string, a: Parsed, preset: Preset, name: string, git: RepositoryOptions) {
-  const file = path.join(stage, ".kitbash/secrets.json");
+  const file = path.join(stage, ".w3bstack/secrets.json");
   const config = JSON.parse(await readFile(file, "utf8"));
   if (str(a, "infisical-project")) config.projectId = str(a, "infisical-project");
   if (str(a, "infisical-domain")) config.domain = httpsOrigin(str(a, "infisical-domain")!, "--infisical-domain");
@@ -96,7 +96,7 @@ async function configureSecrets(stage: string, ids: string[], root: string, a: P
       } } : {}),
     } : {}),
   }]));
-  await writeFile(path.join(stage, ".kitbash/secrets-broker.request.json"), `${JSON.stringify({
+  await writeFile(path.join(stage, ".w3bstack/secrets-broker.request.json"), `${JSON.stringify({
     version: 1, proposalOnly: true, project: name,
     policy: { projectId: config.projectId, projectSlug: "", domain: config.domain, targets, secrets: config.secrets },
   }, null, 2)}\n`);
@@ -204,7 +204,7 @@ export async function bootstrap(io: Io, a: Parsed): Promise<number> {
     for (const task of ["create", "import", "generate", "rotate", "doctor", "run"]) pkg.scripts[`secrets:${task}`] = `node scripts/secrets.mjs ${task}`;
     pkg.scripts["secrets:local"] = "node scripts/secrets.mjs local --env local";
     await writeFile(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
-    await appendFile(path.join(stage, ".gitignore"), "\n.kitbash-secrets-*/\n.kit/plans/\n");
+    await appendFile(path.join(stage, ".gitignore"), "\n.w3bstack-secrets-*/\n.kit/plans/\n");
     if (git.host !== "local") {
       await mkdir(path.join(stage, ".github/workflows"), { recursive: true });
       const checks = await readFile(path.join(catalog, "bootstraps/shared/workflows/github-ci.yml"), "utf8");
@@ -229,7 +229,7 @@ export async function bootstrap(io: Io, a: Parsed): Promise<number> {
   }
   if (bool(a, "install")) await command(io, destination, "pnpm", ["install", "--no-frozen-lockfile"]);
   const repository = await setupRepository(io, destination, git);
-  const next = ["pnpm install (if dependencies were not installed)", "pnpm check", "pnpm dev", `Use kitbash_secrets setup for broker alias ${name}; .kitbash/secrets-broker.request.json proposes destinations and names for operator registration`, ...(pending.length ? ["Complete installed blocks' adaptation checklists with kit status"] : [])];
+  const next = ["pnpm install (if dependencies were not installed)", "pnpm check", "pnpm dev", `Use w3bstack_secrets setup for broker alias ${name}; .w3bstack/secrets-broker.request.json proposes destinations and names for operator registration`, ...(pending.length ? ["Complete installed blocks' adaptation checklists with kit status"] : [])];
   const result = { directory: destination, preset: preset.id, blocks: blockIds, pending_adapt: pending, git: repository, next_steps: next };
   if (bool(a, "json")) json(io, result);
   else {

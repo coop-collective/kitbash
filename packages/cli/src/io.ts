@@ -2,7 +2,7 @@
  * The CLI's environment (injected, so tests run in-process with a mocked fetch and temp dirs) and the output
  * helpers. Everything a block author wrote is printed only through `untrusted()`, sanitized and fenced.
  */
-import { UNTRUSTED_NOTICE } from "@kitbash/core";
+import { UNTRUSTED_NOTICE } from "@w3bstack/core";
 import type { Runner } from "./verify.ts";
 
 export interface Io {

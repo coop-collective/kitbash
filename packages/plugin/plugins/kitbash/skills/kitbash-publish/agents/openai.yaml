@@ -1,4 +1,0 @@
-interface:
-  display_name: "Kitbash: legacy registry publishing"
-  short_description: "Publish to an explicitly configured legacy registry"
-  default_prompt: "Use $kitbash-publish to publish ./blocks/email-code-auth to my configured legacy registry."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "w3bstack: legacy registry publishing"
+  short_description: "Publish to an explicitly configured legacy registry"
+  default_prompt: "Use $w3bstack-publish to publish ./blocks/email-code-auth to my configured legacy registry."

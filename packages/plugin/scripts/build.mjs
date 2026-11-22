@@ -1,5 +1,5 @@
-// Bundles the MCP server and the hook runtime into plugins/kitbash/runtime/kit.mjs (one self-contained ESM file with
-// @kitbash/core, the kit CLI library, zod and the MCP SDK inlined), so an installed plugin needs no node_modules.
+// Bundles the MCP server and the hook runtime into plugins/w3bstack/runtime/kit.mjs (one self-contained ESM file with
+// @w3bstack/core, the kit CLI library, zod and the MCP SDK inlined), so an installed plugin needs no node_modules.
 // The launchers (scripts/kit-mcp.mjs, hooks/session-start.mjs) use it when present and fall back to the sources.
 // Also refreshes the generated copies: the catalog under runtime/, and skills/deterministic-tests as a plugin skill.
 import { build } from "rolldown";
@@ -8,10 +8,10 @@ import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const file = path.join(root, "plugins", "kitbash", "runtime", "kit.mjs");
+const file = path.join(root, "plugins", "w3bstack", "runtime", "kit.mjs");
 const catalog = path.join(path.dirname(file), "catalog");
 await fs.rm(catalog, { recursive: true, force: true });
-// The Styrene UI catalog travels as source (no Storybook build) so kitbash-ui can point an installed plugin at it.
+// The Styrene UI catalog travels as source (no Storybook build) so w3bstack-ui can point an installed plugin at it.
 const sources = { bootstraps: "bootstraps", blocks: "blocks", skills: "skills", recipes: "recipes", ui: "packages/ui" };
 const uiTooling = [".storybook", "scripts"];
 for (const [name, from] of Object.entries(sources)) {
@@ -28,12 +28,12 @@ for (const [name, from] of Object.entries(sources)) {
 }
 // Skills that are also plugin skills: one source in the repository's skills/, a generated copy the harness discovers.
 for (const name of ["deterministic-tests"]) {
-  const to = path.join(root, "plugins", "kitbash", "skills", name);
+  const to = path.join(root, "plugins", "w3bstack", "skills", name);
   await fs.rm(to, { recursive: true, force: true });
   await fs.cp(path.resolve(root, "../..", "skills", name), to, { recursive: true, filter: (source) => path.basename(source) !== ".DS_Store" });
 }
 await build({
-  input: path.join(root, "plugins", "kitbash", "scripts", "entry.mjs"),
+  input: path.join(root, "plugins", "w3bstack", "scripts", "entry.mjs"),
   platform: "node",
   resolve: { mainFields: ["module", "main"] },
   logLevel: "warn",

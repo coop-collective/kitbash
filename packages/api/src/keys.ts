@@ -1,5 +1,5 @@
 // The registry's co-signing key (REGISTRY_SIGNING_KEY: an Ed25519 private JWK as JSON) and its public half.
-import { keyIdOf, publicKeyFromJwk } from "@kitbash/core";
+import { keyIdOf, publicKeyFromJwk } from "@w3bstack/core";
 import { ApiError, type Bindings } from "./types";
 
 export interface RegistryKey {

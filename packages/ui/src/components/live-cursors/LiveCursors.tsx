@@ -66,7 +66,7 @@ export const defaultCursorParticipants: CursorParticipant[] = [
   { id: "maya", name: "Maya Chen", kind: "person", color: "var(--kb-series-5)" },
   { id: "dev", name: "Dev Patel", kind: "person", color: "var(--kb-series-3)" },
   { id: "priya", name: "Priya Raman", kind: "person", color: "var(--kb-series-6)" },
-  { id: "kitbash", name: "Kitbash", kind: "agent", color: "var(--kb-agent)" },
+  { id: "w3bstack", name: "w3bstack", kind: "agent", color: "var(--kb-agent)" },
 ];
 
 export const defaultCursorBlocks: CursorDocBlock[] = [
@@ -131,7 +131,7 @@ const SCRIPT: Record<string, Step[]> = {
     { x: 0.72, y: 0.2 },
     { x: 0.82, y: 0.1 },
   ],
-  kitbash: [
+  w3bstack: [
     { sel: { block: "p3", text: "Do agent runs count toward the free tier?" } },
     "rest",
     "rest",

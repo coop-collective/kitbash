@@ -1,6 +1,6 @@
 {
-  "name": "kitbash",
-  "description": "Kitbash: MIT-licensed application blocks, bootstraps, recipes, and skills for coding agents",
+  "name": "w3bstack",
+  "description": "w3bstack: MIT-licensed application blocks, bootstraps, recipes, and skills for coding agents",
   "owner": {
     "name": "Xava Labs"
   },
@@ -8,8 +8,8 @@
     {
       "name": "kit",
       "description": "Use the bundled local block catalog to bootstrap projects, install and verify features, and prepare source contributions (local MCP server, skills, /kit:* commands).",
-      "version": "0.1.2",
-      "source": "./plugins/kitbash",
+      "version": "0.2.0",
+      "source": "./plugins/w3bstack",
       "author": {
         "name": "Xava Labs"
       }

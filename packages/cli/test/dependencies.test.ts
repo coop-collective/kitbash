@@ -5,7 +5,7 @@
  */
 import { cp } from "node:fs/promises";
 import path from "node:path";
-import { contract } from "@kitbash/core";
+import { contract } from "@w3bstack/core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMockRegistry, type MockRegistry } from "./mock-registry.ts";
 import { kit, readJson, repo, snapshot, templateCopy, tmpDir } from "./helpers.ts";

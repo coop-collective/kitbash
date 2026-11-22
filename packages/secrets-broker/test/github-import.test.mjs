@@ -88,7 +88,7 @@ test('uncertain provider writes resume delivery by metadata; partial writes rema
 });
 
 test('controller decrypts directly to private files, configures the matching webhook and safely retries a lost acknowledgement', async t => {
-  const dir = await mkdtemp(path.join(os.tmpdir(), 'kitbash-receiver-'));
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'w3bstack-receiver-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const publicIdentity = await enrollReceiver(dir);
   const identity = JSON.parse(await readFile(path.join(dir, 'identity.json'), 'utf8'));

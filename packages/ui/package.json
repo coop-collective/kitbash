@@ -1,10 +1,10 @@
 {
-  "name": "@kitbash/ui",
+  "name": "@w3bstack/ui",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Kitbash UI: Styrene-themed React components for agent and AI products, with a Storybook catalog agents can borrow from.",
+  "description": "w3bstack UI: Styrene-themed React components for agent and AI products, with a Storybook catalog agents can borrow from.",
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",

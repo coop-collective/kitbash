@@ -15,7 +15,7 @@ export async function localCloudflareToken({ env, runner = run }) {
   delete childEnv.CLOUDFLARE_API_TOKEN;
   const output = await runner('pnpm', ['exec', 'wrangler', 'auth', 'token', '--json'], {
     cwd: packageDir, env: childEnv,
-    failure: 'Cloudflare login is required for local deployment. Run pnpm --filter @kitbash/secrets-broker exec wrangler login, then rerun setup.',
+    failure: 'Cloudflare login is required for local deployment. Run pnpm --filter @w3bstack/secrets-broker exec wrangler login, then rerun setup.',
   });
   try {
     const result = JSON.parse(output.slice(output.indexOf('{'), output.lastIndexOf('}') + 1));
@@ -31,7 +31,7 @@ export async function configureGitHubCI({ env, settings, ghToken, ask, note, req
   const organization = env.KIT_BROKER_GITHUB_ORGANIZATION || repository.split('/')[0];
   if (!/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(organization) || repository.split('/')[0] !== organization) throw new Error('The deployment organization must own the selected repository.');
   const github = endpoint => requestJson(new URL(endpoint, 'https://api.github.com'), {
-    request, headers: { authorization: `Bearer ${ghToken}`, accept: 'application/vnd.github+json', 'user-agent': 'kitbash-setup' },
+    request, headers: { authorization: `Bearer ${ghToken}`, accept: 'application/vnd.github+json', 'user-agent': 'w3bstack-setup' },
   });
   const optional = async endpoint => {
     try { return await github(endpoint); }

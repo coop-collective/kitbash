@@ -1,0 +1,16 @@
+{
+  "description": "w3bstack: at session start, add the core rules in rules/*.md (tests must be deterministic) to the session context, then send `kit heartbeat --quiet` (the lock's block list only) when .kit/lock.json exists and the project turned telemetry on. No network otherwise.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT:-$PLUGIN_ROOT}/hooks/session-start.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

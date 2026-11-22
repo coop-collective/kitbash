@@ -1,4 +1,4 @@
-import { base64Decode, contract, estimateJsonTokens, sha256Hex, UNTRUSTED_NOTICE, verifyBundle } from "@kitbash/core";
+import { base64Decode, contract, estimateJsonTokens, sha256Hex, UNTRUSTED_NOTICE, verifyBundle } from "@w3bstack/core";
 import { describe, expect, it } from "vitest";
 import { call, member, publishFixture, type TestMember } from "./helpers";
 

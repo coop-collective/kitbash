@@ -1,8 +1,8 @@
-// Writes the kitbash-ui skill's catalog reference from src/catalog.json. `--check` fails if the file is stale.
+// Writes the w3bstack-ui skill's catalog reference from src/catalog.json. `--check` fails if the file is stale.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const catalogPath = new URL("../src/catalog.json", import.meta.url);
-const target = new URL("../../plugin/plugins/kitbash/skills/kitbash-ui/references/catalog.md", import.meta.url);
+const target = new URL("../../plugin/plugins/w3bstack/skills/w3bstack-ui/references/catalog.md", import.meta.url);
 const { components } = JSON.parse(readFileSync(catalogPath, "utf8"));
 
 const byCategory = new Map();
@@ -14,7 +14,7 @@ for (const c of components) {
 const lines = [
   "# Styrene component catalog",
   "",
-  "Generated from `packages/ui/src/catalog.json` by `pnpm -F @kitbash/ui gen-skill-catalog`; do not edit by hand.",
+  "Generated from `packages/ui/src/catalog.json` by `pnpm -F @w3bstack/ui gen-skill-catalog`; do not edit by hand.",
   "Each component lives in `src/components/<slug>/` as `<Export>.tsx`, `<slug>.css` and `<Export>.stories.tsx`.",
   "",
 ];
@@ -27,11 +27,11 @@ const text = lines.join("\n");
 
 if (process.argv.includes("--check")) {
   if (!existsSync(target) || readFileSync(target, "utf8") !== text) {
-    console.error("kitbash-ui references/catalog.md is stale; run pnpm -F @kitbash/ui gen-skill-catalog");
+    console.error("w3bstack-ui references/catalog.md is stale; run pnpm -F @w3bstack/ui gen-skill-catalog");
     process.exit(1);
   }
   console.log("skill catalog reference is current");
 } else {
   writeFileSync(target, text);
-  console.log(`wrote ${components.length} components to the kitbash-ui skill reference`);
+  console.log(`wrote ${components.length} components to the w3bstack-ui skill reference`);
 }

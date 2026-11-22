@@ -1,14 +1,14 @@
 {
-  "name": "kitbash",
+  "name": "w3bstack",
   "interface": {
-    "displayName": "Kitbash"
+    "displayName": "w3bstack"
   },
   "plugins": [
     {
       "name": "kit",
       "source": {
         "source": "local",
-        "path": "./packages/plugin/plugins/kitbash"
+        "path": "./packages/plugin/plugins/w3bstack"
       },
       "policy": {
         "installation": "AVAILABLE"

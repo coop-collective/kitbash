@@ -1,0 +1,48 @@
+{
+  "name": "kit",
+  "version": "0.2.0",
+  "description": "Bootstrap projects with blocks and Git hosting; verify features and manage secrets through a metadata-only broker.",
+  "author": {
+    "name": "Xava Labs"
+  },
+  "license": "MIT",
+  "keywords": [
+    "w3bstack",
+    "xava",
+    "mcp",
+    "blocks",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": {
+    "w3bstack": {
+      "command": "node",
+      "args": [
+        "./scripts/kit-mcp.mjs"
+      ]
+    }
+  },
+  "interface": {
+    "displayName": "w3bstack",
+    "shortDescription": "Bootstrap projects and install tested feature blocks",
+    "longDescription": "Create Worker, vinext or local Rust server projects with compatible blocks and optional Git hosting. Search, install and verify blocks with dry-run diffs. An operator-configured remote broker generates secrets and registers GitHub Actions or Worker sync access without returning values. Pstack is an optional separate dependency.",
+    "developerName": "Xava Labs",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $w3bstack-bootstrap to create a vinext project with cache blocks.",
+      "Use $w3bstack-use to add email sign-in to this project.",
+      "Use $w3bstack-use to find a block for rate limiting and install it.",
+      "Use $w3bstack-harvest to turn this feature into a block.",
+      "Use $w3bstack-harvest to prepare a reusable block contribution.",
+      "Use $w3bstack-secrets to generate staging secrets through the configured broker.",
+      "Use $w3bstack-performance to diagnose slow pages and add regression checks."
+    ],
+    "brandColor": "#F5A524"
+  }
+}

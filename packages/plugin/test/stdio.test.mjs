@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
-import { PLUGIN_TOOLS } from "../plugins/kitbash/scripts/server.mjs";
+import { PLUGIN_TOOLS } from "../plugins/w3bstack/scripts/server.mjs";
 import { FIXTURE_BLOCK, pluginRoot, tmpDir } from "./helpers.mjs";
 
 test("scripts/kit-mcp.mjs speaks MCP over stdio in the project directory: lists registry and bootstrap tools and answers a local get offline", async () => {
@@ -12,7 +12,7 @@ test("scripts/kit-mcp.mjs speaks MCP over stdio in the project directory: lists 
   const home = await tmpDir("kit-plugin-stdio-home-");
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [path.join(pluginRoot, "plugins/kitbash/scripts/kit-mcp.mjs")],
+    args: [path.join(pluginRoot, "plugins/w3bstack/scripts/kit-mcp.mjs")],
     cwd,
     env: { PATH: process.env.PATH, KIT_HOME: home, KIT_API_URL: "http://127.0.0.1:9", KIT_KEYCHAIN: "0" },
     stderr: "pipe",

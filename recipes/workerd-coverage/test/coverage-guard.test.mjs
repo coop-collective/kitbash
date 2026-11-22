@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 const root = fileURLToPath(new URL("../", import.meta.url));
 test("coverage includes unimported source and fails its per-file gate", async () => {
-  const scratch = await mkdtemp(path.join(tmpdir(), "kitbash-coverage-"));
+  const scratch = await mkdtemp(path.join(tmpdir(), "w3bstack-coverage-"));
   try {
     await cp(root, scratch, { recursive: true, filter: (source) => !/(^|\/)(node_modules|coverage|\.wrangler)(\/|$)/.test(path.relative(root, source)) });
     await symlink(path.join(root, "node_modules"), path.join(scratch, "node_modules"), "dir");

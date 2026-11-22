@@ -1,5 +1,5 @@
 {
-  "name": "@kitbash/test-e2e",
+  "name": "@w3bstack/test-e2e",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,6 @@
     "validate": "node validate-blocks.mjs"
   },
   "devDependencies": {
-    "@kitbash/core": "workspace:*"
+    "@w3bstack/core": "workspace:*"
   }
 }

@@ -233,7 +233,7 @@ export function WritingAssistant({
         ) : null}
         <input
           value={input}
-          placeholder={listening ? "Listening" : "Tell Kitbash what to change"}
+          placeholder={listening ? "Listening" : "Tell w3bstack what to change"}
           aria-label="Instruction"
           readOnly={listening}
           onChange={(e) => setInput(e.target.value)}

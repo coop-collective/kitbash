@@ -31,7 +31,7 @@ def private_read(filename, limit):
         return content.decode('utf-8')
 
 def send(url, body):
-    request = urllib.request.Request(url, data=body, method='POST', headers={'Content-Type': 'application/json', 'User-Agent': 'kitbash-secrets-uploader/1.0'})
+    request = urllib.request.Request(url, data=body, method='POST', headers={'Content-Type': 'application/json', 'User-Agent': 'w3bstack-secrets-uploader/1.0'})
     with urllib.request.build_opener(NoRedirect()).open(request, timeout=90) as response:
         raw = response.read(8193)
         if response.status != 200 or len(raw) > 8192:
@@ -67,7 +67,7 @@ def upload(ticket, assignments, post=send):
     return {key: result[key] for key in ['status', 'project', 'target', 'uploadId', 'names']}
 
 def main():
-    parser = argparse.ArgumentParser(description='Upload local private secret files using a Kitbash MCP upload ticket. Prints names/status only.')
+    parser = argparse.ArgumentParser(description='Upload local private secret files using a w3bstack MCP upload ticket. Prints names/status only.')
     parser.add_argument('--ticket', required=True, help='Absolute private JSON file containing the MCP result, or - for stdin')
     parser.add_argument('--secret', action='append', required=True, help='NAME=/absolute/private/file; repeat for each name')
     args = parser.parse_args()

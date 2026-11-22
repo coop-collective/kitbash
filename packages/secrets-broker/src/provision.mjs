@@ -163,7 +163,7 @@ async function provisionGitHubIdentity(config, { infisical, github, checkpoint }
     if (state.roleId) fail('provision_resource_missing');
     await writeStep(checkpoint, 'infisical-role', () => infisical(rolePath, { method: 'POST', body: {
       slug: policy.roleSlug, name: policy.roleSlug, permissions: readerPermissions(config, brokerCI),
-      description: 'Kitbash GitHub deployment: exact environment and source folders only.',
+      description: 'w3bstack GitHub deployment: exact environment and source folders only.',
     } }), value => { validRole(value?.role, config, policy, brokerCI); state.roleId = value.role.id; });
     role = (await read(infisical, `${rolePath}/slug/${policy.roleSlug}`)).role;
   }

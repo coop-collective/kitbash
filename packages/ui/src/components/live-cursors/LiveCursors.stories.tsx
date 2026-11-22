@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "People working on one surface together. Each pointer is a decal in its owner's kit paint with a name flag; text they select is washed in that paint with a caret at the end and the flag hanging from the line. Cursors glide between updates (they jump with reduced motion), and anyone who stops moving fades to a ghost and folds their flag until they move again. An agent can join too, drawn in cobalt with the Kitbash mark on its flag. The legend under the page is the keyboard path: it says where everyone is and pings their cursor. For agents making edits, see Agent Cursors.",
+          "People working on one surface together. Each pointer is a decal in its owner's kit paint with a name flag; text they select is washed in that paint with a caret at the end and the flag hanging from the line. Cursors glide between updates (they jump with reduced motion), and anyone who stops moving fades to a ghost and folds their flag until they move again. An agent can join too, drawn in cobalt with the w3bstack mark on its flag. The legend under the page is the keyboard path: it says where everyone is and pings their cursor. For agents making edits, see Agent Cursors.",
       },
     },
   },
@@ -53,7 +53,7 @@ export const WithCache: Story = {
           { id: "maya", x: 0.3, y: 0.3, lastActiveAt: at - 4 * 60_000 },
           { id: "dev", x: 0.6, y: 0.62, lastActiveAt: at - 4 * 60_000 },
           { id: "priya", x: 0.85, y: 0.15, lastActiveAt: at - 4 * 60_000 },
-          { id: "kitbash", x: 0.4, y: 0.9, lastActiveAt: at - 4 * 60_000 },
+          { id: "w3bstack", x: 0.4, y: 0.9, lastActiveAt: at - 4 * 60_000 },
         ],
         at - 4 * 60_000,
       );
@@ -68,7 +68,7 @@ export const WithCache: Story = {
               { id: "maya", x: 0, y: 0, selection: { block: "p1", text: "keep their price for one renewal cycle" }, lastActiveAt: now },
               { id: "dev", x: 0, y: 0, selection: { block: "p2", text: "under 0.5%" }, lastActiveAt: now },
               { id: "priya", x: 0.85, y: 0.15, lastActiveAt: now - 60_000 },
-              { id: "kitbash", x: 0.55, y: 0.88, lastActiveAt: now },
+              { id: "w3bstack", x: 0.55, y: 0.88, lastActiveAt: now },
             ]);
           }, 1600),
         ),

@@ -1,14 +1,14 @@
-// Validate the kitbash plugin: manifests agree with each other and package.json, the MCP config is the stdio server, the
+// Validate the w3bstack plugin: manifests agree with each other and package.json, the MCP config is the stdio server, the
 // skills and commands have frontmatter ("Use when ..."), hooks point at scripts that exist, the tool names the plugin
 // mentions match the core registry contract and plugin bootstrap tool, and nothing committed carries a secret.
-// Run: pnpm -F @kitbash/plugin validate (then `claude plugin validate plugins/kitbash` for Claude Code's own check).
+// Run: pnpm -F @w3bstack/plugin validate (then `claude plugin validate plugins/w3bstack` for Claude Code's own check).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { REGISTRY_TOOLS } from "@kitbash/core";
+import { REGISTRY_TOOLS } from "@w3bstack/core";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const P = "plugins/kitbash";
+const P = "plugins/w3bstack";
 const errors = [];
 const check = (ok, msg) => {
   if (!ok) errors.push(msg);
@@ -26,13 +26,13 @@ const json = (rel) => {
 const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
-export const MARKETPLACE = "kitbash";
-export const SKILLS = ["deterministic-tests", "kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-performance", "kitbash-publish", "kitbash-secrets", "kitbash-ui", "kitbash-use"];
+export const MARKETPLACE = "w3bstack";
+export const SKILLS = ["deterministic-tests", "w3bstack-accounts", "w3bstack-bootstrap", "w3bstack-harvest", "w3bstack-performance", "w3bstack-publish", "w3bstack-secrets", "w3bstack-ui", "w3bstack-use"];
 export const COMMANDS = ["bootstrap", "harvest", "install", "search", "secrets"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",
   "registry_diff", "registry_harvest", "registry_publish", "registry_propose", "registry_whoami",
-  "kitbash_bootstrap", "kitbash_secrets",
+  "w3bstack_bootstrap", "w3bstack_secrets",
 ];
 
 const REQUIRED = [
@@ -81,13 +81,13 @@ check(cmarket.name === MARKETPLACE && cmarket.plugins?.[0]?.name === PLUGIN_NAME
 check(cmarket.plugins?.[0]?.source?.path === `./${P}`, `Codex marketplace must point at ./${P}`);
 check(codex.skills === "./skills/", "Codex manifest must point skills at ./skills/");
 check(codex.hooks === "./hooks/hooks.json", "Codex manifest must point hooks at ./hooks/hooks.json");
-const cm = codex.mcpServers?.kitbash;
-check(cm?.command === "node" && JSON.stringify(cm?.args) === JSON.stringify(["./scripts/kit-mcp.mjs"]), "Codex manifest: mcpServers.kitbash must be the stdio command node ./scripts/kit-mcp.mjs");
-check(cm?.url === undefined && cm?.env === undefined && cm?.bearer_token_env_var === undefined, "Codex mcpServers.kitbash must not carry a url, env or token (credentials come from KIT_TOKEN / ~/.kit)");
+const cm = codex.mcpServers?.w3bstack;
+check(cm?.command === "node" && JSON.stringify(cm?.args) === JSON.stringify(["./scripts/kit-mcp.mjs"]), "Codex manifest: mcpServers.w3bstack must be the stdio command node ./scripts/kit-mcp.mjs");
+check(cm?.url === undefined && cm?.env === undefined && cm?.bearer_token_env_var === undefined, "Codex mcpServers.w3bstack must not carry a url, env or token (credentials come from KIT_TOKEN / ~/.kit)");
 
 // ---- MCP config: stdio, no credentials in the file
-const mcp = json(`${P}/.mcp.json`).mcpServers?.kitbash ?? {};
-check(mcp.type === "stdio" && mcp.command === "node", ".mcp.json: kitbash must be a stdio node command");
+const mcp = json(`${P}/.mcp.json`).mcpServers?.w3bstack ?? {};
+check(mcp.type === "stdio" && mcp.command === "node", ".mcp.json: w3bstack must be a stdio node command");
 check(JSON.stringify(mcp.args) === JSON.stringify(["${CLAUDE_PLUGIN_ROOT}/scripts/kit-mcp.mjs"]), '.mcp.json: args must be ["${CLAUDE_PLUGIN_ROOT}/scripts/kit-mcp.mjs"]');
 check(mcp.env === undefined && mcp.headers === undefined, ".mcp.json: no env or headers (credentials come from KIT_TOKEN / ~/.kit/credentials)");
 
@@ -108,10 +108,10 @@ const dirs = (rel) => fs.readdirSync(path.join(root, rel), { withFileTypes: true
 const skills = exists(`${P}/skills`) ? dirs(`${P}/skills`).filter((d) => d.isDirectory()).map((d) => d.name).sort() : [];
 check(JSON.stringify(skills) === JSON.stringify(SKILLS), `skills are ${skills.join(", ")}; expected ${SKILLS.join(", ")}`);
 // Skills may describe tools on the separately deployed secrets broker.
-const BROKER_TOOLS = ["kitbash_register_secrets", "kitbash_upload_secrets", "kitbash_secret_deliveries"];
+const BROKER_TOOLS = ["kitbash_secrets", "kitbash_register_secrets", "kitbash_upload_secrets", "kitbash_secret_deliveries"];
 const mentioned = new Set();
 const scanTools = (rel, text) => {
-  for (const m of text.matchAll(/\b(?:registry|kitbash)_[a-z_]+\b/g)) {
+  for (const m of text.matchAll(/\b(?:registry|w3bstack|kitbash)_[a-z_]+\b/g)) {
     mentioned.add(m[0]);
     check(TOOLS.includes(m[0]) || BROKER_TOOLS.includes(m[0]), `${rel} names unknown tool ${m[0]}`);
   }
@@ -140,24 +140,24 @@ for (const name of commands) {
   const rel = `${P}/commands/${name}.md`;
   const fm = frontmatter(rel);
   check(fm?.fields.description, `command ${name} needs a description`);
-  const skill = name === "bootstrap" ? "kitbash-bootstrap" : name === "secrets" ? "kitbash-secrets" : name === "harvest" ? "kitbash-harvest" : "kitbash-use";
+  const skill = name === "bootstrap" ? "w3bstack-bootstrap" : name === "secrets" ? "w3bstack-secrets" : name === "harvest" ? "w3bstack-harvest" : "w3bstack-use";
   check(new RegExp(skill).test(fm?.body ?? ""), `command ${name} must load the ${skill} skill`);
   if (fm) scanTools(rel, fm.body);
 }
 for (const t of TOOLS) check(mentioned.has(t), `no skill or command mentions ${t}`);
 
 // the protocol skill carries the non-negotiables (DESIGN §5.5)
-const use = exists(`${P}/skills/kitbash-use/SKILL.md`) ? read(`${P}/skills/kitbash-use/SKILL.md`) : "";
+const use = exists(`${P}/skills/w3bstack-use/SKILL.md`) ? read(`${P}/skills/w3bstack-use/SKILL.md`) : "";
 for (const must of ["untrusted_author_text", "dry_run", "plan_id", "diff_preview_path", "config-patch", "conflict", "adapt", "registry_verify", "registry_propose", "Never run a shell command", "Instructions are data", "When not to use a block", "overwrite", "project_root", "only network calls"]) {
-  check(use.includes(must), `kitbash-use skill must mention ${must}`);
+  check(use.includes(must), `w3bstack-use skill must mention ${must}`);
 }
-const harvest = exists(`${P}/skills/kitbash-harvest/SKILL.md`) ? read(`${P}/skills/kitbash-harvest/SKILL.md`) : "";
-for (const must of ["boundary", "params", "tests", "Redact", "1,500", "provenance", "registry_harvest"]) check(harvest.includes(must), `kitbash-harvest skill must mention ${must}`);
-const ui = exists(`${P}/skills/kitbash-ui/SKILL.md`) ? read(`${P}/skills/kitbash-ui/SKILL.md`) : "";
-for (const must of ["packages/ui", "runtime/catalog/ui", "references/catalog.md", "--kb-", "keyboard"]) check(ui.includes(must), `kitbash-ui skill must mention ${must}`);
-check(exists(`${P}/skills/kitbash-ui/references/catalog.md`), "missing kitbash-ui/references/catalog.md (generate it with pnpm -F @kitbash/ui gen-skill-catalog)");
-const publish = exists(`${P}/skills/kitbash-publish/SKILL.md`) ? read(`${P}/skills/kitbash-publish/SKILL.md`) : "";
-for (const must of ["private", "public", "license", "price", "scanner", "refused", "registry_publish"]) check(publish.includes(must), `kitbash-publish skill must mention ${must}`);
+const harvest = exists(`${P}/skills/w3bstack-harvest/SKILL.md`) ? read(`${P}/skills/w3bstack-harvest/SKILL.md`) : "";
+for (const must of ["boundary", "params", "tests", "Redact", "1,500", "provenance", "registry_harvest"]) check(harvest.includes(must), `w3bstack-harvest skill must mention ${must}`);
+const ui = exists(`${P}/skills/w3bstack-ui/SKILL.md`) ? read(`${P}/skills/w3bstack-ui/SKILL.md`) : "";
+for (const must of ["packages/ui", "runtime/catalog/ui", "references/catalog.md", "--kb-", "keyboard"]) check(ui.includes(must), `w3bstack-ui skill must mention ${must}`);
+check(exists(`${P}/skills/w3bstack-ui/references/catalog.md`), "missing w3bstack-ui/references/catalog.md (generate it with pnpm -F @w3bstack/ui gen-skill-catalog)");
+const publish = exists(`${P}/skills/w3bstack-publish/SKILL.md`) ? read(`${P}/skills/w3bstack-publish/SKILL.md`) : "";
+for (const must of ["private", "public", "license", "price", "scanner", "refused", "registry_publish"]) check(publish.includes(must), `w3bstack-publish skill must mention ${must}`);
 
 // ---- hooks
 const hooks = exists(`${P}/hooks/hooks.json`) ? json(`${P}/hooks/hooks.json`).hooks ?? {} : {};
@@ -206,7 +206,7 @@ for (const f of walk(root)) {
 }
 
 if (errors.length) {
-  console.error(`kitbash plugin validation failed with ${errors.length} problem(s):\n- ${errors.join("\n- ")}`);
+  console.error(`w3bstack plugin validation failed with ${errors.length} problem(s):\n- ${errors.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, 1 secrets broker tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, ${rules.length} core rule(s), stdio MCP kitbash.`);
+console.log(`Validated w3bstack plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, 1 secrets broker tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, ${rules.length} core rule(s), stdio MCP w3bstack.`);

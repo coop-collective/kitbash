@@ -19,13 +19,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Test shipped payload before rebuilding
         run: node --test packages/plugin/test/distribution.test.mjs
-      - run: pnpm --filter @kitbash/plugin validate
-      - run: pnpm --filter @kitbash/plugin build
+      - run: pnpm --filter @w3bstack/plugin validate
+      - run: pnpm --filter @w3bstack/plugin build
       - name: Require up-to-date committed bundle and catalog
         run: |
-          git diff --exit-code -- packages/plugin/plugins/kitbash/runtime
-          test -z "$(git ls-files --others --exclude-standard packages/plugin/plugins/kitbash/runtime)"
-      - run: pnpm --filter @kitbash/plugin test
+          git diff --exit-code -- packages/plugin/plugins/w3bstack/runtime
+          test -z "$(git ls-files --others --exclude-standard packages/plugin/plugins/w3bstack/runtime)"
+      - run: pnpm --filter @w3bstack/plugin test
   broker:
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +36,6 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @kitbash/secrets-broker typecheck
-      - run: pnpm --filter @kitbash/secrets-broker test
-      - run: pnpm --filter @kitbash/secrets-broker test:worker
+      - run: pnpm --filter @w3bstack/secrets-broker typecheck
+      - run: pnpm --filter @w3bstack/secrets-broker test
+      - run: pnpm --filter @w3bstack/secrets-broker test:worker

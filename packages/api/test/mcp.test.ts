@@ -1,5 +1,5 @@
 // The remote MCP server driven by the real MCP SDK client over Streamable HTTP inside workerd.
-import { REGISTRY_TOOLS } from "@kitbash/core";
+import { REGISTRY_TOOLS } from "@w3bstack/core";
 import { describe, expect, it } from "vitest";
 import { call, mcp, member, publishFixture, tool } from "./helpers";
 

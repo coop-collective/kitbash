@@ -12,8 +12,8 @@ import {
   validateBlock,
   writeProfile,
   type Finding,
-} from "@kitbash/core";
-import { readBlockDir, readTree, writeTree } from "@kitbash/core/node";
+} from "@w3bstack/core";
+import { readBlockDir, readTree, writeTree } from "@w3bstack/core/node";
 import { bool, list, need, stack, str, type Parsed } from "../args.ts";
 import { json, line, sanitizeLine, type Io } from "../io.ts";
 import { openProject } from "../project.ts";

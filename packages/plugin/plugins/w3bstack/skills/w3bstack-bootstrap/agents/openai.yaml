@@ -1,0 +1,4 @@
+interface:
+  display_name: "w3bstack: bootstrap a project"
+  short_description: "Create a project with compatible blocks and Git hosting"
+  default_prompt: "Use $w3bstack-bootstrap to create a vinext project with selected cache blocks."

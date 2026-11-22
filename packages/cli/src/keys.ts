@@ -6,11 +6,13 @@
 import { execFile } from "node:child_process";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { KitError, generateSigningKeyPair, keyIdOf, publicKeyFromJwk } from "@kitbash/core";
+import { KitError, generateSigningKeyPair, keyIdOf, publicKeyFromJwk } from "@w3bstack/core";
 import { kitHome } from "./config.ts";
 import type { Io } from "./io.ts";
 
-const SERVICE = "kitbash-publisher";
+const SERVICE = "w3bstack-publisher";
+/** The keychain item name before the rename. A key stored there is still this member's publisher identity. */
+const LEGACY_SERVICE = "kitbash-publisher";
 const ACCOUNT = "default";
 
 export interface PublisherKey {
@@ -20,7 +22,7 @@ export interface PublisherKey {
   store: "keychain" | "file";
 }
 
-function run(file: string, args: string[], input?: string): Promise<{ code: number; stdout: string }> {
+function spawn(file: string, args: string[], input?: string): Promise<{ code: number; stdout: string }> {
   return new Promise((resolve) => {
     const child = execFile(file, args, { timeout: 10_000, shell: false }, (err, stdout) => {
       resolve({ code: err ? (typeof (err as { code?: unknown }).code === "number" ? ((err as { code: number }).code) : 1) : 0, stdout: stdout ?? "" });
@@ -31,21 +33,28 @@ function run(file: string, args: string[], input?: string): Promise<{ code: numb
   });
 }
 
-interface Backend {
+export interface Backend {
   name: "keychain" | "file";
   load(): Promise<string | null>;
   save(secret: string): Promise<boolean>;
 }
 
-function keychainBackend(io: Io): Backend | null {
+type Exec = typeof spawn;
+
+/** Reads the current item first, then the item an earlier release stored; new keys are saved under the current name. */
+export function keychainBackend(io: Pick<Io, "env" | "platform">, run: Exec = spawn): Backend | null {
   if (io.env.KIT_KEYCHAIN === "0") return null;
+  const first = async (lookup: (service: string) => string[], file: string) => {
+    for (const service of [SERVICE, LEGACY_SERVICE]) {
+      const r = await run(file, lookup(service));
+      if (r.code === 0 && r.stdout.trim()) return r.stdout.trim();
+    }
+    return null;
+  };
   if (io.platform === "darwin") {
     return {
       name: "keychain",
-      load: async () => {
-        const r = await run("security", ["find-generic-password", "-a", ACCOUNT, "-s", SERVICE, "-w"]);
-        return r.code === 0 && r.stdout.trim() ? r.stdout.trim() : null;
-      },
+      load: () => first((service) => ["find-generic-password", "-a", ACCOUNT, "-s", service, "-w"], "security"),
       // `security` only takes the secret as an argument; it is visible to `ps` for the moment the command runs.
       save: async (secret) => (await run("security", ["add-generic-password", "-U", "-a", ACCOUNT, "-s", SERVICE, "-w", secret])).code === 0,
     };
@@ -53,11 +62,8 @@ function keychainBackend(io: Io): Backend | null {
   if (io.platform === "linux") {
     return {
       name: "keychain",
-      load: async () => {
-        const r = await run("secret-tool", ["lookup", "service", SERVICE, "account", ACCOUNT]);
-        return r.code === 0 && r.stdout.trim() ? r.stdout.trim() : null;
-      },
-      save: async (secret) => (await run("secret-tool", ["store", "--label=Kitbash publisher key", "service", SERVICE, "account", ACCOUNT], secret)).code === 0,
+      load: () => first((service) => ["lookup", "service", service, "account", ACCOUNT], "secret-tool"),
+      save: async (secret) => (await run("secret-tool", ["store", "--label=w3bstack publisher key", "service", SERVICE, "account", ACCOUNT], secret)).code === 0,
     };
   }
   return null;

@@ -1,6 +1,6 @@
 /** Argument parsing on `node:util` parseArgs (strict: unknown flags are usage errors). */
 import { parseArgs, type ParseArgsConfig } from "node:util";
-import { KitError } from "@kitbash/core";
+import { KitError } from "@w3bstack/core";
 
 export class UsageError extends Error {
   constructor(message: string) {

@@ -39,7 +39,7 @@ export const DEFAULT_PANEL_COMMENTS: PanelComment[] = [
   },
   {
     id: "p2",
-    author: "Kitbash",
+    author: "w3bstack",
     assistant: true,
     time: "9:20",
     anchor: "Churn fell to 2.1%",
@@ -83,7 +83,7 @@ export interface CommentsPanelProps {
 }
 
 const COMMANDS = [
-  { cmd: "/edit", hint: "Ask Kitbash to change the doc" },
+  { cmd: "/edit", hint: "Ask w3bstack to change the doc" },
   { cmd: "/assign", hint: "Hand this comment to someone" },
 ];
 
@@ -229,7 +229,7 @@ export function CommentsPanel({
                         <Icon name="play" size={12} /> Run edit
                       </button>
                     ) : state === "running" ? (
-                      <span className="kb-cp-running" role="status"><Spinner size={12} label="" /> Kitbash is editing</span>
+                      <span className="kb-cp-running" role="status"><Spinner size={12} label="" /> w3bstack is editing</span>
                     ) : (
                       <>
                         <span className="kb-cp-applied" role="status"><Icon name="check" size={13} strokeWidth={2.4} /> Applied to the doc</span>

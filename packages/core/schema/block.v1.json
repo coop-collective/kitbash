@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kitbash.dev/schema/block.v1.json",
-  "title": "Kitbash block manifest (block.json) v1",
+  "title": "w3bstack block manifest (block.json) v1",
   "type": "object",
   "properties": {
     "$schema": {

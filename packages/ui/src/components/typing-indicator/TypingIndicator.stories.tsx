@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Who is composing. People get three small keys pressing in turn; an agent gets the Kitbash mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike. Names collapse past two (\"Maya and 3 others\"). Inline sits in a line of text; the bar spans the bottom of a thread with faces. The sentence is a polite live region, and with reduced motion the keys rest and the gates stay lit.",
+          "Who is composing. People get three small keys pressing in turn; an agent gets the w3bstack mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike. Names collapse past two (\"Maya and 3 others\"). Inline sits in a line of text; the bar spans the bottom of a thread with faces. The sentence is a polite live region, and with reduced motion the keys rest and the gates stay lit.",
       },
     },
   },

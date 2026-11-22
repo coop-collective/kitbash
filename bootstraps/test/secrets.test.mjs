@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, symlinkSync, wr
 import os from 'node:os';
 import path from 'node:path';
 import { parseEnv } from 'node:util';
-import { childEnvironment, deployWorker, main, makeClient, rotationPlan, selectSecrets, selectTarget, withSecretsFile, writeLocal } from '../shared/files/scripts/secrets.mjs';
+import { childEnvironment, deployWorker, main, makeClient, rotationPlan, selectSecrets, selectTarget, settingsFile, withSecretsFile, writeLocal } from '../shared/files/scripts/secrets.mjs';
 
 const PROJECT = '11111111-1111-4111-8111-111111111111';
 const ROTATION = '22222222-2222-4222-8222-222222222222';
@@ -22,9 +22,9 @@ const config = () => ({
   rotations: { deploy: { target: 'production', provider: 'cloudflare-api-token', name: 'worker-deploy', path: '/ci' } },
 });
 function fixture(t, settings = config()) {
-  const root = mkdtempSync(path.join(os.tmpdir(), 'kitbash-secret-test-'));
-  mkdirSync(path.join(root, '.kitbash'));
-  writeFileSync(path.join(root, '.kitbash/secrets.json'), JSON.stringify(settings));
+  const root = mkdtempSync(path.join(os.tmpdir(), 'w3bstack-secret-test-'));
+  mkdirSync(path.join(root, '.w3bstack'));
+  writeFileSync(path.join(root, '.w3bstack/secrets.json'), JSON.stringify(settings));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   return root;
 }
@@ -152,6 +152,30 @@ test('local writes are private, preserve literal values, and refuse unrelated fi
   writeFileSync(file, 'HAND_WRITTEN=yes\n');
   assert.throws(() => writeLocal(root, scope, { JWT_SESSION_SECRET: value }), /not owned/);
   assert.throws(() => writeLocal(root, { ...scope, target: 'production' }, {}), /only accepts/);
+});
+
+test('a project created under the old product name keeps working', async t => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'w3bstack-secret-test-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(path.join(root, '.kitbash'));
+  writeFileSync(path.join(root, '.kitbash/secrets.json'), JSON.stringify(config()));
+  assert.equal(settingsFile(root), path.join(root, '.kitbash/secrets.json'));
+  const created = [];
+  await main(['generate', 'JWT_SESSION_SECRET', '--env', 'local'], { root, client: { create: async values => { created.push(Object.keys(values)); } }, log: () => {} });
+  assert.deepEqual(created, [['JWT_SESSION_SECRET']]);
+
+  // A local file written by the earlier helper carries the old marker and is still refreshed, under the new one.
+  const scope = selectTarget(config(), 'local');
+  const file = path.join(root, '.dev.vars');
+  writeFileSync(file, `# Kitbash Infisical project=${scope.projectId} env=${scope.environment} path=${scope.path}\nJWT_SESSION_SECRET='old'\n`);
+  writeLocal(root, scope, { JWT_SESSION_SECRET: value });
+  assert.match(readFileSync(file, 'utf8'), /^# w3bstack Infisical project=/);
+  assert.equal(parseEnv(readFileSync(file, 'utf8')).JWT_SESSION_SECRET, value);
+
+  // Once the new directory exists it wins.
+  mkdirSync(path.join(root, '.w3bstack'));
+  writeFileSync(path.join(root, '.w3bstack/secrets.json'), JSON.stringify(config()));
+  assert.equal(settingsFile(root), path.join(root, '.w3bstack/secrets.json'));
 });
 
 test('local writes refuse symlinks and ambiguous dotenv quoting', t => {

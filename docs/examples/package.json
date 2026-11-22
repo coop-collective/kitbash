@@ -1,7 +1,7 @@
 {
   "private": true,
   "type": "module",
-  "name": "kitbash-contract-examples",
+  "name": "w3bstack-contract-examples",
   "devDependencies": {
     "ajv": "8.17.1"
   },

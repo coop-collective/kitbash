@@ -1,10 +1,10 @@
 {
-  "name": "@kitbash/plugin",
-  "version": "0.1.2",
+  "name": "@w3bstack/plugin",
+  "version": "0.2.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Kitbash plugin: bootstrap projects, install feature blocks, and provision secrets through a metadata-only broker",
+  "description": "w3bstack plugin: bootstrap projects, install feature blocks, and provision secrets through a metadata-only broker",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
@@ -12,8 +12,8 @@
     "typecheck": "node scripts/check-syntax.mjs"
   },
   "dependencies": {
-    "@kitbash/cli": "workspace:*",
-    "@kitbash/core": "workspace:*",
+    "@w3bstack/cli": "workspace:*",
+    "@w3bstack/core": "workspace:*",
     "@modelcontextprotocol/server": "2.0.0",
     "zod": "^4.6.7"
   },

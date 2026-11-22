@@ -3,7 +3,7 @@
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { contract, base64Encode, canonicalJson, sha256Hex, toBytes } from "@kitbash/core";
+import { contract, base64Encode, canonicalJson, sha256Hex, toBytes } from "@w3bstack/core";
 import { describe, expect, it } from "vitest";
 import type { Runner } from "../src/verify.ts";
 import { exists, FIXTURE_BLOCK, FIXTURE_LOCAL_ID, fixtureCopy, kit, planIdFrom, readJson, snapshot, templateCopy } from "./helpers.ts";

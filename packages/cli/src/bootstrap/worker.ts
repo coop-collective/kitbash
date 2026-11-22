@@ -1,6 +1,6 @@
 import { readFile, writeFile, appendFile } from "node:fs/promises";
 import path from "node:path";
-import { parseJsonc, renderTemplate, type Lock, type ProjectProfile } from "@kitbash/core";
+import { parseJsonc, renderTemplate, type Lock, type ProjectProfile } from "@w3bstack/core";
 
 /** Bindings and vars do not inherit into Wrangler environments. Keep every target explicit. */
 export async function configureWorker(root: string, profile: ProjectProfile, name: string, lock: Lock, hostname?: string): Promise<void> {

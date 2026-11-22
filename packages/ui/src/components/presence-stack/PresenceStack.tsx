@@ -22,7 +22,7 @@ export interface PresenceMember {
   viewing: string;
   /** When they arrived, ms since epoch */
   since: number;
-  /** Photo URL for people; agents always wear the Kitbash mark */
+  /** Photo URL for people; agents always wear the w3bstack mark */
   src?: string;
 }
 
@@ -55,7 +55,7 @@ const base = Date.now();
 
 export const defaultPresenceMembers: PresenceMember[] = [
   { id: "maya", name: "Maya Chen", kind: "person", state: "active", viewing: "Pricing table", since: base - 42 * MIN },
-  { id: "kitbash", name: "Kitbash", kind: "agent", state: "active", viewing: "Drafting the launch FAQ", since: base - 6 * MIN },
+  { id: "w3bstack", name: "w3bstack", kind: "agent", state: "active", viewing: "Drafting the launch FAQ", since: base - 6 * MIN },
   { id: "dev", name: "Dev Patel", kind: "person", state: "active", viewing: "Rollout plan", since: base - 18 * MIN },
   { id: "priya", name: "Priya Raman", kind: "person", state: "idle", viewing: "Pricing table", since: base - 75 * MIN },
   { id: "jonas", name: "Jonas Berg", kind: "person", state: "active", viewing: "Open questions", since: base - 3 * MIN },
@@ -102,7 +102,7 @@ export interface MemberAvatarProps {
 }
 
 /**
- * A member's face. People are round initials discs; agents are square parts that carry the Kitbash sprue mark,
+ * A member's face. People are round initials discs; agents are square parts that carry the w3bstack sprue mark,
  * so a glance at any stack tells people from agents. The shoulder light is green for an active person, cobalt
  * for an agent at work, a hollow ring when idle, and nothing (the face dims) when away.
  */

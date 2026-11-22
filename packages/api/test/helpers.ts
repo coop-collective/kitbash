@@ -1,7 +1,7 @@
 // Shared test helpers: orgs and members with kit_ tokens, calls into the Worker, the WP-01 fixture block signed by a
 // per-test publisher key, and an MCP SDK client wired to the Worker. Keys are generated here; nothing is committed.
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { base64Encode, fillFileHashes, generateSigningKeyPair, signBundle, toBytes, type SigningKeyPair } from "@kitbash/core";
+import { base64Encode, fillFileHashes, generateSigningKeyPair, signBundle, toBytes, type SigningKeyPair } from "@w3bstack/core";
 import { env, exports } from "cloudflare:workers";
 import { issueToken } from "../src/auth";
 import type { Bindings } from "../src/types";

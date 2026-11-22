@@ -1,5 +1,5 @@
 /**
- * The only I/O surface of core: an injected file-system adapter. Core never imports `node:fs`; `@kitbash/core/node`
+ * The only I/O surface of core: an injected file-system adapter. Core never imports `node:fs`; `@w3bstack/core/node`
  * provides a Node adapter, and `memoryFs` is used by tests and by the Worker.
  */
 import { KitError } from "./errors.ts";

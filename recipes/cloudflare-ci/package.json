@@ -1,5 +1,5 @@
 {
-  "name": "kitbash-recipe-cloudflare-ci",
+  "name": "w3bstack-recipe-cloudflare-ci",
   "private": true,
   "license": "MIT",
   "type": "module",

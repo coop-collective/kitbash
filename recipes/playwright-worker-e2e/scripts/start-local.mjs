@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const port = Number(process.env.E2E_PORT ?? "8797");
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid E2E_PORT");
-const state = await mkdtemp(path.join(tmpdir(), "kitbash-browser-d1-"));
+const state = await mkdtemp(path.join(tmpdir(), "w3bstack-browser-d1-"));
 const wrangler = path.join(root, "node_modules/wrangler/bin/wrangler.js");
 let child;
 let stopping = false;

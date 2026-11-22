@@ -45,7 +45,7 @@ const paths = {
   shield: "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z",
   alert: "M12 4l9 16H3zM12 10v4M12 17h.01",
   info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01",
-  /* Kitbash's AI mark: a part held on its sprue by four gates. Used wherever an agent or model is meant. */
+  /* w3bstack's AI mark: a part held on its sprue by four gates. Used wherever an agent or model is meant. */
   sparkle: "M8 8h8v8H8zM12 3v5M12 16v5M3 12h5M16 12h5",
   bolt: "M13 3L5 13h6l-1 8 8-10h-6z",
   globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18",

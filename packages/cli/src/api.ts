@@ -15,7 +15,7 @@
  * `:scope` is the org slug without the `@`. Errors are the contract's `{error: {code, message}}` envelope.
  * The bundle's `registry_key` is never trusted: signatures are checked against the key pinned at `kit login`.
  */
-import { KitError, TOOL_ERROR_CODES, parseBlockRef, type CardT, type ToolErrorCode } from "@kitbash/core";
+import { KitError, TOOL_ERROR_CODES, parseBlockRef, type CardT, type ToolErrorCode } from "@w3bstack/core";
 import type { Settings } from "./config.ts";
 
 export interface BundleResponse {

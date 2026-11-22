@@ -10,8 +10,8 @@ import { setTimeout as delay } from 'node:timers/promises';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 const recipe = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const template = process.env.KITBASH_VINEXT_TEMPLATE || resolve(recipe, '../../bootstraps/vinext/files');
-const app = await mkdtemp(join(tmpdir(), 'kitbash-vinext-diagnostics-'));
+const template = process.env.W3BSTACK_VINEXT_TEMPLATE || process.env.KITBASH_VINEXT_TEMPLATE || resolve(recipe, '../../bootstraps/vinext/files');
+const app = await mkdtemp(join(tmpdir(), 'w3bstack-vinext-diagnostics-'));
 const env = Object.fromEntries(['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'PNPM_HOME', 'SystemRoot'].filter(key => process.env[key]).map(key => [key, process.env[key]]));
 Object.assign(env, { WRANGLER_SEND_METRICS: 'false', CI: 'true' });
 async function run(args) {

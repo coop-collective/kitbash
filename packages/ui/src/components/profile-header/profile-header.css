@@ -88,7 +88,7 @@
 .kb-ph-stat dd code { font-family: var(--kb-font-code); font-size: var(--kb-text-lg); font-weight: var(--kb-w-medium); }
 .kb-ph-fresh { margin-left: auto; align-self: center; padding-right: var(--kb-s5); }
 
-/* Agent: a square molded part with the Kitbash mark, and a permissions summary in three trays */
+/* Agent: a square molded part with the w3bstack mark, and a permissions summary in three trays */
 .kb-ph-agent-mark {
   display: grid;
   place-items: center;

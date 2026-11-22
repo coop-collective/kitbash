@@ -559,7 +559,7 @@
       "export": "PresenceStack",
       "category": "Multiplayer",
       "inspiration": "",
-      "twist": "Faces sit in a recessed tray with the overflow as a molded +4 key, and agents are square parts carrying the Kitbash mark; a dot on each avatar shows state (green active person, cobalt agent at work, hollow ring idle, faded face away), and following someone rings their face in gunmetal."
+      "twist": "Faces sit in a recessed tray with the overflow as a molded +4 key, and agents are square parts carrying the w3bstack mark; a dot on each avatar shows state (green active person, cobalt agent at work, hollow ring idle, faded face away), and following someone rings their face in gunmetal."
     },
     {
       "slug": "live-cursors",
@@ -575,7 +575,7 @@
       "export": "TypingIndicator",
       "category": "Multiplayer",
       "inspiration": "",
-      "twist": "People get three tiny keycaps pressing down in turn while an agent gets the Kitbash mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike; names collapse to \"Maya and 3 others\"."
+      "twist": "People get three tiny keycaps pressing down in turn while an agent gets the w3bstack mark with its four gates lighting in cobalt, so a person typing and an agent writing never look alike; names collapse to \"Maya and 3 others\"."
     },
     {
       "slug": "activity-feed",
@@ -639,7 +639,7 @@
       "export": "ProfileHeader",
       "category": "Profiles",
       "inspiration": "",
-      "twist": "Follow is the one orange key and stays pressed in, in gunmetal, while you follow; the agent variant uses a square avatar with the Kitbash mark and splits permissions into what it reads, what it does on its own, and what it asks a person first (the decal diamond)."
+      "twist": "Follow is the one orange key and stays pressed in, in gunmetal, while you follow; the agent variant uses a square avatar with the w3bstack mark and splits permissions into what it reads, what it does on its own, and what it asks a person first (the decal diamond)."
     },
     {
       "slug": "profile-editor",

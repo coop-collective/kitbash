@@ -12,13 +12,13 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "types": ["./worker-configuration.d.ts", "@cloudflare/vitest-pool-workers/types", "node"],
-    // @kitbash/core is checked against its own (Node + DOM) libs by `pnpm -F @kitbash/core typecheck`; under the
+    // @w3bstack/core is checked against its own (Node + DOM) libs by `pnpm -F @w3bstack/core typecheck`; under the
     // Workers runtime types two of its WebCrypto/TextDecoder calls do not type-check, so this package checks against
     // core's emitted declarations instead (the typecheck script writes them to .core-types/). Vite bundles the
     // source as usual.
     "paths": {
-      "@kitbash/core": ["./.core-types/src/index.d.ts"],
-      "@kitbash/core/contract": ["./.core-types/src/contract.d.ts"]
+      "@w3bstack/core": ["./.core-types/src/index.d.ts"],
+      "@w3bstack/core/contract": ["./.core-types/src/contract.d.ts"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "worker-configuration.d.ts", "vitest.config.ts"]

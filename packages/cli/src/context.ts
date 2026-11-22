@@ -6,7 +6,7 @@ import {
   sha256Hex,
   type InstallPlan,
   type LockEntryT,
-} from "@kitbash/core";
+} from "@w3bstack/core";
 import { createApi, type ApiClient } from "./api.ts";
 import { loadSettings, type Settings } from "./config.ts";
 import type { Io } from "./io.ts";

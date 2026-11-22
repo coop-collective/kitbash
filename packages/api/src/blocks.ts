@@ -14,8 +14,8 @@ import {
   TAG_RE,
   type Manifest,
   type SummaryT,
-} from "@kitbash/core";
-import type { TrustT } from "@kitbash/core/contract";
+} from "@w3bstack/core";
+import type { TrustT } from "@w3bstack/core/contract";
 import semver from "semver";
 import { registryKey } from "./keys";
 import { membership, orgBySlug } from "./orgs";

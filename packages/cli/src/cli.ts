@@ -2,7 +2,7 @@
  * `kit` command dispatch. `run(argv, io)` returns the exit code (0 ok, 1 failure, 2 usage) and never calls
  * `process.exit`, so tests drive it in-process.
  */
-import { KitError, errorEnvelope } from "@kitbash/core";
+import { KitError, errorEnvelope } from "@w3bstack/core";
 import { parse, UsageError, type Options, type Parsed } from "./args.ts";
 import { json, line, sanitizeLine, type Io } from "./io.ts";
 import { apply, install, installOptions } from "./commands/install.ts";

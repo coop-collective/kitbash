@@ -32,9 +32,9 @@ describe("project bootstrap", () => {
     const diff = await kit(["diff", "@local/crypto-utils", "--json"], { cwd: root });
     expect(diff.code, diff.out).toBe(0);
     expect(JSON.parse(result.out).pending_adapt.length).toBeGreaterThan(0);
-    const secrets = await readJson(path.join(root, ".kitbash/secrets.json"));
+    const secrets = await readJson(path.join(root, ".w3bstack/secrets.json"));
     expect(secrets.secrets.TOKEN_PEPPER.rotation).toBe("migration-required");
-    const broker = await readJson(path.join(root, ".kitbash/secrets-broker.request.json"));
+    const broker = await readJson(path.join(root, ".w3bstack/secrets-broker.request.json"));
     expect(broker.proposalOnly).toBe(true);
     expect(broker.policy.secrets.TOKEN_PEPPER.generate).toBe(true);
     expect(broker.policy.targets.staging.cloudflare.workerName).toBe("my-api-staging");
@@ -52,7 +52,7 @@ describe("project bootstrap", () => {
     const config = await readJson(path.join(root, "wrangler.jsonc"));
     expect(config.env.production.routes).toEqual([{ pattern: "web.example.com", custom_domain: true }]);
     expect(config.env.staging.routes).toBeUndefined();
-    const secrets = await readJson(path.join(root, ".kitbash/secrets.json"));
+    const secrets = await readJson(path.join(root, ".w3bstack/secrets.json"));
     expect(secrets.projectId).toBe("12345678-1234-1234-1234-123456789abc");
     expect(secrets.targets.production.workerName).toBe("my-web-production");
     expect(secrets.targets.production.wranglerConfig).toBe("dist/server/wrangler.json");
@@ -89,8 +89,8 @@ describe("project bootstrap", () => {
     const root = path.join(cwd, "my-server");
     expect(await readFile(path.join(root, "src/main.rs"), "utf8")).toContain("9191");
     expect((await readJson(path.join(root, "package.json"))).scripts.build).toContain("cargo build");
-    expect((await readJson(path.join(root, ".kitbash/secrets.json"))).targets.local.localFile).toBe(".env.local");
-    expect(Object.keys((await readJson(path.join(root, ".kitbash/secrets-broker.request.json"))).policy.targets)).toEqual(["local"]);
+    expect((await readJson(path.join(root, ".w3bstack/secrets.json"))).targets.local.localFile).toBe(".env.local");
+    expect(Object.keys((await readJson(path.join(root, ".w3bstack/secrets-broker.request.json"))).policy.targets)).toEqual(["local"]);
     expect(JSON.parse(result.out).blocks).toEqual([]);
   });
 

@@ -38,9 +38,12 @@ export async function privateWrite(file, value) {
 }
 
 export async function privateDirectory(root) {
-  const dir = path.join(root, '.kitbash');
+  const exists = name => lstat(path.join(root, name)).then(() => true, error => { if (error.code === 'ENOENT') return false; throw error; });
+  // A checkout set up under the old product name keeps its state, lock and credentials together in .kitbash.
+  const name = !(await exists('.w3bstack')) && await exists('.kitbash') ? '.kitbash' : '.w3bstack';
+  const dir = path.join(root, name);
   await mkdir(dir, { mode: 0o700, recursive: true });
-  if (!(await lstat(dir)).isDirectory()) throw new Error('The .kitbash path must be a real directory.');
+  if (!(await lstat(dir)).isDirectory()) throw new Error(`The ${name} path must be a real directory.`);
   await chmod(dir, 0o700);
   return dir;
 }

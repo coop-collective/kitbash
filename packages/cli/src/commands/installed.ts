@@ -27,7 +27,7 @@ import {
   type FileTree,
   type LockEntryT,
   type ProjectProfile,
-} from "@kitbash/core";
+} from "@w3bstack/core";
 import { bool, int, list, need, oneOf, str, type Parsed } from "../args.ts";
 import { apiFor, installedEntry, loadInstalled } from "../context.ts";
 import { json, line, sanitize, sanitizeLine, untrusted, type Io } from "../io.ts";

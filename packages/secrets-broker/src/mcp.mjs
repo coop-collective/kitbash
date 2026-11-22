@@ -54,7 +54,7 @@ export function createSecretsMcp(service, audit) {
     };
     server.registerTool('kitbash_secrets', {
       description: 'Run setup, status, presence, generate, provision-github (Actions OIDC), provision-github-app (new App manifest), or provision-worker-sync ' +
-        'inside the isolated Kitbash broker. Requires only registered project/target aliases and a name for ' +
+        'inside the isolated w3bstack broker. Requires only registered project/target aliases and a name for ' +
         'presence or generate. Returns names and status, plus a human approval link for new Apps, never secret values. No local login or environment ' +
         'variables needed. Mutating operations change the configured external services.',
       inputSchema,

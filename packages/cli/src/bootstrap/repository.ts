@@ -1,4 +1,4 @@
-import { KitError } from "@kitbash/core";
+import { KitError } from "@w3bstack/core";
 import type { Io } from "../io.ts";
 
 export type GitHost = "local" | "github" | "gitstalk";

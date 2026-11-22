@@ -1,6 +1,6 @@
 /**
- * @kitbash/core: block schema, renderer, planner, lock, hashing/signing, client scanner, harvest heuristics and the
- * `registry_*` contract. No I/O except through an injected `KitFs` (see `@kitbash/core/node` for Node).
+ * @w3bstack/core: block schema, renderer, planner, lock, hashing/signing, client scanner, harvest heuristics and the
+ * `registry_*` contract. No I/O except through an injected `KitFs` (see `@w3bstack/core/node` for Node).
  */
 export * from "./errors.ts";
 export * from "./paths.ts";

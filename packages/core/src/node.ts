@@ -1,5 +1,5 @@
 /**
- * Node adapter for core (`@kitbash/core/node`): a `KitFs` rooted at a project directory that refuses to read or
+ * Node adapter for core (`@w3bstack/core/node`): a `KitFs` rooted at a project directory that refuses to read or
  * write outside it (including through symlinks), and `readBlockDir()` for a block directory on disk.
  * The main entry stays free of `node:*` imports so it runs in workerd.
  */

@@ -1,5 +1,5 @@
 /**
- * An in-process stand-in for kit-api (PLAN WP-02's REST routes), built on @kitbash/core: publish verifies the
+ * An in-process stand-in for kit-api (PLAN WP-02's REST routes), built on @w3bstack/core: publish verifies the
  * publisher signature and co-signs with a registry key; bundle/summary/search/get answer from memory. Used as the
  * `fetch` of the CLI under test: no network.
  */
@@ -15,7 +15,7 @@ import {
   verifyBundleSignature,
   type FileTree,
   type SigningKeyPair,
-} from "@kitbash/core";
+} from "@w3bstack/core";
 const cmp = (a: string, b: string) => {
   const x = a.split(/[.-]/).map(Number);
   const y = b.split(/[.-]/).map(Number);

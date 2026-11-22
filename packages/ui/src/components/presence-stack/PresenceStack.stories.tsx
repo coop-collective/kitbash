@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Who is here right now. Faces sit overlapped in a recessed tray, people as round discs and agents as square parts carrying the Kitbash mark. A shoulder light says the state: green for an active person, cobalt for an agent at work, a hollow ring when idle; away faces dim. Active people lead, then agents, then idle and away. The overflow is a key: press it for everyone, with what they have open and how long they have been here, and follow anyone (the followed face takes the gunmetal ring). Arrow keys move through the list; Escape closes it.",
+          "Who is here right now. Faces sit overlapped in a recessed tray, people as round discs and agents as square parts carrying the w3bstack mark. A shoulder light says the state: green for an active person, cobalt for an agent at work, a hollow ring when idle; away faces dim. Active people lead, then agents, then idle and away. The overflow is a key: press it for everyone, with what they have open and how long they have been here, and follow anyone (the followed face takes the gunmetal ring). Arrow keys move through the list; Escape closes it.",
       },
     },
   },

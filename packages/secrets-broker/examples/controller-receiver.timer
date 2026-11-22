@@ -1,6 +1,6 @@
 # Install alongside a service with the same base name, then enable this timer.
 [Unit]
-Description=Poll Kitbash for encrypted credential delivery
+Description=Poll w3bstack for encrypted credential delivery
 
 [Timer]
 OnBootSec=30s

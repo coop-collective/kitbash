@@ -1,4 +1,4 @@
-// kit-api: the Kitbash registry Worker. The HTTP contract is docs/API.md (kept in step with this file).
+// kit-api: the w3bstack registry Worker. The HTTP contract is docs/API.md (kept in step with this file).
 //
 //   GET  /health                                        no auth
 //   *    /api/*                                         kit_ bearer (src/auth.ts)

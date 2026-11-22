@@ -13,7 +13,7 @@
  */
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import { KitError, parseBlockRef, parseDependencyRef, pickVersion, satisfiesRange, toBytes, type KitFs, type Lock } from "@kitbash/core";
+import { KitError, parseBlockRef, parseDependencyRef, pickVersion, satisfiesRange, toBytes, type KitFs, type Lock } from "@w3bstack/core";
 import { apiFor } from "./context.ts";
 import type { Io } from "./io.ts";
 import { fetchRegistryBlock, loadLocalBlock, type ResolvedBlock } from "./source.ts";

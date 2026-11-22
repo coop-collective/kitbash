@@ -9,7 +9,7 @@
 import { execFile } from "node:child_process";
 import { access } from "node:fs/promises";
 import path from "node:path";
-import { checkVerifyCommand } from "@kitbash/core";
+import { checkVerifyCommand } from "@w3bstack/core";
 
 export interface RunResult {
   exit: number;

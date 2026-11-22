@@ -1,6 +1,6 @@
 // Project heartbeats (DESIGN §4.5, MVP: counting only). A heartbeat carries the lock's block list and nothing else;
 // it upserts the project and one installs row per block, and marks blocks no longer listed as removed.
-import { parseBlockRef, VERSION_RE } from "@kitbash/core";
+import { parseBlockRef, VERSION_RE } from "@w3bstack/core";
 import { z } from "zod";
 import { canRead } from "./blocks";
 import { requireOrgMember } from "./orgs";

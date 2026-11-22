@@ -39,7 +39,7 @@ export interface IntegrationPickerProps {
 }
 
 export const DEMO_SERVICES: IntegrationService[] = [
-  { id: "github", name: "GitHub", category: "Code", color: "#2b3540", description: "Read repositories, open branches and pull requests for review.", scopes: ["Read code in 4 selected repositories", "Open branches and pull requests", "Comment on reviews it was asked into"], account: "kitbash-bot", status: "connected" },
+  { id: "github", name: "GitHub", category: "Code", color: "#2b3540", description: "Read repositories, open branches and pull requests for review.", scopes: ["Read code in 4 selected repositories", "Open branches and pull requests", "Comment on reviews it was asked into"], account: "w3bstack-bot", status: "connected" },
   { id: "linear", name: "Linear", category: "Issues", color: "#4b4fc4", description: "Turn findings into issues and keep their status in sync.", scopes: ["Create issues in Platform and Evals", "Update status on issues it created", "Read project cycles"], account: "maya@relaylabs.dev" },
   { id: "slack", name: "Slack", category: "Messaging", color: "#8a3f86", description: "Post run summaries and ask for approvals in channels you pick.", scopes: ["Post in #eval-runs and #agent-alerts", "Send approval requests by direct message", "Read threads it started"], account: "Relay Labs" },
   { id: "notion", name: "Notion", category: "Docs", color: "#5b5f66", description: "Write meeting notes and weekly reviews into shared pages.", scopes: ["Edit pages in Agent reviews", "Create pages from templates"], account: "Relay Labs wiki" },

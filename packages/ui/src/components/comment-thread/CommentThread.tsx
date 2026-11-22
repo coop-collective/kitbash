@@ -24,14 +24,14 @@ export interface ThreadComment {
   work?: WorkItem[];
 }
 
-const ASSISTANT = "Kitbash";
+const ASSISTANT = "w3bstack";
 
 export const DEFAULT_THREAD: ThreadComment[] = [
   {
     id: "c1",
     author: "Maya Okafor",
     time: "10:42",
-    body: "@Kitbash can you update the FAQ so it matches the new annual price, and flag anything else that still says $19?",
+    body: "@w3bstack can you update the FAQ so it matches the new annual price, and flag anything else that still says $19?",
   },
   {
     id: "c2",
@@ -50,7 +50,7 @@ export const DEFAULT_THREAD: ThreadComment[] = [
     id: "c3",
     author: "Dev Patel",
     time: "10:51",
-    body: "@Kitbash leave the email, marketing owns it. Can you check the in-app upgrade modal too?",
+    body: "@w3bstack leave the email, marketing owns it. Can you check the in-app upgrade modal too?",
   },
 ];
 
@@ -314,7 +314,7 @@ export function CommentThread({
             className="kb-ct-input"
             rows={1}
             value={draft}
-            placeholder="Reply, or @mention Kitbash"
+            placeholder="Reply, or @mention w3bstack"
             aria-label="Reply"
             aria-autocomplete="list"
             aria-expanded={Boolean(suggest && options.length)}

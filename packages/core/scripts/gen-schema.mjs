@@ -21,7 +21,7 @@ function strip(s) {
 const block = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: SCHEMA_URL,
-  title: "Kitbash block manifest (block.json) v1",
+  title: "w3bstack block manifest (block.json) v1",
   ...strip(z.toJSONSchema(ManifestSchema, { io: "input", unrepresentable: "any" })),
 };
 
@@ -35,7 +35,7 @@ if (out.schemas.__shared) Object.assign(defs, Object.fromEntries(Object.entries(
 const contract = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://kitbash.dev/schema/contract.v1.json",
-  title: "Kitbash registry_* tool contract v1",
+  title: "w3bstack registry_* tool contract v1",
   description:
     "One $defs entry per tool input/output (registry_<tool>_input|_output) plus shared shapes. Author-written prose only ever appears inside untrusted_author_text (or the length-capped Card.summary).",
   $defs: defs,

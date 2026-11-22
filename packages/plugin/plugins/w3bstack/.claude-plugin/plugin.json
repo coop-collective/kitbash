@@ -1,0 +1,17 @@
+{
+  "name": "kit",
+  "description": "Bootstrap projects with blocks, verify features, and generate secrets or register CI access through an operator-configured broker. Includes a local MCP client and optional pstack composition.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Xava Labs"
+  },
+  "license": "MIT",
+  "keywords": [
+    "w3bstack",
+    "xava",
+    "mcp",
+    "blocks",
+    "registry",
+    "features"
+  ]
+}

@@ -6,9 +6,9 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
 import { z } from "zod";
-import { REGISTRY_TOOLS, UNTRUSTED_NOTICE } from "@kitbash/core";
-import { UNTRUSTED_BEGIN, UNTRUSTED_END } from "@kitbash/cli";
-import { PLUGIN_TOOLS, toArgv } from "../plugins/kitbash/scripts/server.mjs";
+import { REGISTRY_TOOLS, UNTRUSTED_NOTICE } from "@w3bstack/core";
+import { UNTRUSTED_BEGIN, UNTRUSTED_END } from "@w3bstack/cli";
+import { PLUGIN_TOOLS, toArgv } from "../plugins/w3bstack/scripts/server.mjs";
 import { API, FIXTURE_BLOCK, call, connect, exists, fixtureCopy, noNetwork, readJson, snapshot, templateCopy, tmpDir } from "./helpers.mjs";
 
 const { createMockRegistry } = await import("../../cli/test/mock-registry.ts");
@@ -30,7 +30,7 @@ async function registryClient(extra = {}) {
   const cwd = extra.cwd ?? (await templateCopy());
   const client = await connect({ cwd, home, env, fetch: reg.fetch, runner: extra.runner });
   // publish through the same CLI the server delegates to (signs with a throwaway publisher key in the temp home)
-  const { runKit } = await import("../plugins/kitbash/scripts/server.mjs");
+  const { runKit } = await import("../plugins/w3bstack/scripts/server.mjs");
   const p = await runKit(["publish", "--json", "--visibility=private", "--scope=coop", "--", FIXTURE_BLOCK], { cwd, env: { PATH: process.env.PATH, KIT_HOME: home, KIT_KEYCHAIN: "0", ...env }, home, fetch: reg.fetch });
   assert.ok(!p.error, JSON.stringify(p.error));
   return { reg, client, cwd, home };
@@ -237,7 +237,7 @@ test("a block name that looks like a flag or a path is rejected by the contract 
 });
 
 test("everything leaving the server is stripped of ANSI escapes and invisible Unicode", async () => {
-  const { deepSanitize } = await import("../plugins/kitbash/scripts/server.mjs");
+  const { deepSanitize } = await import("../plugins/w3bstack/scripts/server.mjs");
   const dirty = { title: "\u001b[31mred\u001b[0m‮evil​", nested: ["\u0007bell"], "k‮": 1 };
   const clean = JSON.stringify(deepSanitize(dirty));
   assert.ok(!/[\u001b‮​\u0007]/.test(clean), clean);

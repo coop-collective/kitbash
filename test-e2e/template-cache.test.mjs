@@ -19,7 +19,7 @@ const put = async (root, relative, contents) => {
 };
 const identity = (root, extra = {}) => templateCacheIdentity(root, { pnpmVersion: "12.14.0", ...extra });
 
-test("source, migration, config, test, lock and Kitbash profile edits invalidate the cache", async () => {
+test("source, migration, config, test, lock and w3bstack profile edits invalidate the cache", async () => {
   const root = await fixture();
   const inputs = ["package.json", "src/index.ts", "migrations/0001_init.sql", "wrangler.jsonc", "vitest.config.ts", "test/health.test.ts", "pnpm-lock.yaml", ".kit/project.json", ".dev.vars.example"];
   for (const file of inputs) await put(root, file, "before");

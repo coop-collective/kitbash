@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Styrene is the Kitbash UI theme: interface parts that feel molded and click together. Every component reads these tokens from tokens.css.",
+          "Styrene is the w3bstack UI theme: interface parts that feel molded and click together. Every component reads these tokens from tokens.css.",
       },
     },
   },
