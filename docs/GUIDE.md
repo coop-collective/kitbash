@@ -163,6 +163,7 @@ Recipes are runnable reference projects and scripts. The plugin bundles their so
 
 | Recipe | What it demonstrates |
 | --- | --- |
+| [flagship-worker](../recipes/flagship-worker/README.md) | Evaluate feature flags through a Wrangler binding and exercise both flag values in the local store |
 | [cloudflare-ci](../recipes/cloudflare-ci/README.md) | Credential-free checks, Infisical-backed CI, migrations, and environment-specific Worker deployment |
 | [playwright-worker-e2e](../recipes/playwright-worker-e2e/README.md) | Browser journeys against a local Worker and migrated D1 |
 | [tiered-result-cache-do](../recipes/tiered-result-cache-do/README.md) | Full Worker/DO integration tests for the installed result-cache block |

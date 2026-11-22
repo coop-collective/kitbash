@@ -12,6 +12,10 @@ A block contains feature source, tests, migrations, configuration, and an adapta
 ships with the toolkit; local use needs no hosted registry or account. The `registry_*` tools retain their original
 names but can inspect and install local block directories through the local MCP server (`w3bstack`).
 
+For Cloudflare feature flags on Workers, use the Flagship binding recipe in
+`runtime/catalog/recipes/flagship-worker/README.md` under the plugin root. It includes the Wrangler binding,
+a runnable Worker, local flag setup, and the credential path for a standalone Node server.
+
 ## The protocol
 
 1. **Find locally.** Read the project's stack from `.kit/project.json`, or its package and Wrangler configuration.
