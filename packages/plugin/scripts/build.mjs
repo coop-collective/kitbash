@@ -1,6 +1,7 @@
 // Bundles the MCP server and the hook runtime into plugins/kitbash/runtime/kit.mjs (one self-contained ESM file with
 // @kitbash/core, the kit CLI library, zod and the MCP SDK inlined), so an installed plugin needs no node_modules.
 // The launchers (scripts/kit-mcp.mjs, hooks/session-start.mjs) use it when present and fall back to the sources.
+// Also refreshes the generated copies: the catalog under runtime/, and skills/deterministic-tests as a plugin skill.
 import { build } from "rolldown";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -24,6 +25,12 @@ for (const [name, from] of Object.entries(sources)) {
       return !base.endsWith(".log") && base !== ".DS_Store";
     },
   });
+}
+// Skills that are also plugin skills: one source in the repository's skills/, a generated copy the harness discovers.
+for (const name of ["deterministic-tests"]) {
+  const to = path.join(root, "plugins", "kitbash", "skills", name);
+  await fs.rm(to, { recursive: true, force: true });
+  await fs.cp(path.resolve(root, "../..", "skills", name), to, { recursive: true, filter: (source) => path.basename(source) !== ".DS_Store" });
 }
 await build({
   input: path.join(root, "plugins", "kitbash", "scripts", "entry.mjs"),

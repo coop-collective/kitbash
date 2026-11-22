@@ -1,6 +1,7 @@
-// The SessionStart hook: silent and harmless unless .kit/lock.json exists and telemetry is on, then one heartbeat.
+// The SessionStart hook: the core rules as session context always; one heartbeat only when .kit/lock.json exists and
+// telemetry is on. It never fails and never writes to stderr.
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
@@ -11,18 +12,55 @@ import { runKit } from "../plugins/kitbash/scripts/server.mjs";
 const { createMockRegistry } = await import("../../cli/test/mock-registry.ts");
 const HOOK = path.join(pluginRoot, "plugins/kitbash/hooks/session-start.mjs");
 
-test("the hook exits 0 with no output and no network when there is no lock, or telemetry is off", async () => {
+const quiet = { PATH: process.env.PATH, KIT_API_URL: "http://127.0.0.1:9" };
+const runHook = (cwd, hook = HOOK) => spawnSync(process.execPath, [hook], { cwd, encoding: "utf8", env: quiet });
+const RULE = (await readFile(path.join(pluginRoot, "plugins/kitbash/rules/deterministic-tests.md"), "utf8")).trim();
+
+test("the hook adds the core rules as SessionStart context in every project, and does nothing else when there is no lock or telemetry is off", async () => {
   const none = await tmpDir();
-  const r1 = spawnSync(process.execPath, [HOOK], { cwd: none, encoding: "utf8", env: { PATH: process.env.PATH, KIT_API_URL: "http://127.0.0.1:9" } });
-  assert.equal(r1.status, 0);
-  assert.equal(r1.stdout + r1.stderr, "");
   const off = await tmpDir();
   await mkdir(path.join(off, ".kit"));
   await writeFile(path.join(off, ".kit", "lock.json"), '{"blocks":{}}');
   await writeFile(path.join(off, ".kit", "project.json"), '{"telemetry":false}');
-  const r2 = spawnSync(process.execPath, [HOOK], { cwd: off, encoding: "utf8", env: { PATH: process.env.PATH, KIT_API_URL: "http://127.0.0.1:9" } });
-  assert.equal(r2.status, 0);
-  assert.equal(r2.stdout + r2.stderr, "");
+  for (const cwd of [none, off]) {
+    const r = runHook(cwd);
+    assert.equal(r.status, 0);
+    assert.equal(r.stderr, "");
+    // One JSON object, in the shape Claude Code and Codex read from a SessionStart hook.
+    const out = JSON.parse(r.stdout);
+    assert.deepEqual(Object.keys(out), ["hookSpecificOutput"]);
+    assert.equal(out.hookSpecificOutput.hookEventName, "SessionStart");
+    const context = out.hookSpecificOutput.additionalContext;
+    assert.match(context, /^Kitbash core rules\. Follow them in every task in this session\.\n\n# Tests must be deterministic\n/);
+    assert.ok(context.includes(RULE), "the whole rule file is in the context");
+    assert.ok(context.length < 10000, "the context stays small enough for every session");
+  }
+});
+
+test("the hook stays silent and exits 0 when the rules are missing or empty", async () => {
+  const dir = await tmpDir();
+  await mkdir(path.join(dir, "hooks"));
+  const hook = path.join(dir, "hooks", "session-start.mjs");
+  await copyFile(HOOK, hook);
+  const missing = runHook(dir, hook);
+  assert.equal(missing.status, 0);
+  assert.equal(missing.stdout + missing.stderr, "");
+  await mkdir(path.join(dir, "rules"));
+  await writeFile(path.join(dir, "rules", "empty.md"), "\n");
+  const empty = runHook(dir, hook);
+  assert.equal(empty.status, 0);
+  assert.equal(empty.stdout + empty.stderr, "");
+});
+
+test("the deterministic-tests plugin skill is the built copy of skills/deterministic-tests, and states the rule in its description", async () => {
+  const source = path.join(pluginRoot, "../../skills/deterministic-tests");
+  const shipped = path.join(pluginRoot, "plugins/kitbash/skills/deterministic-tests");
+  const files = async (dir) => (await readdir(dir, { recursive: true, withFileTypes: true })).filter((e) => e.isFile()).map((e) => path.relative(dir, path.join(e.parentPath, e.name)).split(path.sep).join("/")).sort();
+  assert.deepEqual(await files(shipped), await files(source));
+  assert.deepEqual(await files(source), ["SKILL.md", "agents/openai.yaml", "references/recipes.md"]);
+  for (const f of await files(source)) assert.equal(await readFile(path.join(shipped, f), "utf8"), await readFile(path.join(source, f), "utf8"), `${f} is stale: run pnpm --filter @kitbash/plugin build`);
+  const description = /^description: (.*)$/m.exec(await readFile(path.join(shipped, "SKILL.md"), "utf8"))[1];
+  for (const must of ["Tests must be deterministic", "wall clock", "sleep", "temp directory", "port 0", "order", "seed", "retry until green"]) assert.ok(description.includes(must), `the description names: ${must}`);
 });
 
 test("with telemetry on, the heartbeat sends the lock's block list only (through the CLI's own heartbeat)", async () => {

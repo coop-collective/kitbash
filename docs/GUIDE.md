@@ -194,6 +194,12 @@ Maintenance skills are explicitly invoked after merge or at a requested producti
 
 Copy selected skills or vendor the `skills/` tree into a project; generated projects keep a copy under `.kit/skills/`. [Installation and invocation](../skills/README.md) explain how to expose them to your harness. No scheduler or recurring agent is enabled automatically.
 
+### Core rule: tests must be deterministic
+
+One rule is not optional and not explicit-only. The plugin adds [`rules/deterministic-tests.md`](../packages/plugin/plugins/kitbash/rules/deterministic-tests.md) to every session through its SessionStart hook, in every project, whether or not the project uses Kitbash blocks: no wall-clock assertions, no sleeping to wait, private temp directories and port 0, no shared global or environment state, no assumed ordering, seeded randomness, a repeated run before review, and a flaky test is fixed or removed from the gating suite, never retried until green. The [deterministic-tests](../skills/deterministic-tests/SKILL.md) skill, shipped as a plugin skill, has the checklist and fix recipes.
+
+Claude Code runs the hook as soon as the plugin is enabled. Codex skips a plugin hook until you review and trust it: run `/hooks` once after installing or updating the plugin. Until then a Codex session still sees the rule in the `deterministic-tests` skill's description.
+
 [Pstack](../docs/PSTACK.md) is an optional, separately installed engineering workflow. Use it to plan, implement, debug, and verify a feature; use Kitbash for the stack-specific blocks, recipes, and maintenance checks. Verification should exercise real user journeys and backend assertions, with recordings where useful.
 
 ## Develop and contribute

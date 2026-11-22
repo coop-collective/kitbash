@@ -1,6 +1,6 @@
 {
   "name": "kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Bootstrap projects with blocks and Git hosting; verify features and manage secrets through a metadata-only broker.",
   "author": {
     "name": "Xava Labs"

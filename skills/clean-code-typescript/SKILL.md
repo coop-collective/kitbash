@@ -28,7 +28,7 @@ For TypeScript-specific signals, read [diagnosis.md](references/diagnosis.md). F
 
 1. Record the baseline and the smallest useful success criterion. For a bug, verify a focused reproduction fails for the intended reason before changing behavior. For performance, measure representative inputs and define the metric.
 2. Make the smallest change that addresses the cause. Preserve contracts, auth boundaries, persisted formats and relevant regression tests. Document non-obvious units, ordering or ownership where that information prevents mistakes.
-3. Run relevant type/lint checks and behavior tests, then required project gates. Check callers and integration boundaries the narrow test does not cover. Do not add tests that only mirror a cosmetic edit, weaken checks, or retry failures until green.
+3. Run relevant type/lint checks and behavior tests, then required project gates. Check callers and integration boundaries the narrow test does not cover. Do not add tests that only mirror a cosmetic edit, weaken checks, or retry failures until green. A test added or changed here must be deterministic; for a test that fails intermittently, or before adding one, follow the [deterministic-tests](../deterministic-tests/SKILL.md) skill and its repeated-run check.
 4. Compare results on equivalent inputs. A shorter file, fewer lines, green tests or a higher coverage percentage alone does not prove better agent performance.
 
 Report the finding and evidence, changed paths, checks and their limits, measured before/after results, and remaining risk. Record no-change/deferred findings with a reason so subsequent maintenance runs do not repeat the same work.

@@ -28,7 +28,7 @@ Read [diagnosis.md](references/diagnosis.md) for relevant runtime signals and [e
 
 1. Record a baseline and a useful success criterion. A bug reproduction must fail for the intended reason; a performance target needs representative inputs and comparable release builds.
 2. Make the smallest justified change, preserving public behavior, persisted formats, cancellation and resource ownership. Comments should capture non-obvious units, lifetimes, ordering and contracts that prevent mistaken edits.
-3. Run focused tests and the repository's format/lint/build checks with the relevant target/feature combinations, then required full gates. Do not assume `--all-features` is valid for mutually exclusive features. Avoid new tests that merely duplicate an implementation.
+3. Run focused tests and the repository's format/lint/build checks with the relevant target/feature combinations, then required full gates. Do not assume `--all-features` is valid for mutually exclusive features. Avoid new tests that merely duplicate an implementation. A test added or changed here must be deterministic; for a test that fails intermittently, or before adding one, follow the [deterministic-tests](../deterministic-tests/SKILL.md) skill and its repeated-run check.
 4. Compare correctness and performance separately. Green tests are scoped evidence, not proof of every race or performance gain. Check error and shutdown paths when the change affects them.
 
 Report evidence, changed paths, commands/results and their limits, before/after measurements, and unresolved risks. Preserve no-change/deferred decisions so later maintenance does not reopen them without new evidence.

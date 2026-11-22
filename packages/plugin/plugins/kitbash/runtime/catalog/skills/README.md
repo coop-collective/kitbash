@@ -7,14 +7,17 @@ Kitbash's first maintenance skills replace broad Clean Code prescriptions with e
 | [clean-code-typescript](clean-code-typescript/SKILL.md) | Diagnose a TypeScript correctness, agent-navigation or measured performance problem |
 | [clean-code-rust](clean-code-rust/SKILL.md) | Diagnose Rust behavior, ownership/task lifecycle or measured costs |
 | [page-delivery](page-delivery/SKILL.md) | Choose and verify rendering/data-refresh/cache strategies per route |
+| [deterministic-tests](deterministic-tests/SKILL.md) | Write tests that pass on every run, and find and fix the cause of a flaky one |
 
 The language names preserve existing Gitstalk invocations. These are maintenance procedures, not style guides that every feature agent should read. Research and its limits live in the skills' targeted references. No universal function/file-size limits or performance savings are claimed.
+
+`deterministic-tests` is the exception to the explicit-only rule below. "Tests must be deterministic" is a core rule for every coding agent in every project, so the skill stays implicitly invocable and the `kit` plugin ships it twice: the short rule in `packages/plugin/plugins/kitbash/rules/deterministic-tests.md`, which the plugin's SessionStart hook adds to every session, and this skill as a plugin skill (a copy the plugin build generates from this directory) for the checklist and fix recipes. The two Clean Code skills refer to it for any test they add or change.
 
 ## Installation and invocation
 
 Each directory is self-contained. Copy selected directories into the project's skill location, or vendor this `skills/` tree as a pinned subtree payload and expose selected skill directories through the harness's supported discovery mechanism. Keep project commands, budgets and exceptions outside the vendored directories. Updating the files does not itself enable a recurring job.
 
-Claude Code frontmatter uses `disable-model-invocation: true`; Codex policy uses `allow_implicit_invocation: false`. After installation, explicitly invoke `/clean-code-typescript`, `/clean-code-rust` or `/page-delivery` in Claude, or the corresponding `$skill-name` in Codex. Do not add these skills to always-load instructions or feature-agent preload lists. [Claude invocation controls](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill), [Codex invocation policy](https://learn.chatgpt.com/docs/build-skills)
+For the three explicit skills, Claude Code frontmatter uses `disable-model-invocation: true`; Codex policy uses `allow_implicit_invocation: false`. After installation, explicitly invoke `/clean-code-typescript`, `/clean-code-rust` or `/page-delivery` in Claude, or the corresponding `$skill-name` in Codex. Do not add those three skills to always-load instructions or feature-agent preload lists. [Claude invocation controls](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill), [Codex invocation policy](https://learn.chatgpt.com/docs/build-skills)
 
 ## Post-merge integration contract
 
