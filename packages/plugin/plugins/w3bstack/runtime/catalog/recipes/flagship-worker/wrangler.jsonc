@@ -1,0 +1,8 @@
+{
+  "name": "flagship-binding-example",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-26",
+  "flagship": [
+    { "binding": "FLAGS", "app_id": "00000000-0000-4000-8000-000000000001" }
+  ]
+}
