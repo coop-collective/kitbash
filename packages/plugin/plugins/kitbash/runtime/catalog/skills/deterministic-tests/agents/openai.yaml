@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deterministic tests"
+  short_description: "Checklist and fix recipes for tests that pass on every run"
+  default_prompt: "Use $deterministic-tests to check the tests in this change and fix any that can fail intermittently."

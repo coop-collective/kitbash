@@ -27,7 +27,7 @@ const pkg = json("package.json");
 
 export const PLUGIN_NAME = "kit"; // commands are /kit:search, /kit:install, /kit:harvest
 export const MARKETPLACE = "kitbash";
-export const SKILLS = ["kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-performance", "kitbash-publish", "kitbash-secrets", "kitbash-ui", "kitbash-use"];
+export const SKILLS = ["deterministic-tests", "kitbash-accounts", "kitbash-bootstrap", "kitbash-harvest", "kitbash-performance", "kitbash-publish", "kitbash-secrets", "kitbash-ui", "kitbash-use"];
 export const COMMANDS = ["bootstrap", "harvest", "install", "search", "secrets"];
 export const TOOLS = [
   "registry_search", "registry_get", "registry_read_file", "registry_install", "registry_verify", "registry_upgrade",
@@ -43,6 +43,7 @@ const REQUIRED = [
   `${P}/.mcp.json`,
   `${P}/hooks/hooks.json`,
   `${P}/hooks/session-start.mjs`,
+  `${P}/rules/deterministic-tests.md`,
   `${P}/scripts/kit-mcp.mjs`,
   `${P}/scripts/server.mjs`,
   `${P}/scripts/load-kit.mjs`,
@@ -169,6 +170,19 @@ for (const [ev, groups] of Object.entries(hooks)) {
 const hook = exists(`${P}/hooks/session-start.mjs`) ? read(`${P}/hooks/session-start.mjs`) : "";
 check(/lock\.json/.test(hook) && /telemetry/.test(hook) && /heartbeat/.test(hook), "session-start.mjs must check .kit/lock.json and telemetry before heartbeat");
 
+// ---- core rules: always-on session context, printed by the hook; the same rule leads the skill for harnesses that
+// have not run the hook (Codex skips a plugin hook until the user trusts it)
+check(/rules/.test(hook) && /additionalContext/.test(hook) && /hookEventName: "SessionStart"/.test(hook), "session-start.mjs must print rules/*.md as SessionStart additionalContext");
+const rules = exists(`${P}/rules`) ? dirs(`${P}/rules`).filter((d) => d.name.endsWith(".md")).map((d) => d.name) : [];
+for (const name of rules) {
+  const text = read(`${P}/rules/${name}`);
+  check(/^# \S/.test(text) && text.length <= 4000, `${P}/rules/${name}: a core rule starts with a heading and stays under 4000 characters (it is in every session)`);
+}
+const deterministic = exists(`${P}/skills/deterministic-tests/SKILL.md`) ? frontmatter(`${P}/skills/deterministic-tests/SKILL.md`) : null;
+check(/^Tests must be deterministic\b/.test(deterministic?.fields.description ?? ""), "deterministic-tests skill: the description must state the rule first (it is what a session sees without the hook)");
+check(exists(`${P}/skills/deterministic-tests/references/recipes.md`), "missing deterministic-tests/references/recipes.md (run the plugin build)");
+check(!/disable-model-invocation/.test(exists(`${P}/skills/deterministic-tests/SKILL.md`) ? read(`${P}/skills/deterministic-tests/SKILL.md`) : "") && !/allow_implicit_invocation:\s*false/.test(exists(`${P}/skills/deterministic-tests/agents/openai.yaml`) ? read(`${P}/skills/deterministic-tests/agents/openai.yaml`) : ""), "deterministic-tests must stay implicitly invocable in Claude Code and Codex");
+
 // ---- no secrets anywhere
 const SECRETS = [
   ["kit or HQ token", /\b(?:hq_|kit_)[A-Za-z0-9_-]{40,}\b/],
@@ -195,4 +209,4 @@ if (errors.length) {
   console.error(`kitbash plugin validation failed with ${errors.length} problem(s):\n- ${errors.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, 1 secrets broker tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, stdio MCP kitbash.`);
+console.log(`Validated kitbash plugin ${pkg.version}: ${contract.length} registry tools, 1 bootstrap tool, 1 secrets broker tool, ${skills.length} skills, ${commands.length} commands, hooks ${Object.keys(hooks).join("/")}, ${rules.length} core rule(s), stdio MCP kitbash.`);

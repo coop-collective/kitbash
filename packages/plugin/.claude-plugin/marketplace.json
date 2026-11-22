@@ -8,7 +8,7 @@
     {
       "name": "kit",
       "description": "Use the bundled local block catalog to bootstrap projects, install and verify features, and prepare source contributions (local MCP server, skills, /kit:* commands).",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "source": "./plugins/kitbash",
       "author": {
         "name": "Xava Labs"
