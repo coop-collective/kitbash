@@ -1,13 +1,13 @@
-# @kitbash/ui
+# @w3bstack/ui
 
-Styrene-themed React components for agent and AI products, catalogued in Storybook. Agents building UI in a Kitbash
+Styrene-themed React components for agent and AI products, catalogued in Storybook. Agents building UI in a w3bstack
 project browse this catalog for structure, interaction and motion ideas before reaching for a generic component kit.
 
 ```sh
-pnpm --filter @kitbash/ui storybook        # http://localhost:6006
-pnpm --filter @kitbash/ui build-storybook  # static catalog in packages/ui/dist/storybook
-pnpm --filter @kitbash/ui validate         # catalog, per-component entry points, barrel and skill reference are current
-pnpm --filter @kitbash/ui test             # every component renders with react-dom/server; package imports resolve
+pnpm --filter @w3bstack/ui storybook        # http://localhost:6006
+pnpm --filter @w3bstack/ui build-storybook  # static catalog in packages/ui/dist/storybook
+pnpm --filter @w3bstack/ui validate         # catalog, per-component entry points, barrel and skill reference are current
+pnpm --filter @w3bstack/ui test             # every component renders with react-dom/server; package imports resolve
 ```
 
 The component set follows the component list of [affectUI](https://www.affectui.com/components) as a brief. Every
@@ -17,7 +17,7 @@ the brief it answers, and what Styrene does differently (`twist`).
 
 ## Styrene, the theme
 
-Kitbashing is building a new model from the parts of other kits. Styrene makes interface parts feel like molded
+w3bstacking is building a new model from the parts of other kits. Styrene makes interface parts feel like molded
 plastic parts that click together:
 
 | Idea | How it shows up |
@@ -33,7 +33,7 @@ plastic parts that click together:
 
 Avoid the generated-UI tells: no all-caps eyebrow labels, no `A · B · C` meta strings, no arrow glyphs appended to
 button text, no gradient washes or glows, no cards nested inside cards, no drop shadow on resting surfaces, no sparkle
-icon for "AI" (the `sparkle` icon is Kitbash's own mark, a part on its sprue), and no repeating the same state with
+icon for "AI" (the `sparkle` icon is w3bstack's own mark, a part on its sprue), and no repeating the same state with
 several signals on one item.
 
 The direction was set with the method from Lenny's Newsletter, "How to turn your AI into a world-class designer":
@@ -77,7 +77,7 @@ Rules:
 - **Caching and lazy loading are the app's choice.** `useCachedLoader(key, load)` gives stale-while-revalidate data
   with `status` and `updatedAt` to pass straight into a component; `LazyMount` defers heavy components until they near
   the viewport, with the component's `loading` state as the fallback. Each component is also its own import path
-  (`@kitbash/ui/<slug>`), so `React.lazy(() => import("@kitbash/ui/chat-thread"))` splits it out.
+  (`@w3bstack/ui/<slug>`), so `React.lazy(() => import("@w3bstack/ui/chat-thread"))` splits it out.
 - **Controlled when it matters.** Selection, open state and values that an app would store accept `value` /
   `onChange` style props; demo state lives inside the component only when those props are absent.
 

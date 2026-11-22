@@ -1,4 +1,4 @@
-# Deploy your own Kitbash secrets connector
+# Deploy your own w3bstack secrets connector
 
 Run the broker in your own Cloudflare account. It stores application secrets in **Cloudflare Secrets Store** and gives agents scoped tools to generate, upload, and check them without returning secret values. Infisical is optional.
 
@@ -9,13 +9,13 @@ You need Node.js 22.18+, pnpm 12.14.0, a Cloudflare account with Workers and Sec
 1. Create your own GitHub copy of this repository and clone it. Replace `YOUR_ORG` and `YOUR_REPO` below:
 
    ```sh
-   git clone https://github.com/YOUR_ORG/YOUR_REPO.git kitbash-broker
-   cd kitbash-broker
+   git clone https://github.com/YOUR_ORG/YOUR_REPO.git w3bstack-broker
+   cd w3bstack-broker
    pnpm install --frozen-lockfile
-   pnpm --filter @kitbash/secrets-broker exec wrangler login
+   pnpm --filter @w3bstack/secrets-broker exec wrangler login
    ```
 
-2. Open **Secrets Store** in the Cloudflare dashboard and copy the account ID and store ID. The dashboard creates the first store for an authorized administrator. Alternatively, create one with `pnpm --filter @kitbash/secrets-broker exec wrangler secrets-store store create kitbash --remote`. Reuse an existing store when available. See [Cloudflare's setup instructions](https://developers.cloudflare.com/secrets-store/integrations/workers/).
+2. Open **Secrets Store** in the Cloudflare dashboard and copy the account ID and store ID. The dashboard creates the first store for an authorized administrator. Alternatively, create one with `pnpm --filter @w3bstack/secrets-broker exec wrangler secrets-store store create w3bstack --remote`. Reuse an existing store when available. See [Cloudflare's setup instructions](https://developers.cloudflare.com/secrets-store/integrations/workers/).
 
 3. Copy the Cloudflare policy and edit its two placeholder IDs:
 
@@ -33,11 +33,11 @@ You need Node.js 22.18+, pnpm 12.14.0, a Cloudflare account with Workers and Sec
 
    Enter your hostname, account ID, Worker name, and `broker.policy.json` when prompted. Setup deploys the Worker, its Durable Object, policy, and credentials; creates the custom-domain route; and prints MCP connection JSON. No Infisical or GitHub CI credentials are required for this path.
 
-5. Copy the generated MCP JSON into your agent's protected connector settings. A private copy is saved at `.kitbash/mcp.json`. Ask the agent to call `kitbash_register_secrets` for your project and then `kitbash_secrets` with `operation: "setup"`, the same `project`, and `target`. The examples below show the registration payload. Successful responses report names and status, never values.
+5. Copy the generated MCP JSON into your agent's protected connector settings. A private copy is saved at `.w3bstack/mcp.json`. Ask the agent to call `kitbash_register_secrets` for your project and then `kitbash_secrets` with `operation: "setup"`, the same `project`, and `target`. The examples below show the registration payload. Successful responses report names and status, never values.
 
 To enable automatic deployments from your GitHub copy later, run `pnpm run setup` without `--skip-ci` and follow [organization deployment credentials](#organization-deployment-credential). That setup run rotates the connector key: update the agent's MCP configuration afterward. Routine code updates use `pnpm run deploy:broker`, which preserves existing keys.
 
-Use **`pnpm run setup`**, not `pnpm setup` (pnpm's own installer). Setup saves private configuration in ignored `.env` and `.kitbash/`; keep those outside the agent's workspace. If the hostname is already attached to another Worker, choose a different hostname or resolve that ownership before deploying.
+Use **`pnpm run setup`**, not `pnpm setup` (pnpm's own installer). Setup saves private configuration in ignored `.env` and `.w3bstack/`; keep those outside the agent's workspace. If the hostname is already attached to another Worker, choose a different hostname or resolve that ownership before deploying.
 
 ## Which credentials go where
 
@@ -45,7 +45,7 @@ Use **`pnpm run setup`**, not `pnpm setup` (pnpm's own installer). Setup saves p
 | --- | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | GitHub **organization secret**, private repositories | Automated Worker deployments |
 | `CLOUDFLARE_ACCOUNT_ID` | GitHub **organization variable**, private repositories | Select the deployment account; this ID is not a secret |
-| MCP bearer token | Your connector configuration and private `.kitbash/mcp.json` | Authenticate the bot to Kitbash |
+| MCP bearer token | Your connector configuration and private `.w3bstack/mcp.json` | Authenticate the bot to w3bstack |
 | MCP token hash, policy, provider credentials | Cloudflare Worker secrets | Broker authentication and access to configured providers |
 | Application secrets | The destination in the broker policy | Application runtime credentials; never GitHub Actions secrets |
 
@@ -97,7 +97,7 @@ require operator-reviewed permissions and URLs. Registration does not grant prov
 
 The response includes `bindings` containing the exact `binding`, `store_id` and `secret_name` entries
 for the app's Wrangler `secrets_store_secrets` array. The app deploys those bindings and reads values
-through its runtime bindings. Kitbash registration does not deploy or modify the application Worker.
+through its runtime bindings. w3bstack registration does not deploy or modify the application Worker.
 
 Registrations persist in Durable Objects across deploys. Only metadata is stored there; generated
 values go directly into Secrets Store. Removing the principal's registration capability revokes
@@ -113,7 +113,7 @@ application secrets, or the broker's Infisical credentials. Routine deployments 
 The Cloudflare MCP exposes `kitbash_upload_secrets` for any registered provider credential or
 UTF-8 secret file. This uses the bot's computer and terminal; there is no human upload page.
 The remote server cannot open a path on that computer, so its tool returns a scoped upload
-ticket and a small Python 3 helper that sends the selected files directly to Kitbash.
+ticket and a small Python 3 helper that sends the selected files directly to w3bstack.
 
 1. Capture or download credentials directly to private local files on the bot computer. Keep
    their contents out of chat and command output. Preserve PEM newlines. The helper requires
@@ -170,7 +170,7 @@ access and a private parent directory writable by the controller service user, r
 
 ```sh
 pnpm run setup:controller \
-  --ssh controller-host --directory /opt/kitbash \
+  --ssh controller-host --directory /opt/w3bstack \
   --project example-app --target production \
   --integration example-runners --owner your-github-org \
   --kind runners --prefix EXAMPLE_GITHUB_RUNNERS
@@ -201,7 +201,7 @@ Grok calls `kitbash_secret_deliveries` with `{}` to discover enrolled destinatio
 
 Run the same local-file helper. No GitHub-specific upload page or `kitbash_import_github_app`
 tool is needed. Old import URLs are retired. Configure the App's HTTPS webhook URL in GitHub
-before delivery. Kitbash validates the key, owner and Client ID, writes the missing values to
+before delivery. w3bstack validates the key, owner and Client ID, writes the missing values to
 Secrets Store, and encrypts all three credentials to the enrolled receiver. Only the encrypted
 packet enters durable storage; it is removed after acknowledgement.
 
@@ -210,8 +210,8 @@ Run the receiver as the enrolled controller user, or schedule it with the suppli
 [timer](../packages/secrets-broker/examples/controller-receiver.timer) templates:
 
 ```sh
-/usr/local/bin/node /opt/kitbash/runtime/scripts/controller-receiver.mjs \
-  receive /opt/kitbash/example-runners
+/usr/local/bin/node /opt/w3bstack/runtime/scripts/controller-receiver.mjs \
+  receive /opt/w3bstack/example-runners
 ```
 
 Replace the service user and private paths, install both units under the same base name in
@@ -241,7 +241,7 @@ procedure before running a disposable canary.
 To configure and deploy the broker without configuring GitHub CI:
 
 ```sh
-pnpm --filter @kitbash/secrets-broker exec wrangler login # only if not already authenticated
+pnpm --filter @w3bstack/secrets-broker exec wrangler login # only if not already authenticated
 pnpm run setup --skip-ci
 ```
 
@@ -251,7 +251,8 @@ credentials. Normal `pnpm run setup` checks the GitHub CLI login first and promp
 only when missing. `--yes` reuses supplied or saved settings; it never starts an interactive login.
 
 The wizard asks for hostname, account, Worker name, policy and private broker credentials. It saves
-settings to ignored `.env` with mode 0600 and connection files under `.kitbash` with mode 0700.
+settings to ignored `.env` with mode 0600 and connection files under `.w3bstack` with mode 0700. A checkout that was set up before the rename
+keeps using its existing `.kitbash` directory; do not move files between the two.
 Secret prompts hide input. Keep this checkout outside the bot's workspace. An operator who can
 deploy broker code can change how it uses provider credentials.
 
@@ -320,7 +321,7 @@ it warns that the key will be replaced and previous MCP connections will stop au
 Permission errors stop setup before rotation. It generates 32 random bytes and deploys the hash,
 policy and provider credentials together using Wrangler's `--secrets-file`.
 
-The terminal output and private `.kitbash/mcp.json` contain:
+The terminal output and private `.w3bstack/mcp.json` contain:
 
 ```json
 {
@@ -335,19 +336,19 @@ The terminal output and private `.kitbash/mcp.json` contain:
 ```
 
 Copy this into the bot's protected MCP connector configuration. Its connector must support bearer
-headers; Kitbash does not implement an OAuth login server. Then call `kitbash_secrets` with `status`,
+headers; w3bstack does not implement an OAuth login server. Then call `kitbash_secrets` with `status`,
 the policy's project alias and an allowed target. The MCP token is the only credential intentionally
 printed. Application or provider secret values are never printed.
 
 Each setup run rotates the selected principal's MCP key. It does not rotate application secrets.
 Ordinary code deployments use `pnpm run deploy:broker`, preserve existing Worker secrets and do
 not require the MCP token. Local deployments use Wrangler login; CI uses the organization token.
-Both commands generate private `.kitbash/wrangler.deploy.json` from the shared `wrangler.jsonc`,
+Both commands generate private `.w3bstack/wrangler.deploy.json` from the shared `wrangler.jsonc`,
 applying the saved hostname/account configuration. Use `deploy:broker --dry-run` to check packaging.
 
 ## Recovery and optional Infisical CI
 
-Keep `.kitbash/setup-state.json`. It stores resource IDs and pending operations, never raw token
+Keep `.w3bstack/setup-state.json`. It stores resource IDs and pending operations, never raw token
 values. An interrupted token creation or organization secret write stops retries for operator
 reconciliation rather than minting duplicate tokens. Inspect the recorded token ID and organization
 secret before retrying. If a token was created but not stored, revoke that specific orphan before

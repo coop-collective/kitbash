@@ -1,6 +1,6 @@
 # Cloudflare CI and environment deployment bootstrap
 
-This template separates credential-free PR checks from a manual, environment-scoped deployment of the same checked main-branch commit. Workflows are inert under `workflows/`; copy them to `.github/workflows/` only in the project adopting the pattern. Kitbash's installer intentionally cannot write workflow paths.
+This template separates credential-free PR checks from a manual, environment-scoped deployment of the same checked main-branch commit. Workflows are inert under `workflows/`; copy them to `.github/workflows/` only in the project adopting the pattern. w3bstack's installer intentionally cannot write workflow paths.
 
 ```sh
 cd recipes/cloudflare-ci
@@ -17,7 +17,7 @@ The last command prints the exact migration/deployment plan. `--execute` perform
 Adoption checklist:
 
 1. Bring the scripts/workflows and package manifest into the app root. Run `pnpm install` and commit the generated `pnpm-lock.yaml` before enabling CI. The example uses pnpm 12.14.0; both workflows install that exact version and use frozen installs. In this repository, dependency versions come from the root lockfile.
-2. Configure both Wrangler environments with separately provisioned bindings; replace both placeholder database IDs. Bindings are not inherited automatically. Copy `.kitbash/secrets.json` too, set its Infisical project UUID/domain, and register application secret names. The fixture has no required runtime secrets. Its `scripts/secrets.mjs` is the tested copy of Kitbash's shared bootstrap helper.
+2. Configure both Wrangler environments with separately provisioned bindings; replace both placeholder database IDs. Bindings are not inherited automatically. Copy `.w3bstack/secrets.json` too, set its Infisical project UUID/domain, and register application secret names. The fixture has no required runtime secrets. Its `scripts/secrets.mjs` is the tested copy of w3bstack's shared bootstrap helper.
 3. Create Infisical `staging` and `production` environments: `/ci` contains `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; `/app` contains registered runtime secrets. Create GitHub environments of the same names; set `INFISICAL_IDENTITY_ID`, `INFISICAL_PROJECT_SLUG`, and optionally `INFISICAL_DOMAIN` as variables. Configure Infisical OIDC identities restricted to this repository and each GitHub environment, with read access only to its `/ci` and `/app` folders. Set production reviewers/branch restrictions in GitHub settings; YAML alone does not create those protections.
 4. Add application lint, workerd integration/migration-history tests and browser checks to the check job. Require it in branch protection. Audit/pin action revisions according to repository policy.
 5. Use additive expand/contract migrations so old code remains compatible after migration but before deploy. A Worker rollback cannot reverse D1 schema/data. Backfills and destructive migrations need a release-specific procedure.

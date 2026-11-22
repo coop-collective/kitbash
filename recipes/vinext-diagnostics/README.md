@@ -1,6 +1,6 @@
 # React and vinext diagnostics
 
-Opt-in client diagnostics for a vinext app, with a compatibility check against Kitbash's pinned bootstrap. This recipe does not change bootstrap defaults, install a telemetry service, or deploy anything.
+Opt-in client diagnostics for a vinext app, with a compatibility check against w3bstack's pinned bootstrap. This recipe does not change bootstrap defaults, install a telemetry service, or deploy anything.
 
 ```sh
 pnpm install
@@ -10,7 +10,7 @@ pnpm exec playwright install chromium
 pnpm test:compat
 ```
 
-`test:compat` creates a temporary copy of `bootstraps/vinext/files`, installs its dependencies plus this recipe's pinned `web-vitals`, runs the bootstrap checks and production build, starts the generated Worker in local workerd, and verifies server `instrumentation.register`, browser hydration and a real LCP callback. It removes the temporary app and stops its server. Allow ten minutes in CI; install Chromium with `pnpm exec playwright install --with-deps chromium` there. When copied outside this repository, supply `KITBASH_VINEXT_TEMPLATE=/absolute/path/to/bootstraps/vinext/files`. The same relative template location exists in the shipped plugin catalog.
+`test:compat` creates a temporary copy of `bootstraps/vinext/files`, installs its dependencies plus this recipe's pinned `web-vitals`, runs the bootstrap checks and production build, starts the generated Worker in local workerd, and verifies server `instrumentation.register`, browser hydration and a real LCP callback. It removes the temporary app and stops its server. Allow ten minutes in CI; install Chromium with `pnpm exec playwright install --with-deps chromium` there. When copied outside this repository, supply `W3BSTACK_VINEXT_TEMPLATE=/absolute/path/to/bootstraps/vinext/files`. The same relative template location exists in the shipped plugin catalog.
 
 ## Adopt the collector
 
@@ -34,4 +34,4 @@ The compatibility check reads the actual bootstrap pins (currently React **19.3.
 
 Sources: [vinext support matrix](https://github.com/cloudflare/vinext#supported-features), [web-vitals usage and reporting](https://github.com/GoogleChrome/web-vitals), [React Strict Mode](https://react.dev/reference/react/StrictMode), [React Profiler](https://react.dev/reference/react/Profiler).
 
-Provenance: original Kitbash recipe, derived from the Sticks November 2026 performance audit's need to distinguish browser measurements, React render work and Worker evidence. No app credentials, user data or production traces are included. This is a recipe rather than an installable block: dependency installation, browser setup and process startup exceed the block verifier's command allowlist.
+Provenance: original w3bstack recipe, derived from the Sticks November 2026 performance audit's need to distinguish browser measurements, React render work and Worker evidence. No app credentials, user data or production traces are included. This is a recipe rather than an installable block: dependency installation, browser setup and process startup exceed the block verifier's command allowlist.

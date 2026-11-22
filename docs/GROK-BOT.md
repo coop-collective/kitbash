@@ -1,9 +1,9 @@
-# Kitbash Account Manager for Grok Bot
+# w3bstack Account Manager for Grok Bot
 
 Use one Bot to manage company service accounts through Agent Vault. Claude Code and
 other coding tools handle application changes and Infisical Secrets Manager access.
-Kitbash contributes the workflow and code changes through those tools; Grok does not
-need an Infisical MCP connection. Grok can use the isolated Kitbash secrets broker's
+w3bstack contributes the workflow and code changes through those tools; Grok does not
+need an Infisical MCP connection. Grok can use the isolated w3bstack secrets broker's
 own remote MCP connector for approved secret setup. Use the template setup command to deploy your own connector; adding it to Grok remains a secure UI step.
 
 ## Connect the secrets broker
@@ -16,8 +16,8 @@ the local client path. Connect the broker directly instead:
    hostname, Cloudflare Secrets Store or Infisical credentials, Worker deployment, and GitHub CI. Setup checks GitHub authentication
    and starts the login prompt only if needed.
 2. Copy the generated MCP JSON from your terminal. Setup generates and deploys the scoped token for you;
-   a repeat run announces and replaces the existing remote token. The private file is `.kitbash/mcp.json`.
-3. Add `https://YOUR-BROKER/mcp` as a custom remote MCP connection named **Kitbash secrets**.
+   a repeat run announces and replaces the existing remote token. The private file is `.w3bstack/mcp.json`.
+3. Add `https://YOUR-BROKER/mcp` as a custom remote MCP connection named **w3bstack secrets**.
    Use supported protected connection controls for its bearer credential. Confirm the
    installed Grok Bot version can send the header; the service does not implement OAuth
    login. Keep the capability out of chat, the bot filesystem, and URL query strings.
@@ -30,7 +30,7 @@ the local client path. Connect the broker directly instead:
    A successful response proves broker
    access; missing names are expected in an existing source folder before setup. If the source environment/folder
    does not exist yet, an authorized `setup` creates it first. An `unavailable` or `forbidden` result
-   is incomplete. Load the `kitbash-secrets` skill separately if the Bot needs workflow guidance.
+   is incomplete. Load the `w3bstack-secrets` skill separately if the Bot needs workflow guidance.
 
 For the example policy, the initial read-only call is:
 
@@ -52,23 +52,25 @@ API, and Grok Bot expose identical authentication controls.
 ## Start in Grok
 
 1. Paste the message below into an **existing Grok Bot**, replacing the example addresses.
-2. Have it create or reuse **Kitbash Account Manager** and enable the existing private
-   **Kitbash accounts** skill. If the skill is not saved yet, supply
-   [the account-management skill](../packages/plugin/plugins/kitbash/skills/kitbash-accounts/SKILL.md)
-   and [the Grok setup reference](../packages/plugin/plugins/kitbash/skills/kitbash-accounts/references/grok-bot.md).
+2. Have it create or reuse **w3bstack Account Manager** and enable the existing private
+   **w3bstack accounts** skill. If the skill is not saved yet, supply
+   [the account-management skill](../packages/plugin/plugins/w3bstack/skills/w3bstack-accounts/SKILL.md)
+   and [the Grok setup reference](../packages/plugin/plugins/w3bstack/skills/w3bstack-accounts/references/grok-bot.md).
+   A Bot or skill saved before the rename is named **Kitbash Account Manager** / **Kitbash accounts**; rename
+   it in Grok or name it in the message, so that a second Bot is not created.
 3. Check the resulting Bot's skill list and readiness report. Connect its Agent Vault
    access through supported secure controls when requested.
 
 ```text
-Create or reuse one Bot named Kitbash Account Manager. Enable the existing private
-skill Kitbash accounts (kitbash-accounts) for that Bot and preserve its instructions.
+Create or reuse one Bot named w3bstack Account Manager. Enable the existing private
+skill w3bstack accounts (w3bstack-accounts) for that Bot and preserve its instructions.
 If the skill cannot be found, identify that missing dependency. Remember this profile
 and have the account-manager Bot perform the first task below.
 
 Our signup pattern is devaccounts+{service}@example.com. Mail reaches our agent through
 the devaccounts@example.com group. Our receiving inbox is company-agent@mail.grokbot.com.
 Agent Vault holds automation credentials. Claude Code and our other coding tools manage
-application credentials in Infisical, scoped to project and environment. Kitbash supports
+application credentials in Infisical, scoped to project and environment. w3bstack supports
 their implementation work. Grok needs no Infisical MCP. Preserve the company signup
 address for login/recovery.
 
@@ -81,7 +83,7 @@ controls for credentials. Do not create provider accounts, send mail, deploy ser
 or enable routines during this check. Bot creation and skill enablement are authorized.
 ```
 
-The Kitbash plugin also includes this workflow as `$kitbash-accounts` for agents that
+The w3bstack plugin also includes this workflow as `$w3bstack-accounts` for agents that
 load its skills. An MCP-only connection exposes tools, not the skill instructions.
 
 ## Native template import
@@ -92,7 +94,7 @@ they do not transfer your browser logins or computer. Review copied skills after
 See [Grok's template documentation](https://docs.x.ai/grok-bot/bots).
 
 The prompt above sets up the Bot through conversation; it is not a Grok JSON export.
-Kitbash cannot mint a native share link without access to a configured Bot. Once the pilot
+w3bstack cannot mint a native share link without access to a configured Bot. Once the pilot
 works, create a generic copy with example addresses and no private infrastructure details
 before publishing a reusable template. Keep the real account inventory private.
 
@@ -101,10 +103,10 @@ before publishing a reusable template. Keep the real account inventory private.
 | Piece | State |
 | --- | --- |
 | Bot instructions, destination rules, readiness check, pilot procedure | Included in this starter |
-| Application secret generation and GitHub/Worker provisioning | Existing [Kitbash broker](SECRETS-BROKER.md), requires operator configuration |
+| Application secret generation and GitHub/Worker provisioning | Existing [w3bstack broker](SECRETS-BROKER.md), requires operator configuration |
 | Remote `kitbash_secrets` connector | Broker `/mcp` implemented; scoped auth, hosting, and Grok connection must be configured |
 | Agent Vault deployment and Grok connection | Must be configured and tested in the target environment |
-| Infisical access | Broker-owned; Grok can request scoped operations through Kitbash MCP; no general Infisical connector required |
+| Infisical access | Broker-owned; Grok can request scoped operations through w3bstack MCP; no general Infisical connector required |
 | Agent Vault password substitution in Grok's browser | Candidate integration; requires a synthetic browser test |
 | GitHub App credential capture | Generic MCP uploads from local credential files implemented; optional App manifest and controller delivery integrations |
 | Recurring signup/maintenance jobs | Not enabled by this starter |

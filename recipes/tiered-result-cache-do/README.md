@@ -1,6 +1,6 @@
 # DO result cache integration fixture
 
-This repository fixture renders the installable `tiered-result-cache` block's defaults through Kitbash's renderer; it does not maintain a second implementation. Run from the workspace with `pnpm --filter @kitbash/recipe-tiered-result-cache-do test`, `typecheck`, or `build`. Dependency installation is managed by the root pnpm workspace.
+This repository fixture renders the installable `tiered-result-cache` block's defaults through w3bstack's renderer; it does not maintain a second implementation. Run from the workspace with `pnpm --filter @w3bstack/recipe-tiered-result-cache-do test`, `typecheck`, or `build`. Dependency installation is managed by the root pnpm workspace.
 
 DO is this fixture's source choice. The same loader contract supports R2, D1, Analytics Engine and other JSON sources; the [source guide](../../blocks/tiered-result-cache/docs/README.md#choosing-a-loader) explains payloads, keys, freshness and the coverage boundary for each.
 

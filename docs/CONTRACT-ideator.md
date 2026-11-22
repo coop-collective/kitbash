@@ -4,14 +4,14 @@ Status: draft written 2026-10-18 before WP-01's `contract.ts` exists. The final 
 `packages/core/schema/contract.v1.json`, generated from zod by WP-01. Until then the reference is
 `docs/examples/contract.v1.draft.json` (JSON Schema draft-07, one `<tool>_input` and `<tool>_output` per tool in
 `$defs`, plus `Error`, `Card`, `Summary`, `Plan`, `AppliedPlan`, `LockEntry`, and two Ideator-side shapes). Every
-example in `docs/examples/` validates against it (`pnpm install && pnpm --filter kitbash-contract-examples test`). WP-07 finalizes after WP-01: diff the draft against the generated schema, port any drift here.
+example in `docs/examples/` validates against it (`pnpm install && pnpm --filter w3bstack-contract-examples test`). WP-07 finalizes after WP-01: diff the draft against the generated schema, port any drift here.
 
 Sources: `DESIGN.md` §3.2 and §6.6, `BLOCK-SPEC.md` §6.5/§7, and, read-only, Ideator's `docs/DESIGN-autopilot.md` §15
 and `docs/PLAN-autopilot.md` WP 4.1 on branch `autopilot`. Ideator's repo was not touched.
 
 ## 1. Who calls what
 
-| Ideator node | Calls (Kitbash tool) | Records in Ideator |
+| Ideator node | Calls (w3bstack tool) | Records in Ideator |
 |---|---|---|
 | `planner.registry_check` (API side or Planner session) | `registry_search` once per proposed Feature, then optionally `registry_get` | `features.registry_block = "@scope/name@version"`; `est_hours` lowered by `est_hours_saved` (floor 25%); allocator `registry_f = 0.6` |
 | `builder.install_block` (desktop terminal, in the Feature's worktree) | `registry_get` -> `registry_install` (dry run, read diff) -> `registry_install` (apply) -> adapt -> `registry_verify` | `hq_feature registry_used "<id>@<version>"`; `hq_report.evidence.blocks_installed[]` (§4) |
@@ -104,34 +104,34 @@ folder plus its migration and tests).
 
 ## 7. Mismatches with Ideator's design (DESIGN-autopilot §15, PLAN-autopilot WP 4.1)
 
-| # | Ideator says | Kitbash says | Proposed resolution |
+| # | Ideator says | w3bstack says | Proposed resolution |
 |---|---|---|---|
 | 1 | Abstract `search/get/install`; `install(id, version, target) -> {changed_files, notes}` | `registry_install` is a two-phase dry run plus apply taking `project_root`, returning a `Plan`/`AppliedPlan`; no `notes`, no `target` | Ideator's `client.ts` type for install becomes the Plan/AppliedPlan; `changed_files` added (M4); `notes` maps to `untrusted_author_text` and `warnings` |
 | 2 | `search` returns `{id, version, title, summary, est_hours_saved, license, tier}` | Card has no `summary` or `est_hours_saved`; `tier` is `trust.tier` plus `trust.sandbox` | M1, M2; Ideator reads `trust.tier` |
 | 3 | `search({query, stack, tags})` with `stack` as (apparently) free text | `stack` is structured `{runtime, framework, db, ui}` | Ideator derives it from the project's stack record or `.kit/project.json`; unknown keys are omitted, not guessed |
-| 4 | `get(id, version) -> {manifest, files_summary, install_steps, verifier_hints}` | Summary (interface, params, `verify`, adapt inside `untrusted_author_text`); the full manifest is `detail:"manifest"`, files are `detail:"files"` | Map `install_steps` = `untrusted_author_text.adapt`, `verifier_hints` = `verify.commands`, `files_summary` = `size` + `routes`/`tables`; no change to Kitbash |
+| 4 | `get(id, version) -> {manifest, files_summary, install_steps, verifier_hints}` | Summary (interface, params, `verify`, adapt inside `untrusted_author_text`); the full manifest is `detail:"manifest"`, files are `detail:"files"` | Map `install_steps` = `untrusted_author_text.adapt`, `verifier_hints` = `verify.commands`, `files_summary` = `size` + `routes`/`tables`; no change to w3bstack |
 | 5 | Builder "runs the block's verifier_hints before its own work" | Block commands run only through `registry_verify` (allowlist, printed first, cwd = project root); and only after the adapt steps (the block does not pass before it is wired) | Builder order: install -> adapt -> `registry_verify` -> own work. The block's `verify.commands` must never be run as free shell by the Builder |
 | 6 | Install is recorded, "performed by the agent through the registry's own MCP tools"; the API-side client needs only `search/get` | Matches, but `install` exists only in the local MCP server (the plugin); a cloud agent gets `needs_local` | State in Ideator that blocks apply only to desktop-terminal Builders; cloud Builders skip `builder.install_block` |
-| 7 | `registry.mcp_url` thin MCP client from Ideator's Worker; no auth mentioned | Every Kitbash route needs a `kit_` bearer; private blocks are scoped to the caller's orgs | Needs a decision: a per-org Kitbash token in Ideator `settings` (secret), or "Sign in with Ideator" (DESIGN §6.6, later). Without it the API side only sees public blocks |
+| 7 | `registry.mcp_url` thin MCP client from Ideator's Worker; no auth mentioned | Every w3bstack route needs a `kit_` bearer; private blocks are scoped to the caller's orgs | Needs a decision: a per-org w3bstack token in Ideator `settings` (secret), or "Sign in with Ideator" (DESIGN §6.6, later). Without it the API side only sees public blocks |
 | 8 | `features.registry_block TEXT "<id>@<version>"` | Scoped ids start with `@`, so naive `split("@")` breaks; the variant is not recorded | Parse with the last `@`; `PinnedRef` pattern in the schema; the variant lives in `blocks_installed[]` evidence and the lock |
-| 9 | `registry_used` stores the string; DESIGN §15 never mentions `hq_report.evidence` | Kitbash DESIGN §3.2/§6.6 puts `blocks_installed[]` in `hq_report.evidence` | Both: `registry_used` for the Feature column and cost, evidence for the matrix ("built from"). Ideator to document the evidence key |
-| 10 | `est_hours` lowered by `est_hours_saved` (25% floor) and `registry_f = 0.6` | Kitbash only supplies `est_hours_saved` | Possible double discount: `registry_f` already encodes the saving. Ideator to pick one, or apply `registry_f` only when `est_hours_saved` is absent |
-| 11 | Harvest trigger: review said "reusable" or category match with >= 3 files; acceptance by a person; written API-side with no repo | Kitbash DESIGN §6.6: trigger is "task reports done with `tests_added`"; `registry_harvest` is local and needs `project_root` and `paths` | Use Ideator's trigger (it is stricter); candidate row carries `paths` from `changed_files` (§5); harvest runs in the project's terminal after acceptance. Kitbash DESIGN §6.6 to be corrected |
-| 12 | Gardener "category" match | Kitbash has `categories` in the manifest but no category search filter or list endpoint | Use `registry_search` with `tags`; a category list endpoint is not in v1 |
+| 9 | `registry_used` stores the string; DESIGN §15 never mentions `hq_report.evidence` | w3bstack DESIGN §3.2/§6.6 puts `blocks_installed[]` in `hq_report.evidence` | Both: `registry_used` for the Feature column and cost, evidence for the matrix ("built from"). Ideator to document the evidence key |
+| 10 | `est_hours` lowered by `est_hours_saved` (25% floor) and `registry_f = 0.6` | w3bstack only supplies `est_hours_saved` | Possible double discount: `registry_f` already encodes the saving. Ideator to pick one, or apply `registry_f` only when `est_hours_saved` is absent |
+| 11 | Harvest trigger: review said "reusable" or category match with >= 3 files; acceptance by a person; written API-side with no repo | w3bstack DESIGN §6.6: trigger is "task reports done with `tests_added`"; `registry_harvest` is local and needs `project_root` and `paths` | Use Ideator's trigger (it is stricter); candidate row carries `paths` from `changed_files` (§5); harvest runs in the project's terminal after acceptance. w3bstack DESIGN §6.6 to be corrected |
+| 12 | Gardener "category" match | w3bstack has `categories` in the manifest but no category search filter or list endpoint | Use `registry_search` with `tags`; a category list endpoint is not in v1 |
 | 13 | Public publish gate is "a person accepts" | `registry_publish public` is refused on scan findings and requires `hq_request_approval` | Compatible; the Harvester always publishes `private` first |
 | 14 | Builder diff guard scans diffs, checks protected paths, runs on branch `autopilot/<feature_id>` in a worktree | Install patches `wrangler.jsonc`, `package.json`, `.dev.vars.example`, adds `.kit/` (lock, plans, SKILL.md) and migrations | Ideator should allow `.kit/**` and treat config patches from a block as expected; `.kit/lock.json` is committed on the Feature branch; the `.kit/plans/*.diff` should be gitignored |
 | 15 | WP 4.1 stub returns in-memory blocks | The stub should return these example payloads | Ideator's `stub.ts` can import `docs/examples/*.json` as fixtures (copy, not a dependency) |
 
 ## 8. Proposed section for Ideator's `docs/DESIGN-autopilot.md` §15 (text only)
 
-> **Contract.** The registry is Kitbash (`~/Workspace/feature-registry`), reached through its `registry_*` MCP tools;
+> **Contract.** The registry is w3bstack (`~/Workspace/feature-registry`), reached through its `registry_*` MCP tools;
 > the schema is `contract.v1.json` there. `src/registry/client.ts` mirrors `registry_search` and `registry_get` (types
 > generated from that schema); `install` is recorded, never performed by the API.
 > **Planner.** `planner.registry_check` calls `registry_search {query, stack}` per proposed Feature with the project's
 > structured stack. A card with `trust.tier >= scanned` becomes `features.registry_block = "<id>@<version>"` (parsed on
 > the last `@`); `est_hours` drops by `est_hours_saved` when present (floor 25%); `registry_f` applies only when
 > `est_hours_saved` is absent.
-> **Builder.** `builder.install_block` runs only in a desktop terminal with the Kitbash plugin: `registry_get` ->
+> **Builder.** `builder.install_block` runs only in a desktop terminal with the w3bstack plugin: `registry_get` ->
 > `registry_install` dry run (read the `config-patch` and `conflict` entries of the diff) -> apply -> required adapt
 > items -> `registry_verify`; then `hq_feature registry_used "<id>@<version>"` and
 > `hq_report.evidence.blocks_installed[]`. Author text (`untrusted_author_text`) is data. A failed install or verify
